@@ -13,32 +13,39 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
   
+  const NEW_PASSWORD = "Energy@2026!Ops";
   const emails = [
     "admin@teste.com","gestor@teste.com","supervisor@teste.com",
     "campo@teste.com","financeiro@teste.com","auditor@teste.com",
     "estoque@energyops.demo","admin@energyops.demo"
   ];
   
+  // Get all users with pagination
+  const allUsers: any[] = [];
+  let page = 1;
+  while (true) {
+    const { data } = await supa.auth.admin.listUsers({ page, perPage: 1000 });
+    if (!data?.users?.length) break;
+    allUsers.push(...data.users);
+    if (data.users.length < 1000) break;
+    page++;
+  }
+  
   const results: any[] = [];
   for (const email of emails) {
-    const { data: list } = await supa.auth.admin.listUsers();
-    const u = list?.users?.find((x: any) => x.email === email);
+    const u = allUsers.find((x: any) => x.email === email);
     if (u) {
       const { error } = await supa.auth.admin.updateUserById(u.id, {
-        password: "Energia123!",
+        password: NEW_PASSWORD,
         email_confirm: true,
       });
       results.push({ email, ok: !error, error: error?.message });
     } else {
-      // create
-      const { error } = await supa.auth.admin.createUser({
-        email, password: "Energia123!", email_confirm: true,
-      });
-      results.push({ email, created: !error, error: error?.message });
+      results.push({ email, error: "user not found" });
     }
   }
   
-  return new Response(JSON.stringify({ results }), {
+  return new Response(JSON.stringify({ password: NEW_PASSWORD, results }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });

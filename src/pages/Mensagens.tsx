@@ -431,25 +431,42 @@ export default function Mensagens() {
                </DialogContent>
             </Dialog>
           </div>
-          <div className="flex-1 overflow-auto">
-            {convs.length === 0 ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">
-                <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
-                Nenhuma conversa.
-              </div>
-            ) : convs.map((c) => (
-              <button key={c.id} onClick={() => setActive(c.id)}
-                className={cn("w-full border-b border-border text-left px-3 py-2 hover:bg-accent transition-colors",
-                  active === c.id && "bg-accent")}>
-                <div className="text-sm font-medium truncate">
-                  {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {new Date(c.created_at).toLocaleDateString("pt-BR")}
-                </div>
-              </button>
-            ))}
-          </div>
+           <ScrollArea className="flex-1">
+             <div className="p-1">
+               {convs.length === 0 ? (
+                 <div className="p-6 text-center text-xs text-muted-foreground">
+                   <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
+                   Nenhuma conversa ativa. Clique em "Nova" para começar.
+                 </div>
+               ) : convs.map((c) => (
+                 <button 
+                   key={c.id} 
+                   onClick={() => setActive(c.id)}
+                   className={cn(
+                     "w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all mb-1 text-left group relative",
+                     active === c.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent border-l-4 border-transparent"
+                   )}
+                 >
+                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                     {c.outros[0]?.nome?.charAt(0) || "C"}
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <div className="flex items-center justify-between mb-0.5">
+                       <div className={cn("text-sm font-bold truncate", active === c.id ? "text-primary" : "text-foreground")}>
+                         {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
+                       </div>
+                       <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
+                         {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                       </span>
+                     </div>
+                     <div className="text-[11px] text-muted-foreground truncate leading-relaxed">
+                       {c.ultima_msg}
+                     </div>
+                   </div>
+                 </button>
+               ))}
+             </div>
+           </ScrollArea>
         </div>
 
         {/* Thread */}

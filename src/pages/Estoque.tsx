@@ -533,7 +533,20 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </Card>
         </TabsContent>
 
-        <TabsContent value="liberacao" className="mt-4 space-y-4">
+        <TabsContent value="liberacao" className="mt-4 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <Card className="p-4 bg-amber-500/5 border-amber-500/10">
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Liberado Hoje</div>
+              <div className="text-2xl font-black text-amber-700">{summary.outToday.length}</div>
+              <div className="text-[10px] text-amber-600/70">Saídas para campo</div>
+            </Card>
+            <Card className="p-4 bg-primary/5 border-primary/10">
+              <div className="text-[10px] font-bold text-primary uppercase tracking-widest">OS Atendidas</div>
+              <div className="text-2xl font-black text-primary/80">{new Set(summary.outToday.map(m => m.os_id).filter(Boolean)).size}</div>
+              <div className="text-[10px] text-primary/60">Obras em execução</div>
+            </Card>
+          </div>
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowUpFromLine className="h-5 w-5 text-amber-500" />

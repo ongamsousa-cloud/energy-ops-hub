@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
- import { Plus, Trash2, MapPin, Camera, History, CheckCircle, XCircle, AlertCircle, Download } from "lucide-react";
+import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function OSDetalhe() {
@@ -99,8 +99,9 @@ export default function OSDetalhe() {
     load();
   }
 
-   async function uploadEvidencia(e: React.ChangeEvent<HTMLInputElement>) {
+   async function uploadEvidencia(e: React.ChangeEvent<HTMLInputElement>, isCamera: boolean = false) {
      const f = e.target.files?.[0]; if (!f) return;
+     toast.info("Processando arquivo...");
      const isVideo = f.type.startsWith("video/");
      const path = `${id}/${crypto.randomUUID()}-${f.name}`;
      const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
@@ -334,16 +335,31 @@ export default function OSDetalhe() {
            )}
          </TabsContent>
 
-         <TabsContent value="evidencias" className="mt-4">
-           <div className="flex items-end justify-between mb-3">
-             <h2 className="text-sm font-medium">Fotos e vídeos do campo</h2>
-             {canEdit && (
-               <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs hover:bg-accent transition-colors">
-                 <Camera className="h-3.5 w-3.5" strokeWidth={1.5}/> Enviar evidência
-                 <input type="file" accept="image/*,video/*" capture="environment" className="hidden" onChange={uploadEvidencia} />
-               </label>
-             )}
-           </div>
+          <TabsContent value="evidencias" className="mt-4">
+            <div className="flex flex-col gap-4 mb-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium">Fotos e vídeos do campo</h2>
+              </div>
+              
+              {canEdit && (
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row">
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm active:scale-95">
+                    <Camera className="h-5 w-5" strokeWidth={2}/> Tirar Foto
+                    <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => uploadEvidencia(e, true)} />
+                  </label>
+                  
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors shadow-sm active:scale-95">
+                    <Video className="h-5 w-5" strokeWidth={2}/> Gravar Vídeo
+                    <input type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => uploadEvidencia(e, true)} />
+                  </label>
+
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm active:scale-95 sm:flex-none">
+                    <Plus className="h-5 w-5" strokeWidth={2}/> Arquivo
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => uploadEvidencia(e, false)} />
+                  </label>
+                </div>
+              )}
+            </div>
            {evid.length === 0 ? (
              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem evidências registradas.</div>
            ) : (

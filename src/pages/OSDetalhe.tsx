@@ -754,9 +754,27 @@ export default function OSDetalhe() {
          )}
         {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={aprovar} className="gap-1.5 bg-green-600 hover:bg-green-700">
-              <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-success hover:bg-success/90 text-white">
+                      <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!evCheck.ok && (
+                  <TooltipContent>
+                    <div className="text-xs max-w-xs">
+                      <strong>Pendências de evidência:</strong>
+                      <ul className="list-disc pl-4 mt-1">
+                        {evCheck.missing.map((m, i) => <li key={i}>{m}</li>)}
+                      </ul>
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
               <History className="h-3.5 w-3.5" /> Solicitar Correção
             </Button>

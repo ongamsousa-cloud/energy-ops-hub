@@ -14,7 +14,12 @@ export default function OSNova() {
   const { user, profile } = useAuth();
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
-  const [obraId, setObraId] = useState("");
+   const [formData, setFormData] = useState({
+     obraId: "",
+     prioridade: "media",
+     data_agendada: new Date().toISOString().split('T')[0],
+     hora_agendada: "08:00"
+   });
   const [busy, setBusy] = useState(false);
   useEffect(() => { supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero").then(({ data }) => setObras(data ?? [])); }, []);
   function getGeo(): Promise<{ lat?: number; lng?: number }> {

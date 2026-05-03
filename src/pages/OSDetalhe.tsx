@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info } from "lucide-react";
+import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
 
@@ -97,6 +97,8 @@ export default function OSDetalhe() {
        setChecklist({}); // Reset checklist on code change
      }
    }, [form.execution_code_id, codes]);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   const ativSel = atvs.find((a) => a.id === form.atividade_id);
   const umdTotal = ativSel && form.quantidade ? Number(form.quantidade) * Number(ativSel.umd_unitaria) : 0;
@@ -380,10 +382,30 @@ export default function OSDetalhe() {
                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                    <div>
                      <Label>Atividade</Label>
-                     <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                       <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                       <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                     </Select>
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          placeholder="Buscar atividade..." 
+                          className="pl-9 h-9" 
+                          value={searchTerm} 
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          disabled={!form.categoria_id}
+                        />
+                      </div>
+                      <Select 
+                        value={form.atividade_id} 
+                        onValueChange={(v)=>setForm({...form, atividade_id: v})} 
+                        disabled={!form.categoria_id}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione na lista"/></SelectTrigger>
+                        <SelectContent>
+                          {atvs
+                            .filter(a => !searchTerm || a.codigo_item.toLowerCase().includes(searchTerm.toLowerCase()) || a.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
+                            .map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                    </div>
                    <div>
                      <Label>Código Técnico (Base Técnica)</Label>

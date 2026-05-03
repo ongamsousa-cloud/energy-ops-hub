@@ -17,6 +17,7 @@ import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, Ale
  import { cn } from "@/lib/utils";
 import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export default function OSDetalhe() {
   const { id } = useParams();

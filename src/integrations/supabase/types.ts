@@ -2108,7 +2108,9 @@ export type Database = {
           id: string
           manager_id: string | null
           nome: string
+          role: string | null
           supervisor_id: string | null
+          team_id: string | null
           telefone: string | null
           ultimo_acesso: string | null
           updated_at: string
@@ -2126,7 +2128,9 @@ export type Database = {
           id: string
           manager_id?: string | null
           nome: string
+          role?: string | null
           supervisor_id?: string | null
+          team_id?: string | null
           telefone?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
@@ -2144,7 +2148,9 @@ export type Database = {
           id?: string
           manager_id?: string | null
           nome?: string
+          role?: string | null
           supervisor_id?: string | null
+          team_id?: string | null
           telefone?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
@@ -2155,6 +2161,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -2471,6 +2484,130 @@ export type Database = {
           },
         ]
       }
+      service_orders: {
+        Row: {
+          address: string | null
+          audit_status: string
+          cliente_id: string | null
+          created_at: string | null
+          department_id: string | null
+          descricao: string | null
+          financial_status: string
+          finished_at: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          manager_id: string | null
+          numero: number
+          obra_id: string | null
+          priority: string | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string
+          supervisor_id: string | null
+          team_id: string | null
+          technician_id: string | null
+          titulo: string
+          updated_at: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          audit_status?: string
+          cliente_id?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          descricao?: string | null
+          financial_status?: string
+          finished_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          manager_id?: string | null
+          numero?: number
+          obra_id?: string | null
+          priority?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          supervisor_id?: string | null
+          team_id?: string | null
+          technician_id?: string | null
+          titulo: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          audit_status?: string
+          cliente_id?: string | null
+          created_at?: string | null
+          department_id?: string | null
+          descricao?: string | null
+          financial_status?: string
+          finished_at?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          manager_id?: string | null
+          numero?: number
+          obra_id?: string | null
+          priority?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          supervisor_id?: string | null
+          team_id?: string | null
+          technician_id?: string | null
+          titulo?: string
+          updated_at?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisors: {
         Row: {
           active: boolean | null
@@ -2536,6 +2673,41 @@ export type Database = {
           value?: Json
         }
         Relationships: []
+      }
+      teams: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          id: string
+          name: string
+          supervisor_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          name: string
+          supervisor_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          name?: string
+          supervisor_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       technicians: {
         Row: {

@@ -29,7 +29,13 @@ export default function ObraDetalhe() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    if (!id) return;
+    const ch = supabase
+      .channel(`obra-os-${id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico", filter: `obra_id=eq.${id}` }, loadData)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [loadData, id]);
 
   if (!obra) return <div className="text-sm text-muted-foreground">Carregando…</div>;
   const totalUmd = oss.reduce((a, r) => a + Number(r.total_umd_aprovada || 0), 0);

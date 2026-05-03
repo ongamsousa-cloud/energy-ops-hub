@@ -74,10 +74,14 @@ import { useState } from "react";
 
   const PIE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#6366f1'];
   
-  // Mock field efficiency if not provided
+  // Eficiência calculada a partir das OS (aprovadas / (aprovadas + reprovadas))
+  const totalDecididas = (Number(stats.osAprov) || 0) + (Number(stats.osRejeitadas) || 0);
+  const eficiencia = totalDecididas > 0
+    ? Math.round((Number(stats.osAprov) / totalDecididas) * 100)
+    : 0;
   const efficiencyData = [
-    { name: 'Eficiência', value: 85, fill: 'hsl(var(--primary))' },
-    { name: 'Restante', value: 15, fill: 'hsl(var(--muted))' }
+    { name: 'Eficiência', value: eficiencia, fill: 'hsl(var(--primary))' },
+    { name: 'Restante', value: Math.max(0, 100 - eficiencia), fill: 'hsl(var(--muted))' }
   ];
 
    return (
@@ -321,8 +325,8 @@ import { useState } from "react";
                 </RadialBarChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
-                <span className="text-3xl font-bold">85%</span>
-                <span className="text-[10px] text-muted-foreground">META ATINGIDA</span>
+                <span className="text-3xl font-bold">{eficiencia}%</span>
+                <span className="text-[10px] text-muted-foreground">APROVAÇÃO</span>
               </div>
             </div>
             <div className="mt-2 text-center">

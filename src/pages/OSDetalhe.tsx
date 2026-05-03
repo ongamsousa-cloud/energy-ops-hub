@@ -720,18 +720,18 @@ export default function OSDetalhe() {
   );
 }
 
-   function EvImg({ ev, onDelete }: { ev: any, onDelete: (ev: any) => void }) {
-     const [url, setUrl] = useState<string>("");
-     const [showDetails, setShowDetails] = useState(false);
-     const { user } = useAuth();
-     
-     useEffect(() => {
-       supabase.storage.from("os-evidences").createSignedUrl(ev.url, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
-     }, [ev.url]);
-     
-     const isVideo = ev.tipo === "video";
-     const metadata = ev.metadata || {};
-     const canDelete = user?.id === ev.user_id || hasRole(['admin', 'gestor']);
+    function EvImg({ ev, onDelete }: { ev: any, onDelete: (ev: any) => void }) {
+      const [url, setUrl] = useState<string>("");
+      const [showDetails, setShowDetails] = useState(false);
+      const { user, hasRole } = useAuth();
+      
+      useEffect(() => {
+        supabase.storage.from("os-evidences").createSignedUrl(ev.url, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
+      }, [ev.url]);
+      
+      const isVideo = ev.tipo === "video";
+      const metadata = ev.metadata || {};
+      const canDelete = user?.id === ev.user_id || hasRole(['admin', 'gestor']);
      
      return (
        <>

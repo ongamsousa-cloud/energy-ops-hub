@@ -31,9 +31,11 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const { user, profile, hasRole } = useAuth();
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
-  const [atividades, setAtividades] = useState<any[]>([]);
-  const [categorias, setCategorias] = useState<any[]>([]);
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
+   const [atividades, setAtividades] = useState<any[]>([]);
+   const [categorias, setCategorias] = useState<any[]>([]);
+   const [servicos, setServicos] = useState<any[]>([]);
+   const [selectedServicoId, setSelectedServicoId] = useState<string>("");
+   const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
   const [equipes, setEquipes] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
@@ -59,25 +61,31 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }
   }, [open, initialObraId]);
 
-  async function fetchInitialData() {
-    const [resObras, resAtividades, resCats, resGestores, resEquipes] = await Promise.all([
-      supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
-      supabase.from("atividades").select("*, categoria:categorias(nome)").eq("ativo", true).order("codigo_item"),
-      supabase.from("categorias").select("*").order("nome"),
-      supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
-      supabase.from("equipes").select("id, nome").order("nome")
-    ]);
-
-    setObras(resObras.data ?? []);
-    setAtividades(resAtividades.data ?? []);
-    setCategorias(resCats.data ?? []);
-    setGestores(resGestores.data ?? []);
-    setEquipes(resEquipes.data ?? []);
-    
-    if (resGestores.data?.length === 1) {
-      setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
-    }
-  }
+   async function fetchInitialData() {
+     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes] = await Promise.all([
+       supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
+       supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
+       supabase.from("categorias").select("*").order("nome"),
+       supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
+       supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
+       supabase.from("equipes").select("id, nome").order("nome")
+     ]);
+ 
+     setObras(resObras.data ?? []);
+     setAtividades(resAtividades.data ?? []);
+     setCategorias(resCats.data ?? []);
+     setServicos(resServicos.data ?? []);
+     setGestores(resGestores.data ?? []);
+     setEquipes(resEquipes.data ?? []);
+     
+     if (resServicos.data?.length) {
+       setSelectedServicoId(resServicos.data[0].id);
+     }
+ 
+     if (resGestores.data?.length === 1) {
+       setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
+     }
+   }
 
   function addActivity(activity: any) {
     if (formData.itens.some(i => i.id === activity.id)) {
@@ -105,27 +113,28 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
-  async function handleSave() {
-    if (!formData.obraId) return toast.error("Selecione a obra");
-    if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
-    
-    setBusy(true);
-    try {
-      const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
-        obra_id: formData.obraId,
-        profissional_id: user!.id,
-        assigned_manager_id: formData.gestorId || null,
-        equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-        status: "iniciada",
-        operational_status: "pendente",
-        prioridade: formData.prioridade,
-        data_agendada: formData.data_agendada,
-        hora_agendada: formData.hora_agendada,
-        observacoes: formData.observacoes,
-        created_by: user!.id,
-      }).select("id").single();
-
-      if (osError) throw osError;
+   async function handleSave() {
+     if (!formData.obraId) return toast.error("Selecione a obra");
+     if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
+     
+     setBusy(true);
+     try {
+       const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
+         obra_id: formData.obraId,
+         servico_id: selectedServicoId || null,
+         profissional_id: user!.id,
+         assigned_manager_id: formData.gestorId || null,
+         equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
+         status: "iniciada",
+         operational_status: "pendente",
+         prioridade: formData.prioridade,
+         data_agendada: formData.data_agendada,
+         hora_agendada: formData.hora_agendada,
+         observacoes: formData.observacoes,
+         created_by: user!.id,
+       }).select("id").single();
+ 
+       if (osError) throw osError;
 
       const osAtividades = formData.itens.map(item => ({
         os_id: os.id,
@@ -209,88 +218,115 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Gestor Responsável</Label>
-              <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o gestor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {gestores.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+             <div className="space-y-2">
+               <Label>Gestor Responsável</Label>
+               <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione o gestor" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {gestores.map((g) => (
+                     <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
 
-          {(hasRole(['admin', 'gestor', 'supervisor'])) && (
-            <div className="space-y-2">
-              <Label>Equipe Executora (Opcional)</Label>
-              <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">A definir pelo Gestor</SelectItem>
-                  {equipes.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+             <div className="space-y-2">
+               <Label>Serviço Principal <span className="text-destructive">*</span></Label>
+               <Select value={selectedServicoId} onValueChange={(v) => {
+                 setSelectedServicoId(v);
+                 setSelectedCategoriaId("all");
+               }}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione o serviço" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {servicos.map((s) => (
+                     <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+           </div>
+ 
+           {(hasRole(['admin', 'gestor', 'supervisor'])) && (
+             <div className="space-y-2">
+               <Label>Equipe Executora (Opcional)</Label>
+               <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="none">A definir pelo Gestor</SelectItem>
+                   {equipes.map((e) => (
+                     <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+           )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">Atividades / Serviços <span className="text-destructive">*</span></Label>
               
-              <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Plus className="h-3.5 w-3.5" /> Adicionar Item
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="end">
-                  <Command>
-                    <div className="p-2 border-b">
-                      <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Filtrar por Categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas as Categorias</SelectItem>
-                          {categorias.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <CommandInput placeholder="Buscar código ou descrição..." />
-                    <CommandList>
-                      <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
-                      <CommandGroup>
-                        {atividades
-                          .filter(a => selectedCategoriaId === "all" || a.categoria_id === selectedCategoriaId)
-                          .map((a) => (
-                          <CommandItem
-                            key={a.id}
-                            value={`${a.codigo_item} ${a.descricao}`}
-                            onSelect={() => addActivity(a)}
-                            className="cursor-pointer"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
-                              <span className="text-sm line-clamp-1">{a.descricao}</span>
-                              <span className="text-[10px] text-muted-foreground uppercase">{a.categoria?.nome} — {a.unidade}</span>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+               <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                 <PopoverTrigger asChild>
+                   <Button variant="outline" size="sm" className="h-8 gap-1">
+                     <Plus className="h-3.5 w-3.5" /> Adicionar Item do Catálogo
+                   </Button>
+                 </PopoverTrigger>
+                 <PopoverContent className="w-[500px] p-0" align="end">
+                   <Command>
+                     <div className="p-2 border-b space-y-2">
+                       <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
+                         <SelectTrigger className="h-8 text-xs">
+                           <SelectValue placeholder="Filtrar por Categoria" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                           {categorias
+                             .filter(c => !selectedServicoId || c.servico_id === selectedServicoId)
+                             .map((c) => (
+                               <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                             ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
+                     <CommandList className="max-h-[300px]">
+                       <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
+                       {categorias
+                         .filter(c => (selectedCategoriaId === "all" || c.id === selectedCategoriaId) && (!selectedServicoId || c.servico_id === selectedServicoId))
+                         .map(cat => {
+                           const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
+                           if (catAtividades.length === 0) return null;
+                           return (
+                             <CommandGroup key={cat.id} heading={cat.nome}>
+                               {catAtividades.map((a) => (
+                                 <CommandItem
+                                   key={a.id}
+                                   value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
+                                   onSelect={() => addActivity(a)}
+                                   className="cursor-pointer"
+                                 >
+                                   <div className="flex flex-col w-full">
+                                     <div className="flex justify-between items-start">
+                                       <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
+                                       <span className="text-[10px] text-muted-foreground uppercase">{a.unidade}</span>
+                                     </div>
+                                     <span className="text-sm line-clamp-2">{a.descricao}</span>
+                                   </div>
+                                 </CommandItem>
+                               ))}
+                             </CommandGroup>
+                           );
+                         })}
+                     </CommandList>
+                   </Command>
+                 </PopoverContent>
+               </Popover>
             </div>
 
             <div className="border rounded-md overflow-hidden">

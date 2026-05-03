@@ -20,7 +20,8 @@ import OSNova from "./pages/OSNova";
 import OSDetalhe from "./pages/OSDetalhe";
 import Aprovacoes from "./pages/Aprovacoes";
 import Relatorios from "./pages/Relatorios";
-import Medicao from "./pages/Medicao";
+ import Medicao from "./pages/Medicao";
+ import FinanceiroOrdens from "./pages/FinanceiroOrdens";
 import Mensagens from "./pages/Mensagens";
 import NotFound from "./pages/NotFound";
 

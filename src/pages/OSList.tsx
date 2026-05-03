@@ -80,21 +80,21 @@ export default function OSList() {
              />
            </div>
          </div>
-         <div className="space-y-1.5">
-           <label className="text-xs font-medium text-muted-foreground">Status</label>
-           <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}>
-             <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-             <SelectContent>
-               <SelectItem value="all">Todos os Status</SelectItem>
-               <SelectItem value="pendente">Pendente</SelectItem>
-               <SelectItem value="iniciada">Em deslocamento</SelectItem>
-               <SelectItem value="em_andamento">Em execução</SelectItem>
-               <SelectItem value="aguardando_revisao">Aguardando validação</SelectItem>
-               <SelectItem value="aprovada">Concluída</SelectItem>
-               <SelectItem value="reprovada">Reprovada</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Status Operacional</label>
+            <Select value={filters.operational_status} onValueChange={(v) => setFilters(f => ({ ...f, operational_status: v }))}>
+              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="em_deslocamento">Em deslocamento</SelectItem>
+                <SelectItem value="em_execucao">Em execução</SelectItem>
+                <SelectItem value="aguardando_validacao">Aguardando validação</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
          <div className="space-y-1.5">
            <label className="text-xs font-medium text-muted-foreground">Prioridade</label>
            <Select value={filters.priority} onValueChange={(v) => setFilters(f => ({ ...f, priority: v }))}>

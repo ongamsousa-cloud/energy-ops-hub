@@ -1,0 +1,3346 @@
+[
+  {
+    "__EMPTY": "tipo de atividade",
+    "4.    TABELA DE ATIVIDADES:": "Item",
+    "__EMPTY_1": "Atividades",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": "Quantidade\r\nde UMD"
+  },
+  {
+    "__EMPTY": "ESCAVAÇÃO DE POSTE",
+    "4.    TABELA DE ATIVIDADES:": 631181,
+    "__EMPTY_1": "Abert. cava, terreno arenoso ou brejo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631184,
+    "__EMPTY_1": "Abert. cava terreno arenoso ou brejo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631191,
+    "__EMPTY_1": "Abertura cava em rocha, com explosivo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631194,
+    "__EMPTY_1": "Abertura cava em rocha, com explosivo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 19.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631201,
+    "__EMPTY_1": "Abertura cava em rocha, sem explosivo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 8.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631204,
+    "__EMPTY_1": "Abertura cava em rocha, sem explosivo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 11.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631211,
+    "__EMPTY_1": "Instalar Fechamento de cava",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631214,
+    "__EMPTY_1": "Instalar Fechamento de cava HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "__EMPTY": "INSTALAÇÃO DE POSTE",
+    "4.    TABELA DE ATIVIDADES:": 631001,
+    "__EMPTY_1": "Instalar Poste, Menor 12m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631002,
+    "__EMPTY_1": "Retirar Poste, Menor 12m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631004,
+    "__EMPTY_1": "Instalar Poste Menor 12m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631005,
+    "__EMPTY_1": "Retirar  Poste Menor 12m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631011,
+    "__EMPTY_1": "Instalar Poste, de 12 a 15m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631012,
+    "__EMPTY_1": "Retirar Poste, de 12 a 15m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631014,
+    "__EMPTY_1": "Instalar Poste 12 a 15m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.16
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631015,
+    "__EMPTY_1": "Retirar  Poste 12 a 15m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.66
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631021,
+    "__EMPTY_1": "Instalar Poste, acima 15m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 8.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631022,
+    "__EMPTY_1": "Retirar Poste, acima 15m c/ guindauto",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.48
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631024,
+    "__EMPTY_1": "Instalar Poste > 15m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 12.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631025,
+    "__EMPTY_1": "Retirar  Poste> 15m c/ guindauto HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.82
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631031,
+    "__EMPTY_1": "Inst. Poste, Menor 300 daN – Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631032,
+    "__EMPTY_1": "Ret.  Poste, Menor 300 daN – Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631034,
+    "__EMPTY_1": "Inst. Poste < 300 daN – Manualmente HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.74
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631035,
+    "__EMPTY_1": "Ret.  Poste < 300 daN – Manualmente HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631041,
+    "__EMPTY_1": "Inst. Poste, 300 a 1000 daN–Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631042,
+    "__EMPTY_1": "Ret. Poste, 300 a 1000 daN–Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.44
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631044,
+    "__EMPTY_1": "Inst. Poste 300 a 1000 daN – Manual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.99
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631045,
+    "__EMPTY_1": "Ret. Poste, 300 a 1000 daN – Manual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631051,
+    "__EMPTY_1": "Inst. Poste, acima 1000 daN–Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631052,
+    "__EMPTY_1": "Ret. Poste, acima 1000 daN–Manualmente",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.68
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631054,
+    "__EMPTY_1": "Inst. Poste acima 1000 daN – Manual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.82
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631055,
+    "__EMPTY_1": "Ret. Poste acima 1000 daN – Manual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.33
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631131,
+    "__EMPTY_1": "Instalar Aprumagem de Poste",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631134,
+    "__EMPTY_1": "Instalar Aprumagem de Poste HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.693
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631171,
+    "__EMPTY_1": "Instalar Abertura cava, terreno normal",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 631174,
+    "__EMPTY_1": "Instalar Abertura cava terreno normal HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653461,
+    "__EMPTY_1": "Instalar Estrutura de apoio provisório para Poste",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.384
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653462,
+    "__EMPTY_1": "Retirar Estrutura de apoio provisório para Poste",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.134
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653464,
+    "__EMPTY_1": "Instalar Estrutura de apoio provisório para Poste HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.5376
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653465,
+    "__EMPTY_1": "Retirar Estrutura de apoio provisório para Poste HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1876
+  },
+  {
+    "__EMPTY": "BASE DO POSTE",
+    "4.    TABELA DE ATIVIDADES:": 634071,
+    "__EMPTY_1": "Instalar Escora de Subsolo Simples",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634081,
+    "__EMPTY_1": "Instalar Escora de Subsolo Dupla",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634091,
+    "__EMPTY_1": "Instalar Sapata para Pântano",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634094,
+    "__EMPTY_1": "Instalar Sapata para Pântano HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.159
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634101,
+    "__EMPTY_1": "Instalar Concretar Base de Poste",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634104,
+    "__EMPTY_1": "Instalar Concretar Base de Poste HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.545
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653460,
+    "__EMPTY_1": "Abertura de cava com engastamento de poste tipo tubulão",
+    "__EMPTY_2": "Unidades",
+    "__EMPTY_3": 14.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653463,
+    "__EMPTY_1": "Abertura de cava com engastamento de poste tipo tubulão HE",
+    "__EMPTY_2": "Unidades",
+    "__EMPTY_3": 20.44
+  },
+  {
+    "__EMPTY": "ESTRUTURA DE ALTA TRIFÁSICA",
+    "4.    TABELA DE ATIVIDADES:": 632001,
+    "__EMPTY_1": "Inst. Estrut. N1, B1, M1, T1, TP5 – Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632002,
+    "__EMPTY_1": "Ret. Estrut N1, B1, M1, T1, TP5 – Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.16
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632004,
+    "__EMPTY_1": "Inst. Estrut. N1 B1 M1 T1, TP5 – Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632005,
+    "__EMPTY_1": "Ret. Estrut N1 B1 M1 T1, TP5 – Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.222
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632011,
+    "__EMPTY_1": "Inst. Estrut. N2, B2, M2, T2 – Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632012,
+    "__EMPTY_1": "Ret. Estrut. N2, B2, M2, T2 – Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.28
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632014,
+    "__EMPTY_1": "Inst. Estrut. N2 B2 M2 T2 – Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.97
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632015,
+    "__EMPTY_1": "Ret. Estrut. N2 B2 M2 T2 – Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.388
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632031,
+    "__EMPTY_1": "Inst. Estrut. N3,B3,M3,T3,TP3 – Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632032,
+    "__EMPTY_1": "Ret. Estrut. N3, B3, M3, T3,TP3 – Cruz. Mad/Aço.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.24
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632034,
+    "__EMPTY_1": "Inst. Estrut N3,B3,M3,T3,TP3 – Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.832
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632035,
+    "__EMPTY_1": "Ret. Estrut. N3 B3 M3 T3,TP3 – Cruz. Mad/Aço. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.333
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632051,
+    "__EMPTY_1": "Inst. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632052,
+    "__EMPTY_1": "Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632054,
+    "__EMPTY_1": "Inst. Estrut N4,B4,M4,T4,TP4 – Cruz. Mad/Aço. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.386
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632055,
+    "__EMPTY_1": "Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632091,
+    "__EMPTY_1": "Inst. Estrut. N1,B1,M1,T1 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.54
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632092,
+    "__EMPTY_1": "Ret. Estrut. N1,B1,M1,T1 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.216
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632094,
+    "__EMPTY_1": "Inst. Estrut N1,B1,M1,T1 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.749
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632095,
+    "__EMPTY_1": "Ret. Estrut. N1,B1,M1,T1 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.299
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632101,
+    "__EMPTY_1": "Inst. Estrut N2,B2,M2,T2 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.946
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632102,
+    "__EMPTY_1": "Ret.  Estrut. N2,B2,M2,T2 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.378
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632104,
+    "__EMPTY_1": "Inst. Estrut N2,B2,M2,T2 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.311
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632105,
+    "__EMPTY_1": "Ret  Estrut. N2,B2,M2,T2 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.524
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632121,
+    "__EMPTY_1": "Inst. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.81
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632122,
+    "__EMPTY_1": "Ret. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.324
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632124,
+    "__EMPTY_1": "Inst. Estrut N3,B3,M3,T3,TP3 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.123
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632125,
+    "__EMPTY_1": "Ret. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.449
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632141,
+    "__EMPTY_1": "Inst. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.35
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632142,
+    "__EMPTY_1": "Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.54
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632144,
+    "__EMPTY_1": "Inst Estrut. N4,B4,M4,T4,TP4 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.871
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632145,
+    "__EMPTY_1": "Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.749
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653471,
+    "__EMPTY_1": "Instalar Estrutura P1, P2, TP1, TP2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.28
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653472,
+    "__EMPTY_1": "Retirar Estrutura P1, P2, TP1, TP2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.112
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653474,
+    "__EMPTY_1": "Instalar Estrutura P3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.49
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653475,
+    "__EMPTY_1": "Retirar Estrutura P3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.196
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653477,
+    "__EMPTY_1": "Instalar Estrutura P4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653478,
+    "__EMPTY_1": "Retirar Estrutura P4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.28
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653480,
+    "__EMPTY_1": "Instalar estrutura CE1 e CE1A",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653481,
+    "__EMPTY_1": "Retirar estrutura CE1 e CE1A",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653482,
+    "__EMPTY_1": "Instalar estrutura CE2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653483,
+    "__EMPTY_1": "Retirar estrutura CE2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653484,
+    "__EMPTY_1": "Instalar estrutura CE3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653485,
+    "__EMPTY_1": "Retirar estrutura CE3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653486,
+    "__EMPTY_1": "Instalar estrutura CE4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653487,
+    "__EMPTY_1": "Retirar estrutura CE4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653496,
+    "__EMPTY_1": "Instalação de cobertura protetora permanente para cabo nu",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.218
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653497,
+    "__EMPTY_1": "Instalação do suporte L ou espaçador losangular",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653498,
+    "__EMPTY_1": "Remoção do suporte L ou espaçador losangular",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.05
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653499,
+    "__EMPTY_1": "Instalação do braço antibalanço",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653500,
+    "__EMPTY_1": "Remoção do braço antibalanço",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.02
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653510,
+    "__EMPTY_1": "Instalar Estrutura P1, P2, TP1, TP2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.392
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653511,
+    "__EMPTY_1": "Retirar Estrutura P1, P2, TP1, TP2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.1568
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653513,
+    "__EMPTY_1": "Instalar Estrutura P3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.686
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653514,
+    "__EMPTY_1": "Retirar Estrutura P3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.2744
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653516,
+    "__EMPTY_1": "Instalar Estrutura P4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.98
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653517,
+    "__EMPTY_1": "Retirar Estrutura P4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.392
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653519,
+    "__EMPTY_1": "Instalar estrutura CE1 e CE1A HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.42
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653520,
+    "__EMPTY_1": "Retirar estrutura CE1 e CE1A HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.28
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653521,
+    "__EMPTY_1": "Instalar estrutura CE2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.415
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653522,
+    "__EMPTY_1": "Retirar estrutura CE2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653523,
+    "__EMPTY_1": "Instalar estrutura CE3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.831
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653524,
+    "__EMPTY_1": "Retirar estrutura CE3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.415
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653525,
+    "__EMPTY_1": "Instalar estrutura CE4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.385
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653526,
+    "__EMPTY_1": "Retirar estrutura CE4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.692
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653537,
+    "__EMPTY_1": "Instalação de cobertura protetora permanente para cabo nú HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.305
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653538,
+    "__EMPTY_1": "Instalação do braço antibalanço HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.056
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653539,
+    "__EMPTY_1": "Remoção do braço antibalanço HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.028
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653541,
+    "__EMPTY_1": "Instalar Estrutura Tipo HS HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653542,
+    "__EMPTY_1": "Retirar  Estrutura Tipo HS HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.448
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653544,
+    "__EMPTY_1": "Instalar Estrutura Tipo HT HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 2.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653545,
+    "__EMPTY_1": "Retirar  Estrutura Tipo HT HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653579,
+    "__EMPTY_1": "Instalação do suporte L ou espaçador losangular HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653580,
+    "__EMPTY_1": "Remoção do suporte L ou espaçador losangular HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.07
+  },
+  {
+    "__EMPTY": "ESTRUTURA DE ALTA MONOFÁSICA",
+    "4.    TABELA DE ATIVIDADES:": 632181,
+    "__EMPTY_1": "Instalar Estrutura Tipo U1, UP1",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632182,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U1, UP1",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632184,
+    "__EMPTY_1": "Instalar Estrutura Tipo U1,UP1 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632185,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U1,UP1 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632191,
+    "__EMPTY_1": "Instalar Estrutura Tipo U2, UP2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632192,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U2, UP2",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.032
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632194,
+    "__EMPTY_1": "Instalar Estrutura Tipo U2,UP2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632195,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U2,UP2 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.044
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632201,
+    "__EMPTY_1": "Instalar Estrutura Tipo U3, UP3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632202,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U3, UP3",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632204,
+    "__EMPTY_1": "Instalar Estrutura Tipo U3,UP3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632205,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U3,UP3 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632211,
+    "__EMPTY_1": "Instalar Estrutura Tipo U4, UP4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632212,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U4,UP4",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632214,
+    "__EMPTY_1": "Instalar Estrutura Tipo U4,UP4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632215,
+    "__EMPTY_1": "Retirar  Estrutura Tipo U4,UP4 HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "__EMPTY": "ESTRUTURA DE ALTA ANTIGOS",
+    "4.    TABELA DE ATIVIDADES:": 632231,
+    "__EMPTY_1": "Instalar Estrutura Tipo HS",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632232,
+    "__EMPTY_1": "Retirar  Estrutura Tipo HS",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.32
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632241,
+    "__EMPTY_1": "Instalar Estrutura Tipo HT",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632242,
+    "__EMPTY_1": "Retirar  Estrutura Tipo HT",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632321,
+    "__EMPTY_1": "Nivelar e Alinhar Cruzeta",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632324,
+    "__EMPTY_1": "Nivelar e Alinhar Cruzeta HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632331,
+    "__EMPTY_1": "Revisar Cruzeta no Alto da Estrutura",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.01
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632334,
+    "__EMPTY_1": "Revisar Cruzeta no Alto da Estrutura HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.014
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632341,
+    "__EMPTY_1": "Inst. Pino Cruzeta ou Topo com Isolador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632342,
+    "__EMPTY_1": "Ret. Pino de Cruzeta ou Topo com Isol.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632344,
+    "__EMPTY_1": "Inst. Pino Cruzeta ou Topo c Isolador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632345,
+    "__EMPTY_1": "Ret. Pino de Cruzeta ou Topo c Isol. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632381,
+    "__EMPTY_1": "Instalar Isolador de Disco / Bastão",
+    "__EMPTY_2": "cada",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632382,
+    "__EMPTY_1": "Retirar  Isolador de Disco / Bastão",
+    "__EMPTY_2": "cada",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632384,
+    "__EMPTY_1": "Instalar Isolador de Disco / Bastão HE",
+    "__EMPTY_2": "cada",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632385,
+    "__EMPTY_1": "Retirar  Isolador de Disco / Bastão HE",
+    "__EMPTY_2": "cada",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632431,
+    "__EMPTY_1": "Lavação de Isoladores",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.18
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632434,
+    "__EMPTY_1": "Lavação de Isoladores HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.25
+  },
+  {
+    "__EMPTY": "ESTRUTURA DE BAIXA TENSÃO",
+    "4.    TABELA DE ATIVIDADES:": 633001,
+    "__EMPTY_1": "Instalar Armação Secundária",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633002,
+    "__EMPTY_1": "Retirar  Armação Secundária",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633004,
+    "__EMPTY_1": "Instalar Armação Secundária HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633005,
+    "__EMPTY_1": "Retirar Armação Secundária HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633011,
+    "__EMPTY_1": "Instalar Afastador Secundário",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633012,
+    "__EMPTY_1": "Retirar  Afastador Secundário",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633014,
+    "__EMPTY_1": "Instalar Afastador Secundário HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633015,
+    "__EMPTY_1": "Retirar  Afastador Secundário HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633071,
+    "__EMPTY_1": "Inst. Conj. Grampo Susp.Cabo Multiplex.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.301
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633072,
+    "__EMPTY_1": "Ret. Conj. Grampo Susp.Cabo Multiplex.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633074,
+    "__EMPTY_1": "InstConj Grampo Susp.Cabo Multiplex HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.417
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633075,
+    "__EMPTY_1": "RetConj Grampo Susp.Cabo Multiplex. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635161,
+    "__EMPTY_1": "Balanceamento Rede Secundária",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635164,
+    "__EMPTY_1": "Balanceamento Rede Secundária HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635173,
+    "__EMPTY_1": "Tensionamento do Ramal de Ligação",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.016
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635176,
+    "__EMPTY_1": "Tensionamento do Ramal de Ligação HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.022
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635181,
+    "__EMPTY_1": "Instalar Espaçador de Baixa Tensão",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635182,
+    "__EMPTY_1": "Retirar  Espaçador de Baixa Tensão",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635184,
+    "__EMPTY_1": "Instalar Espaçador de Baixa Tensão HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635185,
+    "__EMPTY_1": "Retirar  Espaçador de Baixa Tensão HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635191,
+    "__EMPTY_1": "InstCond Multiplex.BT Seção Fase=35 mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 30
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635192,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção Fase=35 mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635194,
+    "__EMPTY_1": "Inst Cond Multiplex.BT Seção =35 mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 42
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635195,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção =35 mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 16
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635201,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção Fase=50 mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 33
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635202,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção Fase=50mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 13.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635204,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção =50 mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 46
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635205,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção =50mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 18
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635211,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção Fase=70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 36
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635212,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção Fase=70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635214,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção =70mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 50
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635215,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção =70mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 20
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635221,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção Fase=120mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 40
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635222,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção Fase=120mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 15
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635224,
+    "__EMPTY_1": "Inst Cond Multiplex BT Seção =120mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 55
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635225,
+    "__EMPTY_1": "Ret Cond Multiplex BT Seção =120mm² HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 20
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635231,
+    "__EMPTY_1": "Instalar Conector de BT, Tipo Perfurante ou ampactinho",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635232,
+    "__EMPTY_1": "Retirar  Conector de BT, Tipo Perfurante ou ampactinho",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635234,
+    "__EMPTY_1": "Inst. Conector de BT, Tipo Perfurante ou ampactinho HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635235,
+    "__EMPTY_1": "Ret.  Conector de BT Tipo Perfurante ou ampactinho HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635251,
+    "__EMPTY_1": "Emenda Cabo Multip.BT Seção 35 a 120mm²",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.18
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635254,
+    "__EMPTY_1": "Emenda Cabo Multip.BT Seção 35a120mm² HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.25
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635261,
+    "__EMPTY_1": "Inst Flying-Tap/Cruzam.Aéreo,RDMultipl.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635262,
+    "__EMPTY_1": "Ret Flying-Tap/CruzamAéreo, RD Multipl.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635264,
+    "__EMPTY_1": "Inst Flying-Tap/Cruzam.AéreoMultipl. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635265,
+    "__EMPTY_1": "Ret Flying-Tap/CruzamAéreoMultipl. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636121,
+    "__EMPTY_1": "InstPára-Raios de BT, Redes Multiplex.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636122,
+    "__EMPTY_1": "RetPára-Raios de BT, Redes Multiplex.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636124,
+    "__EMPTY_1": "InstPára-Raios BT, Redes Multiplex. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636125,
+    "__EMPTY_1": "RetPára-Raios de BT, Redes Multiplex HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654282,
+    "__EMPTY_1": "Instalação de Ramal de Ligação",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 15
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654283,
+    "__EMPTY_1": "Retirada de Ramal de Ligação",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654284,
+    "__EMPTY_1": "Instalação de Ramal de Ligação HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 21
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654285,
+    "__EMPTY_1": "Retirada de Ramal de Ligação HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 8.4
+  },
+  {
+    "__EMPTY": "INSTALAÇÃO DE TRANSFORMADOR",
+    "4.    TABELA DE ATIVIDADES:": 635083,
+    "__EMPTY_1": "Serviço em Condutor AT (Descida FU ao Trafo)",
+    "__EMPTY_2": "fase",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636021,
+    "__EMPTY_1": "Instalar Transformador Monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636022,
+    "__EMPTY_1": "Retirar  Transformador Monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.96
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636024,
+    "__EMPTY_1": "Instalar Transformador Monofásico - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.326
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636025,
+    "__EMPTY_1": "Retirar  Transformador Monofásico - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.33
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636031,
+    "__EMPTY_1": "Instalar Transformador Trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636032,
+    "__EMPTY_1": "Retirar  Transformador Trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636034,
+    "__EMPTY_1": "Instalar Transformador Trifásico - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 7.208
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636035,
+    "__EMPTY_1": "Retirar  Transformador Trifásico - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654286,
+    "__EMPTY_1": "Instalar Transformador Monofásico – Sem acesso de veículo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.32
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654287,
+    "__EMPTY_1": "Retirar Transformador Monofásico – Sem acesso de veículo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.72
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654288,
+    "__EMPTY_1": "Instalar Transformador Monofásico – Sem acesso de veículo - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 6.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654289,
+    "__EMPTY_1": "Retirar Transformador Monofásico – Sem acesso de veículo - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654290,
+    "__EMPTY_1": "Instalar Transformador Trifásico – Sem acesso de veículo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 9.36
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654291,
+    "__EMPTY_1": "Retirar Transformador Trifásico – Sem acesso de veículo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.74
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654292,
+    "__EMPTY_1": "Instalar Transformador Trifásico – Sem acesso de veículo - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 13.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654293,
+    "__EMPTY_1": "Retirar Transformador Trifásico – Sem acesso de veículo - HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.23
+  },
+  {
+    "__EMPTY": "INSTALAR CONJUNTO COM CHAVE FACA",
+    "4.    TABELA DE ATIVIDADES:": 632451,
+    "__EMPTY_1": "Inst. Estrut. c/ chave faca-Cruz.mad.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.37
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632452,
+    "__EMPTY_1": "Ret. Estrut. c/ chave faca-Cruz. Mad/Aço.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.45
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632454,
+    "__EMPTY_1": "Inst. Estrut. c/ chave faca-Cruz.mad. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.899
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632455,
+    "__EMPTY_1": "Ret. Estrut. c/ chave faca-Cruz. Mad/Aço. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.624
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632471,
+    "__EMPTY_1": "Inst. Estrut. c/ chave faca-Cruz. conc.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.73
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632472,
+    "__EMPTY_1": "Ret. Estrut. c/ chave faca-Cruzeta conc.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.57
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632474,
+    "__EMPTY_1": "InstEstrut c/ chave faca-Cruz. conc. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 2.398
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632475,
+    "__EMPTY_1": "RetEstrut c/ chave faca-Cruzeta conc HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.79
+  },
+  {
+    "__EMPTY": "INSTALAR CONJUNTO COM TRANSFORMADOR",
+    "4.    TABELA DE ATIVIDADES:": 632441,
+    "__EMPTY_1": "Inst. Estrut c/ transf. Trif.-Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.38
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632442,
+    "__EMPTY_1": "Ret. Estrut c/ transf. Trif.-Cruz. Mad/Aço",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.46
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632444,
+    "__EMPTY_1": "Inst. Estrut c/ transfTrif.-Cruz Mad HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.913
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632445,
+    "__EMPTY_1": "Ret. Estrut c/ transfTrif.-Cruz. Mad/Aço HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.638
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632461,
+    "__EMPTY_1": "Inst. Estrut. c/ transf. Trif.-Cruz.Conc",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.623
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632462,
+    "__EMPTY_1": "Ret. Estrut.c/ transf. Trif.-Cruz.conc.",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.541
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632464,
+    "__EMPTY_1": "InstEstrut c/ transfTrif.-Cruz.Conc HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 2.25
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 632465,
+    "__EMPTY_1": "Ret Estrut.c/ transfTrif- Cruz.conc. HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.75
+  },
+  {
+    "__EMPTY": "INSTALAÇÃO DE PARA RÁIOS E CHAVES",
+    "4.    TABELA DE ATIVIDADES:": 636001,
+    "__EMPTY_1": "Instalar Chave Fusível ou Faca-Fusível",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636002,
+    "__EMPTY_1": "Retirar  Chave Fusível ou Faca-fusível",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636004,
+    "__EMPTY_1": "Instalar Chave Fusível HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636005,
+    "__EMPTY_1": "Retirar  Chave Fusível HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636011,
+    "__EMPTY_1": "Instalar Pára-Raios",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636012,
+    "__EMPTY_1": "Retirar  Pára-Raios",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636014,
+    "__EMPTY_1": "Instalar Pára-Raios HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636015,
+    "__EMPTY_1": "Retirar  Pára-Raios HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636041,
+    "__EMPTY_1": "Instalar Chave a Óleo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636042,
+    "__EMPTY_1": "Retirar  Chave a Óleo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636044,
+    "__EMPTY_1": "Instalar Chave a Óleo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.604
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636045,
+    "__EMPTY_1": "Retirar  Chave a Óleo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.442
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636091,
+    "__EMPTY_1": "Reaperto e Regulagem de Chave",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636094,
+    "__EMPTY_1": "Reaperto e Regulagem de Chave HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.693
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636101,
+    "__EMPTY_1": "Instalar Chave Faca",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636102,
+    "__EMPTY_1": "Retirar  Chave Faca",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636104,
+    "__EMPTY_1": "Instalar Chave Faca HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636105,
+    "__EMPTY_1": "Retirar  Chave Faca HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636111,
+    "__EMPTY_1": "Instalar Chave Religadora ou Religador Monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636112,
+    "__EMPTY_1": "Retirar  Chave Religadora ou Religador Monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636114,
+    "__EMPTY_1": "Instalar Chave Religadora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636115,
+    "__EMPTY_1": "Retirar  Chave Religadora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639012,
+    "__EMPTY_1": "Abrir chave fusível/faca",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.05
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639015,
+    "__EMPTY_1": "Abrir chave fusível/faca HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.069
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639021,
+    "__EMPTY_1": "Fechar chave fusível/faca",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639024,
+    "__EMPTY_1": "Fechar chave fusível/faca HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654266,
+    "__EMPTY_1": "Instalar Chave by pass",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654267,
+    "__EMPTY_1": "Retirar  Chave by pass",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.16
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654268,
+    "__EMPTY_1": "Instalar Chave by pass HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.56
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654269,
+    "__EMPTY_1": "Retirar  Chave by pass HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.224
+  },
+  {
+    "__EMPTY": "LANÇAMENTO DE CONDUTOR",
+    "4.    TABELA DE ATIVIDADES:": 635001,
+    "__EMPTY_1": "Instalar Condutor 4CAA e 6CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 4.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635002,
+    "__EMPTY_1": "Retirar  Condutor 4CAA e 6CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 1.84
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635004,
+    "__EMPTY_1": "Instalar Condutor 4CAA e 6CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6.377
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635005,
+    "__EMPTY_1": "Retirar  Condutor 4CAA e 6CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 2.551
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635011,
+    "__EMPTY_1": "Inst. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 10.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635012,
+    "__EMPTY_1": "Ret. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 4.32
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635014,
+    "__EMPTY_1": "InsT Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 14.972
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635015,
+    "__EMPTY_1": "Ret. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 5.988
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635021,
+    "__EMPTY_1": "InstCond.Bit. maior 2/0 CA/CAA e 1/0CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 15
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635022,
+    "__EMPTY_1": "Ret. Cond.Bit. maior 2/0 CA/CAA e 1/0CU",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635024,
+    "__EMPTY_1": "InstCond.Bit> 2/0 CA/CAA e 1/0CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 20.793
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635025,
+    "__EMPTY_1": "Ret. Cond.Bit. > 2/0 CA/CAA e 1/0CU HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 8.318
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635031,
+    "__EMPTY_1": "Instalar Condutor de Aço",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635032,
+    "__EMPTY_1": "Retirar  Condutor de Aço",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 2.52
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635034,
+    "__EMPTY_1": "Instalar Condutor de Aço HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 8.733
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635035,
+    "__EMPTY_1": "Retirar  Condutor de Aço HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 3.494
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635041,
+    "__EMPTY_1": "Retensionamento de Condutor (p/cond.)",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635044,
+    "__EMPTY_1": "Retensionamento de Condutor (p/cond.) HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 4.159
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635051,
+    "__EMPTY_1": "Instalar Flying-Tap/ Cruzamento Aéreo",
+    "__EMPTY_2": "fase",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635052,
+    "__EMPTY_1": "Retirar  Flying-Tap/ Cruzamento Aéreo",
+    "__EMPTY_2": "fase",
+    "__EMPTY_3": 0.16
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635054,
+    "__EMPTY_1": "Instalar Flying-Tap/ Cruzamento Aéreo HE",
+    "__EMPTY_2": "fase",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635055,
+    "__EMPTY_1": "Retirar  Flying-Tap/ Cruzamento Aéreo HE",
+    "__EMPTY_2": "fase",
+    "__EMPTY_3": 0.222
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635061,
+    "__EMPTY_1": "Inst Emenda Cond. c/ Luva ou Pré-formado",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.014
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635064,
+    "__EMPTY_1": "Inst Emenda Cond c Luv ou Pré-formado HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.019
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635073,
+    "__EMPTY_1": "Refazer Amarração",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.02
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635076,
+    "__EMPTY_1": "Refazer Amarração HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.028
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653488,
+    "__EMPTY_1": "Instalar Cabo Coberto até 70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653489,
+    "__EMPTY_1": "Retirar Cabo Coberto até 70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653490,
+    "__EMPTY_1": "Instalar Cabo Coberto maior que 70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 19.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653491,
+    "__EMPTY_1": "Retirar Cabo Coberto maior que 70mm²",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653492,
+    "__EMPTY_1": "Retensionamento de Condutor protegido (p/cond.)",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 4.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653527,
+    "__EMPTY_1": "Instalar Cabo Coberto até 70mm² HE",
+    "__EMPTY_2": "Km",
+    "__EMPTY_3": 19.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653528,
+    "__EMPTY_1": "Retirar Cabo Coberto até 70mm² HE",
+    "__EMPTY_2": "Km",
+    "__EMPTY_3": 7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653529,
+    "__EMPTY_1": "Inst. Cabo Coberto maior que 70mm² HE",
+    "__EMPTY_2": "Km",
+    "__EMPTY_3": 27.44
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653530,
+    "__EMPTY_1": "Retirar Cabo Coberto maior que 70mm² HE",
+    "__EMPTY_2": "Km",
+    "__EMPTY_3": 9.008
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653531,
+    "__EMPTY_1": "Retensionamento de Condutor protegido (p/cond.) HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6.232
+  },
+  {
+    "__EMPTY": "ESTRUTURA DE ESTAI",
+    "4.    TABELA DE ATIVIDADES:": 634001,
+    "__EMPTY_1": "Instalar Estai de Ancora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634002,
+    "__EMPTY_1": "Retirar  Estai de Ancora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.32
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634004,
+    "__EMPTY_1": "Instalar Estai de Ancora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.109
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634005,
+    "__EMPTY_1": "Retirar  Estai de Ancora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.444
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634011,
+    "__EMPTY_1": "Inst. Estai Ancora em Rocha s/ explosivo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634014,
+    "__EMPTY_1": "Inst. Estai Ancora em Rocha s/ explos HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.495
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634021,
+    "__EMPTY_1": "Inst Estai Ancora em Rocha c/ explosivo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634024,
+    "__EMPTY_1": "Inst Estai Ancora em Rocha c/ explos HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 5.545
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634031,
+    "__EMPTY_1": "Inst. Estai de Ancora em Terreno Arenoso",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634034,
+    "__EMPTY_1": "Inst. Estai de Ancora em Terr Arenoso HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.05
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634041,
+    "__EMPTY_1": "Instalar Estaiamento Aéreo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634042,
+    "__EMPTY_1": "Retirar  Estaiamento Aéreo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634044,
+    "__EMPTY_1": "Instalar Estaiamento Aéreo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634045,
+    "__EMPTY_1": "Retirar  Estaiamento Aéreo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634051,
+    "__EMPTY_1": "Instalar Retensionamento de Estai",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 634054,
+    "__EMPTY_1": "Instalar Retensionamento de Estai HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "__EMPTY": "ATERRAMENTO",
+    "4.    TABELA DE ATIVIDADES:": 635111,
+    "__EMPTY_1": "Instalar Aterramento, Primeira Haste",
+    "__EMPTY_2": "ponto",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635114,
+    "__EMPTY_1": "Instalar Aterramento, Primeira Haste HE",
+    "__EMPTY_2": "ponto",
+    "__EMPTY_3": 1.108
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635121,
+    "__EMPTY_1": "Instalar Aterramento, demais Hastes",
+    "__EMPTY_2": "ponto",
+    "__EMPTY_3": 0.48
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635124,
+    "__EMPTY_1": "Instalar Aterramento, demais Hastes HE",
+    "__EMPTY_2": "ponto",
+    "__EMPTY_3": 0.666
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635131,
+    "__EMPTY_1": "Revisão do Aterramento",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635134,
+    "__EMPTY_1": "Revisão do Aterramento HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635141,
+    "__EMPTY_1": "Seccion.Cerca, c/ Pré-formado e Aterr.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635144,
+    "__EMPTY_1": "Seccion.Cerca c/ Pré-formado e Aterr. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635151,
+    "__EMPTY_1": "Seccion.Cerca, c/ Mourões e Aterr.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635154,
+    "__EMPTY_1": "Seccion.Cerca, c/ Mourões e Aterr. HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "__EMPTY": "CONECTORES",
+    "4.    TABELA DE ATIVIDADES:": 635103,
+    "__EMPTY_1": "Serviços em Conectores",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.024
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635106,
+    "__EMPTY_1": "Serviços em Conectores HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.033
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635241,
+    "__EMPTY_1": "Instalar Conector Tipo Cunha",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635242,
+    "__EMPTY_1": "Retirar  Conector Tipo Cunha",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.036
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635244,
+    "__EMPTY_1": "Instalar Conector Tipo Cunha HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 635245,
+    "__EMPTY_1": "Retirar  Conector Tipo Cunha HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.05
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653493,
+    "__EMPTY_1": "Instalar Conector em Cabo Protegido",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.15
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653494,
+    "__EMPTY_1": "Retirar  Conector em Cabo Protegido",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653495,
+    "__EMPTY_1": "Emenda em cabo protegido",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.52
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653532,
+    "__EMPTY_1": "Instalar Conector em Cabo Protegido HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.208
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653533,
+    "__EMPTY_1": "Retirar  Conector em Cabo Protegido HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653534,
+    "__EMPTY_1": "Emenda em cabo protegido HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.722
+  },
+  {
+    "__EMPTY": "INSTALAÇÃO DE EQUIPAMENTO ESPECIAIS",
+    "4.    TABELA DE ATIVIDADES:": 636051,
+    "__EMPTY_1": "Instalar Religador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.836
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636052,
+    "__EMPTY_1": "Retirar  Religador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.377
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636054,
+    "__EMPTY_1": "Instalar Religador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.545
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636055,
+    "__EMPTY_1": "Retirar  Religador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.909
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636071,
+    "__EMPTY_1": "Instalar Capacitor",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.909
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636072,
+    "__EMPTY_1": "Retirar  Capacitor",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.182
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636074,
+    "__EMPTY_1": "Instalar Capacitor HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.032
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636075,
+    "__EMPTY_1": "Retirar  Capacitor HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.025
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639421,
+    "__EMPTY_1": "Operar religador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639424,
+    "__EMPTY_1": "Operar religador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639431,
+    "__EMPTY_1": "Operar regulador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639434,
+    "__EMPTY_1": "Operar regulador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654270,
+    "__EMPTY_1": "Instalar Estrutura de Regulador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654271,
+    "__EMPTY_1": "Retirar Estrutura de Regulador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654272,
+    "__EMPTY_1": "Instalar Estrutura de Regulador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654273,
+    "__EMPTY_1": "Retirar Estrutura de Regulador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.68
+  },
+  {
+    "__EMPTY": "INSTALAÇÃO DE ILUMINAÇÃO PÚBLICA",
+    "4.    TABELA DE ATIVIDADES:": 637001,
+    "__EMPTY_1": "Instalar Iluminação Pública Comum",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637002,
+    "__EMPTY_1": "Retirar  Iluminação Pública Comum",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637004,
+    "__EMPTY_1": "Instalar Iluminação Pública Comum HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637005,
+    "__EMPTY_1": "Retirar  Iluminação Pública Comum HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637011,
+    "__EMPTY_1": "Instalar Iluminação Pública Especial",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.9
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637012,
+    "__EMPTY_1": "Retirar  Iluminação Pública Especial",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.36
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637014,
+    "__EMPTY_1": "Instalar Iluminação Pública Especial HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 1.248
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637015,
+    "__EMPTY_1": "Retirar  Iluminação Pública Especial HE",
+    "__EMPTY_2": "conjunto",
+    "__EMPTY_3": 0.499
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637021,
+    "__EMPTY_1": "Inst Reator p/ Lâmpada Comum ou Especial",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637022,
+    "__EMPTY_1": "Ret Reator p/ Lâmpada Comum ou Especial",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.032
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637024,
+    "__EMPTY_1": "Inst Reator p/ Lâmp Comum ou Especial HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637025,
+    "__EMPTY_1": "Ret Reator p/ Lâmp Comum ou Especial HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.044
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637031,
+    "__EMPTY_1": "Instalar Rele Fotoelétrico Individual",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637032,
+    "__EMPTY_1": "Retirar  Rele Fotoelétrico Individual",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.016
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637034,
+    "__EMPTY_1": "Instalar Rele Fotoelétrico Individual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637035,
+    "__EMPTY_1": "Retirar  Rele Fotoelétrico Individual HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.022
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637041,
+    "__EMPTY_1": "Instalar Chave Magnética",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637042,
+    "__EMPTY_1": "Retirar  Chave Magnética",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637044,
+    "__EMPTY_1": "Instalar Chave Magnética HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637045,
+    "__EMPTY_1": "Retirar  Chave Magnética HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637072,
+    "__EMPTY_1": "Limpeza de vidro em luminária fechada",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 637075,
+    "__EMPTY_1": "Limpeza de vidro em luminária fechada HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.055
+  },
+  {
+    "__EMPTY": "ROÇADA E LIMPEZA",
+    "4.    TABELA DE ATIVIDADES:": 638002,
+    "__EMPTY_1": "Limpeza Faixa c/ Veg. Rast.– 220/380 V",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 0.761
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638005,
+    "__EMPTY_1": "Limpeza Faixa c/ Veg. Rast. 220/380 V HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 1.055
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638012,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.Rast.– 6,6 a 25 kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 1.521
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638015,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.Rast– 6,6 a 25 Kv HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 2.108
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638022,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.Rast.– 34,5 kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 2.281
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638025,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.Rast.– 34,5 kV HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 3.162
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638032,
+    "__EMPTY_1": "Limpeza Faixa c/Veg. até 2m – 220/380 V",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 2.662
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638035,
+    "__EMPTY_1": "Limpeza Faixa c/Veg até 2m 220/380 V HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 3.69
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638042,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.até 2m – 6,6 a25kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 4.943
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638045,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.até 2m 6,6 a25kV HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 6.852
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638052,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.até 2m – 34,5kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 7.224
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638055,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.até 2m 34,5kV HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 10.014
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638062,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.acima 2m – 220/380 V",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 5.323
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638065,
+    "__EMPTY_1": "Limp. Faixa c/Veg.acima 2m 220/380 V HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 7.379
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638072,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.ac.2m – 6,6 a 25 kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 10.266
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638075,
+    "__EMPTY_1": "Limp. Faixa c/Veg.ac.2m – 6,6 a 25 Kv HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 14.231
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638082,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.acima 2m – 34,5 kV",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 14.449
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638085,
+    "__EMPTY_1": "Limpeza Faixa c/Veg.acima 2m 34,5 kV HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 20.029
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638092,
+    "__EMPTY_1": "Poda de Arvore Área Urbana",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.076
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638095,
+    "__EMPTY_1": "Poda de Arvore Área Urbana HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.105
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638102,
+    "__EMPTY_1": "Corte Arvore Área Urbana",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.095
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638105,
+    "__EMPTY_1": "Corte Arvore Área Urbana HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.132
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638112,
+    "__EMPTY_1": "Corte Bambuzal Isolado",
+    "__EMPTY_2": "m2",
+    "__EMPTY_3": 0.152
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638115,
+    "__EMPTY_1": "Corte Bambuzal Isolado HE",
+    "__EMPTY_2": "m2",
+    "__EMPTY_3": 0.211
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638122,
+    "__EMPTY_1": "Poda de árvore área Rural",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.038
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638125,
+    "__EMPTY_1": "Poda de árvore área Rural HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.053
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638132,
+    "__EMPTY_1": "Corte de árvore área Rural",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.038
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 638135,
+    "__EMPTY_1": "Corte de árvore área Rural HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.053
+  },
+  {
+    "__EMPTY": "INSPEÇÃO",
+    "4.    TABELA DE ATIVIDADES:": 639031,
+    "__EMPTY_1": "Insp. circuito p/ localizar falha",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639034,
+    "__EMPTY_1": "Insp. circuito p/ localizar falha HE",
+    "__EMPTY_2": "km",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639201,
+    "__EMPTY_1": "Verificar níveis de tensão",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639204,
+    "__EMPTY_1": "Verificar níveis de tensão HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639291,
+    "__EMPTY_1": "Inspec. estrutura de rede aérea urbana",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.007
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639351,
+    "__EMPTY_1": "Inst Afastador ninhos de joão-de-barro",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.01
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639352,
+    "__EMPTY_1": "Ret Afastador ninhos de joão-de-barro",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.01
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639354,
+    "__EMPTY_1": "Inst Afastador ninhos joão-de-barro HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.014
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639355,
+    "__EMPTY_1": "Ret Afastador ninhos de joão-de-barro HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.014
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653509,
+    "__EMPTY_1": "Conserto de calçada",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.9
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653548,
+    "__EMPTY_1": "Conserto de calçada HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.26
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639294,
+    "__EMPTY_1": "Inspec. estrutura rede aérea urbana HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.01
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639301,
+    "__EMPTY_1": "Inspec. estrutura de rede aérea rural",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.035
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639304,
+    "__EMPTY_1": "Inspec. estrutura de rede aérea rural HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.049
+  },
+  {
+    "__EMPTY": "LIGAÇÃO DE CONSUMIDORES",
+    "4.    TABELA DE ATIVIDADES:": 639041,
+    "__EMPTY_1": "Ligar Un.cons.monof Gr B cabo multiplex.",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639044,
+    "__EMPTY_1": "LigUn.cons.monof Gr B cabo multiplex HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.554
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639051,
+    "__EMPTY_1": "Ligar Un.cons. bif. Gr B cabo multiplex",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.45
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639054,
+    "__EMPTY_1": "LigUn.cons. bif. Gr B cabo multiplex HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.624
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639061,
+    "__EMPTY_1": "Ligar Un. Cons. trif Gr B cabo multiplex",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.5
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639064,
+    "__EMPTY_1": "Lig Unidade. Constrif Gr B cabo multiplex HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.693
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639071,
+    "__EMPTY_1": "LigUnConsMonof Gr B cond singelo isol",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.25
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639074,
+    "__EMPTY_1": "Lig UC MonofGrp B condsingeloisol HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.347
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639081,
+    "__EMPTY_1": "LigUnidconsbif Gr B cond singelo isol",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639084,
+    "__EMPTY_1": "Lig UC bifGrp B condsingeloisol HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639091,
+    "__EMPTY_1": "Lig. Un.constrif Gr B cond singelo isol",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.35
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639094,
+    "__EMPTY_1": "Lig. UC trifGrp B condsingeloisol HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.485
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639101,
+    "__EMPTY_1": "Ligar Unidcons Gr B edif uso coletivo",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639104,
+    "__EMPTY_1": "LigUnidcons Gr B edif uso coletivo HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639112,
+    "__EMPTY_1": "Desligar Unid Consumidora Monof Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639115,
+    "__EMPTY_1": "DesligUnid Consumidora Monof Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639122,
+    "__EMPTY_1": "Desligar Unid Consumidora Bif Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639125,
+    "__EMPTY_1": "Desligar Unid Consumidora Bif Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639132,
+    "__EMPTY_1": "Desligar Unid Consumidora Trif Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639135,
+    "__EMPTY_1": "DesligUnid Consumidora Trif Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.194
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639141,
+    "__EMPTY_1": "Religar Unid Consumidora Monof. Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639144,
+    "__EMPTY_1": "ReligUnid Consumidora Monof. Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639151,
+    "__EMPTY_1": "Religar Unidade Consumidora Bif. Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639154,
+    "__EMPTY_1": "Relig Unidade Consumidora Bif Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.166
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639161,
+    "__EMPTY_1": "Religar Unidade Consumidora Trif. Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.14
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639164,
+    "__EMPTY_1": "ReligUnid Consumidora Trif. Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.194
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639171,
+    "__EMPTY_1": "Alterar ligação de Unidade consumidora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.22
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639174,
+    "__EMPTY_1": "Alterar ligação de Unid consumidora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.305
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639181,
+    "__EMPTY_1": "Instalar Medidor de energia elétrica",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639182,
+    "__EMPTY_1": "Retirar  Medidor de energia elétrica",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639184,
+    "__EMPTY_1": "Instalar Medidor de energia elétrica HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639185,
+    "__EMPTY_1": "Retirar  Medidor de energia elétrica HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639191,
+    "__EMPTY_1": "Fiscaliz/vistoriar entr um. cons Grupo B",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.007
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639194,
+    "__EMPTY_1": "Fiscaliz/vistor entr Unidade. cons Grupo B HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.01
+  },
+  {
+    "__EMPTY": "TRANSPORTE",
+    "4.    TABELA DE ATIVIDADES:": 652062,
+    "__EMPTY_1": "Transporte de Transformador Monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652063,
+    "__EMPTY_1": "Transporte de Transformador Trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652064,
+    "__EMPTY_1": "Transporte de poste",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.82
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652067,
+    "__EMPTY_1": "Serv. deslocamento até local do serviço",
+    "__EMPTY_2": "KM",
+    "__EMPTY_3": 0.03
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652068,
+    "__EMPTY_1": "Serv. deslocamento até local serviço HE",
+    "__EMPTY_2": "KM",
+    "__EMPTY_3": 0.042
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 653508,
+    "__EMPTY_1": "Transporte de Regulador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654294,
+    "__EMPTY_1": "Transporte de Religador trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "__EMPTY": "SOBREAVISO",
+    "4.    TABELA DE ATIVIDADES:": 652065,
+    "__EMPTY_1": "Disponibilidade de equipe reduzida (3 profissionais)",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.154
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652066,
+    "__EMPTY_1": "Disponibilidade de equipe completa (6 profissionais)",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.324
+  },
+  {
+    "__EMPTY": "OUTROS",
+    "4.    TABELA DE ATIVIDADES:": 633031,
+    "__EMPTY_1": "Inst Cobertura Protetora de Rede Secund.",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.004
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633034,
+    "__EMPTY_1": "Inst Cobertura Protetora Rede Secund. HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.006
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633042,
+    "__EMPTY_1": "Retirar Objeto Estranho da Rede por vão",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633045,
+    "__EMPTY_1": "Ret. Objeto Estranho da Rede por vão HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633052,
+    "__EMPTY_1": "Limpeza de Condutores com Parasitas por vão",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 633055,
+    "__EMPTY_1": "Limp. Condutores c/ Parasitas por vão HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636061,
+    "__EMPTY_1": "Instalar Seccionalizador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.36
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636062,
+    "__EMPTY_1": "Retirar  Seccionalizador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.27
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636064,
+    "__EMPTY_1": "Instalar Seccionalizador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.499
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636065,
+    "__EMPTY_1": "Retirar  Seccionalizador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.374
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636081,
+    "__EMPTY_1": "Inst Regulador em Plataf ou Auto-Booster",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636082,
+    "__EMPTY_1": "Ret Regulador em Plataf. ouAuto-Booster",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.25
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636084,
+    "__EMPTY_1": "Inst Regulador Plataf ou Auto-Booster HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 4.159
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 636085,
+    "__EMPTY_1": "Ret Regulador Plataf. ouAuto-Booster HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.119
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639212,
+    "__EMPTY_1": "Retirar  Placas e faixas inst em postes",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639215,
+    "__EMPTY_1": "Ret.  Placas e faixas inst em postes HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.083
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639221,
+    "__EMPTY_1": "Instalar Disjuntor de AT",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.4
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639222,
+    "__EMPTY_1": "Retirar  Disjuntor de AT",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.6
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639224,
+    "__EMPTY_1": "Instalar Disjuntor de AT HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.941
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639225,
+    "__EMPTY_1": "Retirar  Disjuntor de AT HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.832
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639231,
+    "__EMPTY_1": "Instalar Disjuntor de AT – Operação",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639234,
+    "__EMPTY_1": "Instalar Disjuntor de AT – Operação HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639241,
+    "__EMPTY_1": "Reaperto/regul. chavesectrip em cabine",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639244,
+    "__EMPTY_1": "Reaperto/regulchave sec trip cabine HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.97
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639253,
+    "__EMPTY_1": "Comutar TAP de transformador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.55
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639256,
+    "__EMPTY_1": "Comutar TAP de transformador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.762
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639261,
+    "__EMPTY_1": "Inst Cabo isol AT (15 e 25 kV) subter.",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.18
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639262,
+    "__EMPTY_1": "Ret  Caboisol. AT (15 e 25 kV) subter.",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639264,
+    "__EMPTY_1": "Inst Cabo isol AT (15 e 25 kV) subter HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.252
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639265,
+    "__EMPTY_1": "Ret  Cabo isol AT (15 e 25 kV) subter HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.056
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639271,
+    "__EMPTY_1": "Inst Cabo isol.BT(1kV)bit até 50mm² subt",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639272,
+    "__EMPTY_1": "Ret Cabo isol.BT(1kV)bit até 50mm² subt",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.03
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639274,
+    "__EMPTY_1": "Inst Cabo isol.BT(1kV)bit <50mm² subt HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.056
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639275,
+    "__EMPTY_1": "Ret Cabo isol.BT(1kV)bit < 50mm² subt HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.042
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639281,
+    "__EMPTY_1": "InstCabisol BT(1kV)acima de 50mm² subt",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.06
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639282,
+    "__EMPTY_1": "Ret Cab isol BT(1kV)bit acima 50mm² subt",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.04
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639284,
+    "__EMPTY_1": "Inst Cab isol BT(1kV)> de 50mm² subt HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.084
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639285,
+    "__EMPTY_1": "Ret Cab isol BT(1kV)bit > 50mm² subt HE",
+    "__EMPTY_2": "Metro",
+    "__EMPTY_3": 0.056
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639311,
+    "__EMPTY_1": "Instalar Disjuntor monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639312,
+    "__EMPTY_1": "Retirar  Disjuntor monofásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.08
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639314,
+    "__EMPTY_1": "Instalar Disjuntor monofásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639315,
+    "__EMPTY_1": "Retirar  Disjuntor monofásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.111
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639321,
+    "__EMPTY_1": "Instalar Disjuntor bifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639322,
+    "__EMPTY_1": "Retirar  Disjuntor bifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639324,
+    "__EMPTY_1": "Instalar Disjuntor bifásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639325,
+    "__EMPTY_1": "Retirar  Disjuntor bifásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.125
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639331,
+    "__EMPTY_1": "Instalar Disjuntor trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639332,
+    "__EMPTY_1": "Retirar  Disjuntor trifásico",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639334,
+    "__EMPTY_1": "Instalar Disjuntor trifásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639335,
+    "__EMPTY_1": "Retirar  Disjuntor trifásico HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.139
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639341,
+    "__EMPTY_1": "Coleta de óleo de transformador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639344,
+    "__EMPTY_1": "Coleta de óleo de transformador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.277
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639361,
+    "__EMPTY_1": "Instalar Mufla",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639362,
+    "__EMPTY_1": "Retirar  Mufla",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639364,
+    "__EMPTY_1": "Instalar Mufla HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639365,
+    "__EMPTY_1": "Retirar  Mufla HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.416
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639371,
+    "__EMPTY_1": "Limpeza de cabines transformadoras",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639374,
+    "__EMPTY_1": "Limpeza de cabines transformadoras HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.109
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639381,
+    "__EMPTY_1": "Instalar Transformador em cabine",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.8
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639382,
+    "__EMPTY_1": "Retirar  Transformador em cabine",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639384,
+    "__EMPTY_1": "Instalar Transformador em cabine HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 3.881
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639385,
+    "__EMPTY_1": "Retirar  Transformador em cabine HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.663
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639391,
+    "__EMPTY_1": "Inst. Chave sec.tripolarinst em cabine",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639392,
+    "__EMPTY_1": "Ret. Chave sec tripolar inst. em cabine",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639394,
+    "__EMPTY_1": "Inst Chave sectripolarinst em cabine HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 2.772
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639395,
+    "__EMPTY_1": "Ret Chave sec tripolar inst em cabine HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 1.386
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639441,
+    "__EMPTY_1": "Inspeção de Unidade Consumidora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.42
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 639444,
+    "__EMPTY_1": "Inspeção de Unidade Consumidora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.582
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 652061,
+    "__EMPTY_1": "Registro e acompanhamento de procedimentos",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.1
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654274,
+    "__EMPTY_1": "Instalar Perfil U prolongador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654275,
+    "__EMPTY_1": "Retirar Perfil U prolongador",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654276,
+    "__EMPTY_1": "Instalar Perfil U prolongador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.42
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654277,
+    "__EMPTY_1": "Retirar Perfil U prolongador HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654278,
+    "__EMPTY_1": "Instalar Esfera Sinalizadora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.3
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654279,
+    "__EMPTY_1": "Retirar Esfera Sinalizadora",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.09
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654280,
+    "__EMPTY_1": "Instalar Esfera Sinalizadora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.42
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654281,
+    "__EMPTY_1": "Retirar Esfera Sinalizadora HE",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 0.12
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654295,
+    "__EMPTY_1": "Operação Verão Diurna",
+    "__EMPTY_2": "Período",
+    "__EMPTY_3": 26
+  },
+  {
+    "4.    TABELA DE ATIVIDADES:": 654296,
+    "__EMPTY_1": "Operação Verão Noturna",
+    "__EMPTY_2": "Período",
+    "__EMPTY_3": 29
+  },
+  {
+    "__EMPTY_1": "Mobilização de Gerador Móvel",
+    "__EMPTY_2": "Unidade",
+    "__EMPTY_3": 20
+  },
+  {
+    "__EMPTY_1": "Operação de Gerador Móvel",
+    "__EMPTY_2": "Hora",
+    "__EMPTY_3": 2
+  },
+  {
+    "__EMPTY_1": "Plantão de Equipe Leve de Emergência – 02 eletricistas em\r\nCaminhonete 4x4",
+    "__EMPTY_2": "Hora",
+    "__EMPTY_3": 0.7
+  },
+  {
+    "__EMPTY_1": "Plantão de Equipe Leve de Emergência – 02 eletricistas em\r\nMotos",
+    "__EMPTY_2": "Hora",
+    "__EMPTY_3": 0.45
+  }
+]

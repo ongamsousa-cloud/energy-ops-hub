@@ -175,7 +175,7 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
          <CardContent>
            <div className="h-[300px] w-full">
              <ChartContainer config={chartConfig}>
-               <BarChart data={formattedStatusData} layout="vertical" margin={{ left: -20, right: 20 }}>
+                <BarChart data={formattedStatusData} layout="vertical" margin={{ left: -30, right: 10 }}>
                  <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                  <XAxis type="number" hide />
                  <YAxis 

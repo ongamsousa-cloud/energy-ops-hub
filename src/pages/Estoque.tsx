@@ -86,8 +86,6 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
  
     async function deleteWarehouse(id: string) {
       if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
-      const { error } = await supabase.from("warehouses").update({ active: true, active_status: false }).eq("id", id); // Assuming active column, checking schema
-      // Actually, checking WarehouseDialog, it uses 'active' column.
       const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
       if (err) toast.error("Erro ao desativar: " + err.message);
       else { toast.success("Almoxarifado desativado"); loadWarehouses(); }

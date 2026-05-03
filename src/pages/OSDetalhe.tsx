@@ -27,6 +27,7 @@ export default function OSDetalhe() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
    const [newMessage, setNewMessage] = useState("");
+   const [busy, setBusy] = useState(false);
    const [cats, setCats] = useState<any[]>([]);
    const [atvs, setAtvs] = useState<any[]>([]);
    const [equipes, setEquipes] = useState<any[]>([]);
@@ -234,12 +235,33 @@ export default function OSDetalhe() {
    }
 
    async function aprovar() {
+     if (evid.length === 0) {
+       return toast.error("É obrigatório ter ao menos uma evidência (foto/vídeo) para aprovar a OS.");
+     }
+     
      const obs = prompt("Comentário de aprovação (opcional):") || "";
-     await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
-     await supabase.from("ordens_servico").update({ status: "aprovada", aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-    await registrarAuditoria("aprovada", obs);
-    toast.success("OS aprovada"); load();
-  }
+     setBusy(true);
+     try {
+       await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
+       const { error } = await supabase.from("ordens_servico").update({ 
+         status: "aprovada", 
+         aprovado_por: user!.id, 
+         aprovado_em: new Date().toISOString(),
+         validated_at: new Date().toISOString(),
+         validated_by: user!.id
+       }).eq("id", id);
+       
+       if (error) throw error;
+       
+       await registrarAuditoria("aprovada", obs);
+       toast.success("OS aprovada com sucesso");
+       load();
+     } catch (err: any) {
+       toast.error(err.message);
+     } finally {
+       setBusy(false);
+     }
+   }
 
   const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
     open: false, type: null, comment: "" 

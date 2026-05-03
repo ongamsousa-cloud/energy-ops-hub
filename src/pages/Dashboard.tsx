@@ -45,7 +45,7 @@
           statusQuery.eq("assigned_supervisor_id", user.id);
         }
  
-          const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes, osRecentesRes, teamsProdRes, materialsRes] = await Promise.all([
+           const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes, osRecentesRes, teamsProdRes, materialsRes, stockRes, movRes, whRes] = await Promise.all([
          supabase.from("obras").select("id"),
          supabase.from("obras").select("id").eq("status", "execucao"),
           (() => {
@@ -86,13 +86,13 @@
            // Produtividade por Equipe
            supabase.from("ordens_servico").select("total_umd_aprovada, equipe:equipes(nome)").eq("status", "aprovada"),
            // Materiais (uso real via os_materials)
-            supabase.from("os_materials").select("quantity_used, materials(material_categories(name))"),
-            supabase.from("materials").select("*, material_categories(name), stock_levels(quantity, warehouses(name))").eq("active", true),
-            supabase.from("stock_movements").select("*, materials(name, code, unit), from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name), to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name)").order("created_at", { ascending: false }).limit(20),
-            supabase.from("warehouses").select("*, stock_levels(quantity, materials(cost_price))").eq("active", true)
-        ]);
-        // Dados auxiliares: alertas, regras financeiras, casos críticos, OS ativa do técnico, UMD em andamento, Estoque
-        const [alertasRes, ruleRes, divRes, criticosRes, osAtivaRes, umdMesRes, stockRes, movRes, whRes] = await Promise.all([
+             supabase.from("os_materials").select("quantity_used, materials(material_categories(name))"),
+             supabase.from("materials").select("*, material_categories(name), stock_levels(quantity, warehouses(name))").eq("active", true),
+             supabase.from("stock_movements").select("*, materials(name, code, unit), from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name), to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name)").order("created_at", { ascending: false }).limit(20),
+             supabase.from("warehouses").select("*, stock_levels(quantity, materials(cost_price))").eq("active", true)
+          ]);
+         // Dados auxiliares: alertas, regras financeiras, casos críticos, OS ativa do técnico, UMD em andamento, Estoque
+         const [alertasRes, ruleRes, divRes, criticosRes, osAtivaRes, umdMesRes] = await Promise.all([
          supabase.from("operational_alerts").select("id, title, description, severity, created_at").eq("status", "open").order("created_at", { ascending: false }).limit(5),
          supabase.from("financial_rules").select("rule_config").eq("rule_key", "umd_unit_value").eq("active", true).maybeSingle(),
          supabase.from("financial_order_records").select("id", { count: "exact", head: true }).eq("financial_status", "divergente"),

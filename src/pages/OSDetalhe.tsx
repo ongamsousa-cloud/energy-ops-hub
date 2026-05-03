@@ -711,9 +711,43 @@ export default function OSDetalhe() {
                              <span className="text-muted-foreground">-</span>
                            )}
                          </td>
-                         <td className="px-4 py-3 text-right">
-                           {canEdit && <Button size="icon" variant="ghost" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
-                         </td>
+                       <td className="px-4 py-3 text-right flex justify-end gap-1">
+                         <Button size="sm" variant="outline" onClick={() => setConsumeDialog({ open: true, item: m, qty: (m.quantity_planned - m.quantity_used).toString(), warehouse_id: "" })}>
+                           Lançar Uso
+                         </Button>
+                         {canEdit && <Button size="icon" variant="ghost" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                       </td>
+         <Dialog open={consumeDialog.open} onOpenChange={open => setConsumeDialog(prev => ({ ...prev, open }))}>
+           <DialogContent>
+             <DialogHeader><DialogTitle>Registrar Consumo de Material</DialogTitle></DialogHeader>
+             <div className="space-y-4 py-4">
+               <div className="p-3 bg-muted rounded-md space-y-1">
+                 <p className="text-xs font-bold uppercase text-muted-foreground">Material</p>
+                 <p className="text-sm font-medium">{consumeDialog.item?.materials?.name}</p>
+               </div>
+               <div className="space-y-2">
+                 <Label>Almoxarifado de Origem</Label>
+                 <Select value={consumeDialog.warehouse_id} onValueChange={v => setConsumeDialog({...consumeDialog, warehouse_id: v})}>
+                   <SelectTrigger><SelectValue placeholder="Selecione o local de retirada..." /></SelectTrigger>
+                   <SelectContent>
+                     {warehouses.map(w => (
+                       <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-2">
+                 <Label>Quantidade Retirada</Label>
+                 <Input type="number" step="0.01" value={consumeDialog.qty} onChange={e => setConsumeDialog({...consumeDialog, qty: e.target.value})} />
+               </div>
+               <Button className="w-full" onClick={() => {
+                 if (!consumeDialog.warehouse_id) return toast.error("Selecione a origem");
+                 useMaterial(consumeDialog.item, parseFloat(consumeDialog.qty), consumeDialog.warehouse_id);
+                 setConsumeDialog(prev => ({ ...prev, open: false }));
+               }}>Baixar do Estoque</Button>
+             </div>
+           </DialogContent>
+         </Dialog>
                        </tr>
                      ))
                    )}

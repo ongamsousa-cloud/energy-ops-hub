@@ -112,17 +112,22 @@ export default function CampoDashboard({ stats }: CampoDashboardProps) {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <Button size="lg" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => photoRef.current?.click()}>
-            <Camera className="h-5 w-5" /> Tirar Foto
-          </Button>
-          <Button size="lg" variant="secondary" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => videoRef.current?.click()}>
-            <Video className="h-5 w-5" /> Gravar Vídeo
-          </Button>
-          <Link to={osAtiva ? `/app/os/${osAtiva.id}` : "/app/os"} className="col-span-2 sm:col-span-1">
-            <Button size="lg" variant="outline" className="h-14 w-full gap-2">
-              <ArrowRight className="h-5 w-5" /> Abrir OS
-            </Button>
-          </Link>
+           <Button size="lg" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva || uploading} onClick={() => photoRef.current?.click()}>
+             <Camera className="h-5 w-5" /><span className="text-[10px]">Tirar Foto</span>
+           </Button>
+           <Button size="lg" variant="secondary" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva || uploading} onClick={() => videoRef.current?.click()}>
+             <Video className="h-5 w-5" /><span className="text-[10px]">Gravar Vídeo</span>
+           </Button>
+           <div className="col-span-2 sm:col-span-1 grid grid-cols-2 gap-2">
+             <Button size="lg" variant="outline" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva} onClick={handleCheckIn}>
+               <MapIcon className="h-5 w-5" /><span className="text-[10px]">GPS</span>
+             </Button>
+             <Link to={osAtiva ? `/app/os/${osAtiva.id}` : "/app/os"}>
+               <Button size="lg" variant="outline" className="h-14 w-full gap-2 flex flex-col items-center justify-center pt-2">
+                 <ArrowRight className="h-5 w-5" /><span className="text-[10px]">Abrir</span>
+               </Button>
+             </Link>
+           </div>
         </div>
         <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, false)} />
         <input ref={videoRef} type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, true)} />

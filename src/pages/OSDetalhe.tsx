@@ -108,7 +108,8 @@ export default function OSDetalhe() {
   }, [evid, items, evRules]);
 
     useEffect(() => {
-      if (os?.servico_id || (hasRole(['admin', 'gestor']))) {
+      // Load catalog for all authorized profiles
+      if (os?.servico_id || hasRole(['admin', 'gestor', 'supervisor', 'tecnico'])) {
         supabase.from("atividades")
           .select("*, categoria:categorias(nome, servico_id)")
           .eq("ativo", true)
@@ -117,7 +118,7 @@ export default function OSDetalhe() {
             setAllAtvs(data ?? []);
           });
       }
-    }, [os?.servico_id, roles]);
+    }, [os?.servico_id, roles, hasRole]);
 
     useEffect(() => {
       let filtered = allAtvs;
@@ -556,7 +557,8 @@ export default function OSDetalhe() {
                                      <SelectValue placeholder="Filtrar por Categoria" />
                                    </SelectTrigger>
                                    <SelectContent>
-                                     <SelectItem value="all">Todas as Categorias</SelectItem>
+                                     <SelectItem value="all">Todas as Atividades do Serviço</SelectItem>
+                                     <SelectItem value="all_global">Exibir Catálogo Completo (Sem Filtros)</SelectItem>
                                      {cats.filter(c => !os.servico_id || c.servico_id === os.servico_id).map((c) => (
                                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                                      ))}
@@ -567,7 +569,11 @@ export default function OSDetalhe() {
                                <CommandList className="max-h-[300px]">
                                  <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
                                  {cats
-                                   .filter(cat => (selectedCategoriaId === "all" || cat.id === selectedCategoriaId) && (!os.servico_id || cat.servico_id === os.servico_id))
+                                   .filter(cat => {
+                                     if (selectedCategoriaId === "all_global") return true;
+                                     if (selectedCategoriaId === "all") return !os.servico_id || cat.servico_id === os.servico_id;
+                                     return cat.id === selectedCategoriaId;
+                                   })
                                    .map(cat => {
                                      const catAtividades = allAtvs.filter(a => a.categoria_id === cat.id);
                                      if (catAtividades.length === 0) return null;

@@ -11,8 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
-import { useAuth } from "@/lib/auth";
+ import { Plus, Search } from "lucide-react";
+ import { useAuth } from "@/lib/auth";
+ import { cepService } from "@/services";
 
 const STATUS = ["aberta","planejamento","execucao","pausada","aguardando_material","aguardando_aprovacao","concluida","cancelada"] as const;
 
@@ -22,8 +23,44 @@ export default function Obras() {
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
-  const [form, setForm] = useState<any>({ numero: "", nome: "", cidade: "", estado: "", status: "aberta" });
+   const [form, setForm] = useState<any>({ 
+     numero: "", 
+     nome: "", 
+     cidade: "", 
+     estado: "", 
+     status: "aberta",
+     cep: "",
+     bairro: "",
+     endereco: ""
+   });
+   const [searchingCep, setSearchingCep] = useState(false);
 
+   async function handleCepSearch() {
+     const cep = form.cep?.replace(/\D/g, "");
+     if (cep?.length !== 8) return toast.error("CEP inválido");
+     setSearchingCep(true);
+     try {
+       const data = await cepService.buscarCep(cep);
+       if (data) {
+         setForm({
+           ...form,
+           endereco: data.logradouro,
+           bairro: data.bairro,
+           cidade: data.localidade,
+           estado: data.uf,
+         });
+         toast.success("Endereço preenchido");
+       } else {
+         toast.error("CEP não encontrado");
+       }
+     } catch (err) {
+       toast.error("Erro ao buscar CEP");
+     } finally {
+       setSearchingCep(false);
+     }
+   }
+ 
+   async function save() {
   async function load() {
     const { data } = await supabase.from("obras").select("*").order("created_at", { ascending: false });
     setRows(data ?? []);

@@ -13,9 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { cn } from "@/lib/utils";
 import {
-  Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-  TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
-  Boxes, AlertCircle, RotateCcw, MinusCircle, Download
+   Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
+   TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
+   Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";

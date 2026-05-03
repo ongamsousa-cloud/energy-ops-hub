@@ -106,16 +106,15 @@ export default function Obras() {
                  <div className="sm:col-span-2"><Label>Endereço</Label><Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} /></div>
                  <div><Label>Bairro</Label><Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} /></div>
                  <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} /></div>
-                 <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
-                <div>
-                  <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
-                    <SelectTrigger><SelectValue/></SelectTrigger>
-                    <SelectContent>{STATUS.map((s)=>(<SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>))}</SelectContent>
-                  </Select>
-                </div>
-                <div className="sm:col-span-2"><Label>Endereço</Label><Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} /></div>
-                <div className="sm:col-span-2"><Label>Descrição</Label><Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} /></div>
+                  <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
+                 <div>
+                   <Label>Status</Label>
+                   <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
+                     <SelectTrigger><SelectValue/></SelectTrigger>
+                     <SelectContent>{STATUS.map((s)=>(<SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>))}</SelectContent>
+                   </Select>
+                 </div>
+                 <div className="sm:col-span-2"><Label>Descrição</Label><Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} /></div>
               </div>
               <Button onClick={save}>Salvar</Button>
             </DialogContent>

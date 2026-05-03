@@ -43,7 +43,7 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
     <div className="space-y-6 animate-in fade-in duration-700">
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
-          <Link to="/app/atividades/import" className="flex items-center">
+          <Link to="/app/atividades/importar" className="flex items-center">
             <Upload className="mr-2 h-4 w-4 text-primary" />
             Importar Excel (Serviços/Atividades)
           </Link>

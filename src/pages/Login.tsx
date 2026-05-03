@@ -94,7 +94,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background p-[10px]">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <img src="/logo.png" alt="Logo" className="h-16 w-auto object-contain" />
+          <img src="https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png" alt="Logo" className="h-16 w-auto object-contain" />
           <div className="space-y-1">
             <div className="text-lg font-bold tracking-tight">Energia · Operações</div>
             <div className="text-xs text-muted-foreground">Sistema de Gestão de Ordens de Serviço</div>

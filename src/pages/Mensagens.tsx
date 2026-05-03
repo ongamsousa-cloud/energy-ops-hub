@@ -39,6 +39,7 @@ export default function Mensagens() {
    const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
+   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
@@ -87,8 +88,16 @@ export default function Mensagens() {
        return;
      }
      setAudioBlob(blob);
+     if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+     setAudioPreviewUrl(URL.createObjectURL(blob));
      setRecordingMode(null);
    };
+ 
+   useEffect(() => {
+     return () => {
+       if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+     };
+   }, [audioPreviewUrl]);
 
   async function enviarAudio() {
     if (!audioBlob || !active) return;
@@ -661,7 +670,7 @@ export default function Mensagens() {
                         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                           <Mic className="h-4 w-4" />
                         </div>
-                        <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
+                         <audio src={audioPreviewUrl || ""} controls className="h-8 flex-1" />
                         <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -868,7 +877,7 @@ export default function Mensagens() {
                       <Mic className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 w-full" />
+                       <audio src={audioPreviewUrl || ""} controls className="h-8 w-full" />
                     </div>
                     <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                       <Trash2 className="h-4 w-4" />

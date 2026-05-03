@@ -836,14 +836,14 @@ export default function Mensagens() {
                       <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
                       <span className="text-xs font-medium text-red-600">Gravando...</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }} className="text-muted-foreground h-8">
-                        Cancelar
-                      </Button>
-                      <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
-                        Parar Gravação
-                      </Button>
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Button size="sm" variant="ghost" onClick={() => recorderControls.stopRecording()} className="text-muted-foreground h-8">
+                         Cancelar
+                       </Button>
+                       <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
+                         Parar Gravação
+                       </Button>
+                     </div>
                   </div>
                  ) : (
                    <div className="flex items-center gap-2">
@@ -872,7 +872,10 @@ export default function Mensagens() {
                            "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
                            isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
                          )}
-                         onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
+                          onClick={() => { 
+                            setRecordingMode('direct');
+                            recorderControls.startRecording(); 
+                          }}
                          title="Gravar Áudio"
                        >
                          <Mic className="h-4 w-4" />

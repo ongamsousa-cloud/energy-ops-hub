@@ -411,60 +411,138 @@ export default function Mensagens() {
                      </div>
                    </div>
 
-                   {/* Contatos */}
-                   <div className="flex-1 flex flex-col overflow-hidden bg-card">
-                     <div className="p-3 border-b">
-                       <div className="relative">
-                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                         <Input 
-                           placeholder="Pesquisar profissional..." 
-                           className="pl-9 h-9"
-                           value={searchTerm}
-                           onChange={(e) => setSearchTerm(e.target.value)}
-                         />
-                       </div>
-                     </div>
-                     
-                     <ScrollArea className="flex-1 p-2">
-                       <div className="space-y-4">
-                         {Object.entries(contatosPorRole).map(([role, list]) => (
-                           <div key={role} className="space-y-1">
-                             <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                               {ROLE_LABEL[role as AppRole] || role}
-                             </h4>
-                             <div className="grid gap-0.5">
-                               {list.map((p) => (
-                                 <button
-                                   key={p.id}
-                                   onClick={() => startConversa(p)}
-                                   className="flex items-center gap-3 w-full text-left p-2 rounded-lg hover:bg-accent transition-all group"
-                                 >
-                                   <div className="relative">
-                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                                       {p.nome.charAt(0)}
-                                     </div>
-                                     <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></div>
-                                   </div>
-                                   <div className="flex-1 min-w-0">
-                                     <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{p.nome}</p>
-                                     <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
-                                   </div>
-                                   <Send className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-2" />
-                                 </button>
-                               ))}
-                             </div>
-                           </div>
-                         ))}
-                         {filteredContatos.length === 0 && (
-                           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                             <User className="h-12 w-12 opacity-10 mb-2" />
-                             <p className="text-sm font-medium">Nenhum profissional encontrado</p>
-                             <p className="text-xs opacity-60">Tente buscar por outro nome ou cargo</p>
-                           </div>
-                         )}
-                       </div>
-                     </ScrollArea>
-                   </div>
+                    {/* Contatos ou Interface de Mensagem */}
+                    <div className="flex-1 flex flex-col overflow-hidden bg-card">
+                      {selectedContact ? (
+                        <div className="flex flex-col h-full bg-muted/10">
+                          <div className="p-4 border-b flex items-center justify-between bg-card">
+                            <div className="flex items-center gap-3">
+                              <Button variant="ghost" size="icon" onClick={() => setSelectedContact(null)} className="h-8 w-8">
+                                <ArrowLeft className="h-4 w-4" />
+                              </Button>
+                              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                {selectedContact.nome.charAt(0)}
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold">{selectedContact.nome}</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-medium">{ROLE_LABEL[selectedContact.role as AppRole]}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                            <div className="w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center mb-4">
+                              <MessageSquare className="h-8 w-8 text-primary/40" />
+                            </div>
+                            <h3 className="text-base font-semibold">Nova Mensagem Direta</h3>
+                            <p className="text-xs text-muted-foreground mt-1 max-w-[250px]">
+                              Escreva ou grave um áudio para enviar agora mesmo.
+                            </p>
+                          </div>
+
+                          <div className="p-4 border-t bg-card">
+                            {audioBlob ? (
+                              <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg mb-2">
+                                <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
+                                <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : isRecording ? (
+                              <div className="flex items-center justify-between bg-red-50 p-2 rounded-lg mb-2 border border-red-100">
+                                <span className="text-[10px] font-bold text-red-600 animate-pulse flex items-center gap-2">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-red-500" /> GRAVANDO ÁUDIO...
+                                </span>
+                                <Button size="sm" variant="ghost" onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }} className="h-7 text-[10px]">Cancelar</Button>
+                                <Button size="sm" className="h-7 bg-red-500 hover:bg-red-600 text-[10px]" onClick={() => recorderControls.stopRecording()}>Parar</Button>
+                                <div className="hidden">
+                                  <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
+                                </div>
+                              </div>
+                            ) : null}
+                            
+                            <div className="flex items-center gap-2">
+                              <div className="relative flex-1">
+                                <Input 
+                                  placeholder="Digite sua mensagem..." 
+                                  className="pr-10 rounded-full h-11 bg-muted/20 border-none focus-visible:ring-primary"
+                                  value={text}
+                                  onChange={(e) => setText(e.target.value)}
+                                  disabled={isRecording}
+                                />
+                                <button 
+                                  className={cn("absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors", isRecording ? "text-red-500" : "text-muted-foreground hover:text-primary")}
+                                  onClick={() => { if (!isRecording) { recorderControls.startRecording(); setIsRecording(true); } else { recorderControls.stopRecording(); } }}
+                                >
+                                  <Mic className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <Button 
+                                className="h-11 w-11 rounded-full shrink-0 shadow-lg" 
+                                onClick={() => sendDirectly(selectedContact)}
+                                disabled={(!text.trim() && !audioBlob) || isRecording}
+                              >
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-3 border-b">
+                            <div className="relative">
+                              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input 
+                                placeholder="Pesquisar profissional..." 
+                                className="pl-9 h-9"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                          
+                          <ScrollArea className="flex-1 p-2">
+                            <div className="space-y-4">
+                              {Object.entries(contatosPorRole).map(([role, list]) => (
+                                <div key={role} className="space-y-1">
+                                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                                    {ROLE_LABEL[role as AppRole] || role}
+                                  </h4>
+                                  <div className="grid gap-0.5">
+                                    {list.map((p) => (
+                                      <button
+                                        key={p.id}
+                                        onClick={() => setSelectedContact(p)}
+                                        className="flex items-center gap-3 w-full text-left p-2 rounded-lg hover:bg-accent transition-all group"
+                                      >
+                                        <div className="relative">
+                                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                                            {p.nome.charAt(0)}
+                                          </div>
+                                          <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{p.nome}</p>
+                                          <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
+                                        </div>
+                                        <Send className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-2" />
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                              {filteredContatos.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                                  <User className="h-12 w-12 opacity-10 mb-2" />
+                                  <p className="text-sm font-medium">Nenhum profissional encontrado</p>
+                                  <p className="text-xs opacity-60">Tente buscar por outro nome ou cargo</p>
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                        </>
+                      )}
+                    </div>
                  </div>
                </DialogContent>
             </Dialog>

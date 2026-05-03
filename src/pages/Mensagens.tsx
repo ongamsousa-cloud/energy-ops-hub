@@ -34,7 +34,7 @@ export default function Mensagens() {
   const [searchTerm, setSearchTerm] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+   const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
@@ -46,12 +46,20 @@ export default function Mensagens() {
     if (active) setMobileView('thread');
   }, [active]);
 
-  const recorderControls = useAudioRecorder();
+   const recorderControls = useAudioRecorder(
+     {
+       noiseSuppression: true,
+       echoCancellation: true,
+     },
+     (err) => console.error("Erro no gravador:", err)
+   );
+ 
+   const isRecording = recorderControls.isRecording;
 
-   const addAudioElement = async (blob: Blob) => {
+   const addAudioElement = (blob: Blob) => {
      console.log("Gravação concluída:", blob.size, "bytes");
      setAudioBlob(blob);
-     setIsRecording(false);
+     setRecordingMode(null);
    };
 
   async function enviarAudio() {

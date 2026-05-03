@@ -507,7 +507,9 @@ export default function OSDetalhe() {
       )}
 
        <Tabs defaultValue="atividades" className="mt-8">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="atividades">Atividades</TabsTrigger>
+            <TabsTrigger value="materiais">Materiais</TabsTrigger>
             <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
              <TabsTrigger value="evidencias">Evidências</TabsTrigger>
              <TabsTrigger value="materiais">Materiais</TabsTrigger>
@@ -713,6 +715,7 @@ export default function OSDetalhe() {
                </div>
              ) : (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+            <TabsTrigger value="atividades">Atividades</TabsTrigger>
                   {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
                 </div>
              )}

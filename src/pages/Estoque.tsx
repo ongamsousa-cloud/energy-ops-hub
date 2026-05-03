@@ -329,51 +329,89 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
              {/* Main Analytics Area (3/4) */}
              <div className="xl:col-span-3 space-y-6">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <Card className="p-6 border-none shadow-sm bg-card/50">
-                   <div className="flex items-center justify-between mb-6">
-                     <div>
-                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Fluxo Logístico</h3>
-                       <p className="text-[10px] text-muted-foreground">Entradas vs Saídas (14 dias)</p>
-                     </div>
-                     <Badge variant="secondary" className="text-[10px]">OPERACIONAL</Badge>
-                   </div>
-                   <div className="h-[250px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <LineChart data={chartFlow}>
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                         <XAxis dataKey="dia" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                         <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
-                         <Legend verticalAlign="top" align="right" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                         <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
-                         <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={3} dot={{ r: 4, fill: 'hsl(var(--destructive))' }} />
-                       </LineChart>
-                     </ResponsiveContainer>
-                   </div>
-                 </Card>
-
-                 <Card className="p-6 border-none shadow-sm bg-card/50">
-                   <div className="flex items-center justify-between mb-6">
-                     <div>
-                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Consumo de Materiais</h3>
-                       <p className="text-[10px] text-muted-foreground">Itens com maior giro</p>
-                     </div>
-                     <Boxes className="h-4 w-4 text-amber-500" />
-                   </div>
-                   <div className="h-[250px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <BarChart data={chartTopConsumed} layout="vertical">
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                         <XAxis type="number" hide />
-                         <YAxis dataKey="nome" type="category" width={100} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                         <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: "12px" }} />
-                         <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />
-                       </BarChart>
-                     </ResponsiveContainer>
-                   </div>
-                 </Card>
-               </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="p-4 bg-emerald-500/5 border-emerald-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Entradas (Hoje)</p>
+                      <p className="text-2xl font-black text-emerald-700">{kpis.entriesToday}</p>
+                    </div>
+                    <ArrowDownToLine className="h-8 w-8 text-emerald-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-red-500/5 border-red-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Saídas (Hoje)</p>
+                      <p className="text-2xl font-black text-red-700">{kpis.exitsToday}</p>
+                    </div>
+                    <ArrowUpFromLine className="h-8 w-8 text-red-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-amber-500/5 border-amber-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Críticos</p>
+                      <p className="text-2xl font-black text-amber-700">{kpis.critical}</p>
+                    </div>
+                    <AlertTriangle className="h-8 w-8 text-amber-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-primary/5 border-primary/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Atendimentos</p>
+                      <p className="text-2xl font-black text-primary/80">{new Set(movements.filter(m => m.type === 'saida' && new Date(m.created_at) >= startOfDay(new Date())).map(m => m.os_id).filter(Boolean)).size}</p>
+                    </div>
+                    <Activity className="h-8 w-8 text-primary/20" />
+                  </Card>
+                </div>
+ 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <ArrowDownToLine className="h-4 w-4 text-emerald-500" />
+                        Entradas Recentes
+                      </h3>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("entradas")}>Ver Todas</Button>
+                    </div>
+                    <div className="space-y-4">
+                      {movements.filter(m => m.type === 'entrada').slice(0, 5).map(m => (
+                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold">{m.materials?.name}</span>
+                            <span className="text-[10px] text-muted-foreground">NF: {m.invoice_number || '—'} · {m.to_wh?.name}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-mono font-bold text-emerald-600">+{Number(m.quantity)} {m.materials?.unit}</span>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+ 
+                  <Card className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <ArrowUpFromLine className="h-4 w-4 text-red-500" />
+                        Liberações p/ OS
+                      </h3>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("liberacao")}>Ver Todas</Button>
+                    </div>
+                    <div className="space-y-4">
+                      {movements.filter(m => m.type === 'saida').slice(0, 5).map(m => (
+                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold">{m.materials?.name}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {m.ordens_servico?.numero && <Badge variant="outline" className="text-[9px] h-4 font-mono">OS {m.ordens_servico.numero}</Badge>}
+                              <span className="text-[10px] text-muted-foreground">{m.profiles?.nome}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-mono font-bold text-red-600">-{Number(m.quantity)} {m.materials?.unit}</span>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
 
                <Card className="p-6 border-none shadow-sm bg-card/50">
                  <div className="flex items-center justify-between mb-6">

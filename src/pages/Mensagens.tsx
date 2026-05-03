@@ -79,19 +79,19 @@ export default function Mensagens() {
      return `${mins}:${secs.toString().padStart(2, '0')}`;
    };
 
-   const addAudioElement = (blob: Blob) => {
-     console.log("Gravação concluída:", blob.size, "bytes");
-     if (blob.size < 100) {
-       console.warn("Áudio muito pequeno, possível erro de captura");
-       toast.error("Falha ao capturar áudio. Tente novamente.");
-       setRecordingMode(null);
-       return;
-     }
-     setAudioBlob(blob);
-     if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
-     setAudioPreviewUrl(URL.createObjectURL(blob));
-     setRecordingMode(null);
-   };
+    const addAudioElement = (blob: Blob) => {
+      console.log("Gravação concluída:", blob.size, "bytes");
+      if (blob.size < 500) {
+        console.warn("Áudio muito pequeno, possível erro de captura ou gravação muito curta");
+        toast.error("Áudio muito curto ou falha na captura. Tente novamente.");
+        setRecordingMode(null);
+        return;
+      }
+      setAudioBlob(blob);
+      if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+      setAudioPreviewUrl(URL.createObjectURL(blob));
+      setRecordingMode(null);
+    };
  
    useEffect(() => {
      return () => {
@@ -719,33 +719,30 @@ export default function Mensagens() {
                             } 
                           }}
                         />
-                        <button
-                          className={cn(
-                            "absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all", 
-                            isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
-                            selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
-                          )}
-                           onClick={async () => { 
-                             if (selectedContacts.length === 0) return;
-                             try {
-                               if (!isRecording) { 
+                        {!isRecording && (
+                          <button
+                            className={cn(
+                              "absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all", 
+                              "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                              selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
+                            )}
+                             onClick={async () => { 
+                               if (selectedContacts.length === 0) return;
+                               try {
                                  setRecordingMode('broadcast');
                                  await recorderControls.startRecording();
                                  toast.info("Iniciando gravação...");
-                               } else { 
-                                 await recorderControls.stopRecording();
-                                 toast.info("Processando áudio...");
+                               } catch (err: any) {
+                                 console.error("Erro ao gerenciar gravação:", err);
+                                 toast.error("Erro ao acessar microfone. Verifique as permissões.");
+                                 setRecordingMode(null);
                                }
-                             } catch (err: any) {
-                               console.error("Erro ao gerenciar gravação:", err);
-                               toast.error("Erro ao acessar microfone. Verifique as permissões.");
-                               setRecordingMode(null);
-                             }
-                           }}
-                          disabled={selectedContacts.length === 0}
-                        >
-                          <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />
-                        </button>
+                             }}
+                            disabled={selectedContacts.length === 0}
+                          >
+                            <Mic className="h-5 w-5" />
+                          </button>
+                        )}
                       </div>
                       <Button
                         className="h-14 w-14 rounded-2xl shrink-0 shadow-xl bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
@@ -931,26 +928,28 @@ export default function Mensagens() {
                          placeholder="Escreva sua mensagem..." 
                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
                        />
-                       <button 
-                         className={cn(
-                           "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
-                           isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
-                         )}
-                          onClick={async () => { 
-                            try {
-                              setRecordingMode('direct');
-                              await recorderControls.startRecording();
-                              toast.info("Iniciando gravação...");
-                            } catch (err: any) {
-                              console.error("Erro ao iniciar gravação direta:", err);
-                              toast.error("Erro ao acessar microfone.");
-                              setRecordingMode(null);
-                            }
-                          }}
-                         title="Gravar Áudio"
-                       >
-                         <Mic className="h-4 w-4" />
-                       </button>
+                        {!isRecording && (
+                          <button 
+                            className={cn(
+                              "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                              "text-muted-foreground hover:text-primary"
+                            )}
+                             onClick={async () => { 
+                               try {
+                                 setRecordingMode('direct');
+                                 await recorderControls.startRecording();
+                                 toast.info("Iniciando gravação...");
+                               } catch (err: any) {
+                                 console.error("Erro ao iniciar gravação direta:", err);
+                                 toast.error("Erro ao acessar microfone.");
+                                 setRecordingMode(null);
+                               }
+                             }}
+                            title="Gravar Áudio"
+                          >
+                            <Mic className="h-4 w-4" />
+                          </button>
+                        )}
                      </div>
 
                       <Button 

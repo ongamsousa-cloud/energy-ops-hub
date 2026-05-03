@@ -757,16 +757,28 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
               </TableRow></TableHeader>
                <TableBody>
                  {filteredMovements.map(m => (
-                   <TableRow key={m.id}>
-                    <TableCell className="text-xs whitespace-nowrap">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
-                    <TableCell><Badge variant="outline" className={TYPE_COLOR[m.type]}>{TYPE_LABEL[m.type]}</Badge></TableCell>
-                    <TableCell><div className="font-medium text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground">{m.materials?.code}</div></TableCell>
-                    <TableCell className="text-right font-mono">{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.from_wh?.name || "—"} {m.to_wh?.name && `→ ${m.to_wh.name}`}</TableCell>
-                    <TableCell className="text-xs">{m.ordens_servico?.numero || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.profiles?.nome || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.creator?.nome || "—"}</TableCell>
-                  </TableRow>
+                    <TableRow key={m.id} className="hover:bg-muted/30">
+                     <TableCell className="text-xs whitespace-nowrap py-3">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
+                     <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
+                     <TableCell className="py-3"><div className="font-bold text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground font-mono">{m.materials?.code}</div></TableCell>
+                     <TableCell className={cn("text-right font-mono font-bold py-3", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : '')}>
+                       {m.type === 'entrada' ? '+' : m.type === 'saida' ? '-' : ''}{Number(m.quantity)} {m.materials?.unit}
+                     </TableCell>
+                     <TableCell className="text-xs py-3">
+                       <div className="flex flex-col gap-0.5">
+                         {m.from_wh?.name && <span className="text-muted-foreground line-through decoration-muted-foreground/30">{m.from_wh.name}</span>}
+                         {m.to_wh?.name && <span className="font-medium text-primary flex items-center gap-1"><ArrowDownToLine className="h-3 w-3" /> {m.to_wh.name}</span>}
+                         {!m.to_wh?.name && m.from_wh?.name && <span className="font-medium text-destructive flex items-center gap-1"><ArrowUpFromLine className="h-3 w-3" /> {m.from_wh.name}</span>}
+                       </div>
+                     </TableCell>
+                     <TableCell className="py-3">
+                       {m.ordens_servico?.numero ? (
+                         <Badge variant="secondary" className="font-mono text-[9px] bg-blue-50 text-blue-700 border-blue-100 uppercase tracking-tighter">OS {m.ordens_servico.numero}</Badge>
+                       ) : <span className="text-muted-foreground text-[10px]">—</span>}
+                     </TableCell>
+                     <TableCell className="text-xs font-medium py-3">{m.profiles?.nome || "—"}</TableCell>
+                     <TableCell className="text-xs text-muted-foreground py-3 italic">{m.creator?.nome || "—"}</TableCell>
+                   </TableRow>
                 ))}
                 {movements.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Sem movimentações registradas.</TableCell></TableRow>}
               </TableBody>

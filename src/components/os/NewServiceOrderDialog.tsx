@@ -312,7 +312,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                            <SelectValue placeholder="Filtrar por Categoria" />
                          </SelectTrigger>
                          <SelectContent>
-                           <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                            <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                            <SelectItem value="all_global">Catálogo Completo (Sem Filtros)</SelectItem>
                            {categorias
                              .filter(c => !selectedServicoId || c.servico_id === selectedServicoId)
                              .map((c) => (
@@ -324,10 +325,14 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
                       <CommandList className="max-h-[450px]">
                        <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
-                       {categorias
-                         .filter(c => (selectedCategoriaId === "all" || c.id === selectedCategoriaId) && (!selectedServicoId || c.servico_id === selectedServicoId))
-                         .map(cat => {
-                           const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
+                        {categorias
+                          .filter(cat => {
+                            if (selectedCategoriaId === "all_global") return true;
+                            if (selectedCategoriaId === "all") return !selectedServicoId || cat.servico_id === selectedServicoId;
+                            return cat.id === selectedCategoriaId;
+                          })
+                          .map(cat => {
+                            const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
                            if (catAtividades.length === 0) return null;
                            return (
                              <CommandGroup key={cat.id} heading={cat.nome}>

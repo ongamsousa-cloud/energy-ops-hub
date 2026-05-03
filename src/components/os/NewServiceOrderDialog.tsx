@@ -32,6 +32,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
    const [atividades, setAtividades] = useState<any[]>([]);
+   const [servicoHasNoActivities, setServicoHasNoActivities] = useState(false);
    const [categorias, setCategorias] = useState<any[]>([]);
    const [servicos, setServicos] = useState<any[]>([]);
    const [selectedServicoId, setSelectedServicoId] = useState<string>("");
@@ -72,14 +73,21 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      ]);
  
      setObras(resObras.data ?? []);
-     setAtividades(resAtividades.data ?? []);
-     setCategorias(resCats.data ?? []);
-     setServicos(resServicos.data ?? []);
+      const allAtividades = resAtividades.data ?? [];
+      setAtividades(allAtividades);
+      setCategorias(resCats.data ?? []);
+      const allServicos = resServicos.data ?? [];
+      setServicos(allServicos);
      setGestores(resGestores.data ?? []);
      setEquipes(resEquipes.data ?? []);
      
-     if (resServicos.data?.length) {
-       setSelectedServicoId(resServicos.data[0].id);
+      if (allServicos.length) {
+        const firstServId = allServicos[0].id;
+        setSelectedServicoId(firstServId);
+        // Check if this service has any activities via its categories
+        const servCats = resCats.data?.filter(c => c.servico_id === firstServId) || [];
+        const hasAtvs = allAtividades.some(a => servCats.some(c => c.id === a.categoria_id));
+        setServicoHasNoActivities(!hasAtvs);
      }
  
      if (resGestores.data?.length === 1) {
@@ -234,10 +242,19 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
              <div className="space-y-2">
                <Label>Serviço Principal <span className="text-destructive">*</span></Label>
-               <Select value={selectedServicoId} onValueChange={(v) => {
-                 setSelectedServicoId(v);
-                 setSelectedCategoriaId("all");
-               }}>
+               <Select 
+                 value={selectedServicoId} 
+                 onValueChange={(v) => {
+                   setSelectedServicoId(v);
+                   setSelectedCategoriaId("all");
+                   const servCats = categorias.filter(c => c.servico_id === v);
+                   const hasAtvs = atividades.some(a => servCats.some(c => c.id === a.categoria_id));
+                   setServicoHasNoActivities(!hasAtvs);
+                   if (!hasAtvs) {
+                     toast.warning("Atenção: Este serviço não possui atividades cadastradas nas suas categorias.");
+                   }
+                 }}
+               >
                  <SelectTrigger>
                    <SelectValue placeholder="Selecione o serviço" />
                  </SelectTrigger>
@@ -266,6 +283,16 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                </Select>
              </div>
            )}
+
+            {servicoHasNoActivities && (
+              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md flex items-start gap-2 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Nenhuma atividade configurada</p>
+                  <p>Este serviço ou suas categorias não possuem itens cadastrados no catálogo técnico. Verifique as configurações do banco de dados.</p>
+                </div>
+              </div>
+            )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

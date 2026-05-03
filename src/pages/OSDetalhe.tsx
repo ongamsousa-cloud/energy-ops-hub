@@ -179,12 +179,17 @@ export default function OSDetalhe() {
      const obs = prompt("Comentário de aprovação (opcional):") || "";
      await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
      await supabase.from("ordens_servico").update({ status: "aprovada", aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-     await registrarAuditoria("aprovada", obs);
-     toast.success("OS aprovada"); load();
-   }
+    await registrarAuditoria("aprovada", obs);
+    toast.success("OS aprovada"); load();
+  }
+
   const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
     open: false, type: null, comment: "" 
   });
+
+  function openReview(type: "reprovar" | "correcao") {
+    setRevModal({ open: true, type, comment: "" });
+  }
 
   async function handleReview() {
     if (!revModal.comment && revModal.type === "reprovar") return toast.error("Motivo é obrigatório");

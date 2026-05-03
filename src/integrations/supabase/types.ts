@@ -2291,10 +2291,10 @@ export type Database = {
           action: string
           created_at: string | null
           description: string | null
-          gps_lat: number | null
-          gps_lng: number | null
+          details: Json | null
           id: string
-          metadata: Json | null
+          latitude: number | null
+          longitude: number | null
           new_status: string | null
           previous_status: string | null
           service_order_id: string
@@ -2304,10 +2304,10 @@ export type Database = {
           action: string
           created_at?: string | null
           description?: string | null
-          gps_lat?: number | null
-          gps_lng?: number | null
+          details?: Json | null
           id?: string
-          metadata?: Json | null
+          latitude?: number | null
+          longitude?: number | null
           new_status?: string | null
           previous_status?: string | null
           service_order_id: string
@@ -2317,10 +2317,10 @@ export type Database = {
           action?: string
           created_at?: string | null
           description?: string | null
-          gps_lat?: number | null
-          gps_lng?: number | null
+          details?: Json | null
           id?: string
-          metadata?: Json | null
+          latitude?: number | null
+          longitude?: number | null
           new_status?: string | null
           previous_status?: string | null
           service_order_id?: string
@@ -2339,51 +2339,51 @@ export type Database = {
       service_order_media: {
         Row: {
           captured_at: string | null
+          category: string | null
           created_at: string | null
           description: string | null
           execution_record_id: string | null
           file_name: string | null
+          file_path: string
           file_size: number | null
-          file_url: string
-          gps_lat: number | null
-          gps_lng: number | null
+          file_type: string
           id: string
-          media_type: string
+          latitude: number | null
+          longitude: number | null
           service_order_id: string
-          stage: string | null
-          technician_id: string
+          user_id: string
         }
         Insert: {
           captured_at?: string | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
           execution_record_id?: string | null
           file_name?: string | null
+          file_path: string
           file_size?: number | null
-          file_url: string
-          gps_lat?: number | null
-          gps_lng?: number | null
+          file_type: string
           id?: string
-          media_type: string
+          latitude?: number | null
+          longitude?: number | null
           service_order_id: string
-          stage?: string | null
-          technician_id: string
+          user_id: string
         }
         Update: {
           captured_at?: string | null
+          category?: string | null
           created_at?: string | null
           description?: string | null
           execution_record_id?: string | null
           file_name?: string | null
+          file_path?: string
           file_size?: number | null
-          file_url?: string
-          gps_lat?: number | null
-          gps_lng?: number | null
+          file_type?: string
           id?: string
-          media_type?: string
+          latitude?: number | null
+          longitude?: number | null
           service_order_id?: string
-          stage?: string | null
-          technician_id?: string
+          user_id?: string
         }
         Relationships: [
           {

@@ -291,30 +291,25 @@ export default function Mensagens() {
      let lastConvId: string | null = null;
      let okCount = 0;
 
-     for (const contact of selectedContacts) {
-       const convId = await getOrCreateConversa(contact);
-       if (!convId) continue;
-       lastConvId = convId;
+      for (const contact of selectedContacts) {
+        const convId = await getOrCreateConversa(contact);
+        if (!convId) continue;
+        lastConvId = convId;
 
-       if (conteudo) {
-         const { error } = await supabase.from("messages").insert({
-           conversation_id: convId,
-           sender_id: user!.id,
-           conteudo,
-         });
-         if (error) { toast.error(error.message); continue; }
-       }
-       if (audioUrl) {
-         const { error } = await supabase.from("messages").insert({
-           conversation_id: convId,
-           sender_id: user!.id,
-           anexo_url: audioUrl,
-           anexo_tipo: "audio",
-         });
-         if (error) { toast.error(error.message); continue; }
-       }
-       okCount++;
-     }
+        const { error } = await supabase.from("messages").insert({
+          conversation_id: convId,
+          sender_id: user!.id,
+          conteudo,
+          anexo_url: audioUrl,
+          anexo_tipo: audioUrl ? "audio" : null,
+        });
+
+        if (error) {
+          toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
+          continue;
+        }
+        okCount++;
+      }
 
      setText("");
      setAudioBlob(null);

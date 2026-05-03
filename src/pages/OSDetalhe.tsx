@@ -35,7 +35,10 @@ export default function OSDetalhe() {
    const [newMessage, setNewMessage] = useState("");
    const [busy, setBusy] = useState(false);
    const [cats, setCats] = useState<any[]>([]);
-   const [atvs, setAtvs] = useState<any[]>([]);
+    const [atvs, setAtvs] = useState<any[]>([]);
+    const [allAtvs, setAllAtvs] = useState<any[]>([]);
+    const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
+    const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
    const [equipes, setEquipes] = useState<any[]>([]);
    const [profs, setProfs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
@@ -104,10 +107,27 @@ export default function OSDetalhe() {
     setEvCheck(checkEvidenceCompleteness(evid, items, evRules));
   }, [evid, items, evRules]);
 
-  useEffect(() => {
-    if (!form.categoria_id) { setAtvs([]); return; }
-    supabase.from("atividades").select("*").eq("categoria_id", form.categoria_id).eq("ativo", true).order("codigo_item").then(({ data }) => setAtvs(data ?? []));
-  }, [form.categoria_id]);
+    useEffect(() => {
+      if (os?.servico_id || (hasRole(['admin', 'gestor']))) {
+        supabase.from("atividades")
+          .select("*, categoria:categorias(nome, servico_id)")
+          .eq("ativo", true)
+          .order("codigo_item")
+          .then(({ data }) => {
+            setAllAtvs(data ?? []);
+          });
+      }
+    }, [os?.servico_id, roles]);
+
+    useEffect(() => {
+      let filtered = allAtvs;
+      if (selectedCategoriaId !== "all") {
+        filtered = allAtvs.filter(a => a.categoria_id === selectedCategoriaId);
+      } else if (os?.servico_id) {
+        filtered = allAtvs.filter(a => a.categoria?.servico_id === os.servico_id);
+      }
+      setAtvs(filtered);
+    }, [allAtvs, selectedCategoriaId, os?.servico_id]);
 
    useEffect(() => {
      const code = codes.find(c => c.id === form.execution_code_id);

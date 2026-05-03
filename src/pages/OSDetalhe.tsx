@@ -522,38 +522,103 @@ export default function OSDetalhe() {
           </TabsContent>
 
           <TabsContent value="evidencias" className="mt-4">
-            <div className="flex flex-col gap-4 mb-4">
+            <div className="flex flex-col gap-4 mb-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium">Fotos e vídeos do campo</h2>
+                <h2 className="text-sm font-medium">Evidências do Campo</h2>
+                <span className="text-[10px] text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded-full">{evid.length} arquivos</span>
               </div>
               
-              {canEdit && (
+              {canEdit && !mediaUpload.previewUrl && (
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row">
                   <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm active:scale-95">
                     <Camera className="h-5 w-5" strokeWidth={2}/> Tirar Foto
-                    <input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => uploadEvidencia(e, true)} />
+                    <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
                   </label>
                   
                   <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors shadow-sm active:scale-95">
                     <Video className="h-5 w-5" strokeWidth={2}/> Gravar Vídeo
-                    <input type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => uploadEvidencia(e, true)} />
+                    <input type="file" accept="video/*" capture="environment" className="hidden" onChange={handleFileSelect} />
                   </label>
 
                   <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm active:scale-95 sm:flex-none">
                     <Plus className="h-5 w-5" strokeWidth={2}/> Arquivo
-                    <input type="file" accept="image/*,video/*" className="hidden" onChange={(e) => uploadEvidencia(e, false)} />
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileSelect} />
                   </label>
                 </div>
               )}
+
+              {mediaUpload.previewUrl && (
+                <Card className="p-4 border-primary/20 bg-primary/5 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative h-40 w-full sm:w-40 bg-black rounded-md overflow-hidden shrink-0">
+                      {mediaUpload.file?.type.startsWith('video/') ? (
+                        <video src={mediaUpload.previewUrl} className="h-full w-full object-contain" controls />
+                      ) : (
+                        <img src={mediaUpload.previewUrl} className="h-full w-full object-contain" alt="Preview" />
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold truncate max-w-[200px]">{mediaUpload.file?.name}</p>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setMediaUpload({ file: null, previewUrl: null, uploading: false, error: null })}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground uppercase">{mediaUpload.file?.type} · {(mediaUpload.file!.size / 1024 / 1024).toFixed(2)} MB</p>
+                        {mediaUpload.error && (
+                          <div className="mt-2 p-2 rounded bg-destructive/10 text-[11px] text-destructive flex items-center gap-1.5 font-medium">
+                            <AlertCircle className="h-3.5 w-3.5" /> {mediaUpload.error}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-4 sm:mt-0">
+                        <Button 
+                          className="flex-1 sm:flex-none font-bold" 
+                          onClick={executeUpload} 
+                          disabled={mediaUpload.uploading}
+                        >
+                          {mediaUpload.uploading ? (
+                            <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Enviando...</>
+                          ) : mediaUpload.error ? (
+                            <><RefreshCw className="mr-2 h-4 w-4" /> Retentar Upload</>
+                          ) : (
+                            <><CheckCircle className="mr-2 h-4 w-4" /> Confirmar e Enviar</>
+                          )}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 sm:flex-none" 
+                          onClick={() => setMediaUpload({ file: null, previewUrl: null, uploading: false, error: null })}
+                          disabled={mediaUpload.uploading}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
-           {evid.length === 0 ? (
-             <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem evidências registradas.</div>
-           ) : (
-             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
-               {evid.map((e)=>(<EvImg key={e.id} ev={e}/>))}
-             </div>
-           )}
-         </TabsContent>
+
+           <div className="space-y-4">
+             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-2 flex items-center gap-2">
+               <Eye className="h-3 w-3" /> Galeria de Evidências
+             </h3>
+             {evid.length === 0 ? (
+               <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground bg-muted/10">
+                 <div className="flex flex-col items-center gap-2">
+                   <Camera className="h-8 w-8 opacity-20" />
+                   <p>Nenhuma evidência capturada para esta OS.</p>
+                 </div>
+               </div>
+             ) : (
+               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+                 {evid.map((e)=>(<EvImg key={e.id} ev={e}/>))}
+               </div>
+             )}
+           </div>
+          </TabsContent>
 
          <TabsContent value="auditoria" className="mt-4">
            <div className="space-y-4">

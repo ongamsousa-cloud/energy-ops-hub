@@ -54,57 +54,57 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
        )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-         <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer" asChild>
-           <Link to="/app/relatorios">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground">Produtividade Total</p>
-              <Activity className="h-4 w-4 text-blue-500" />
-            </div>
-            <div className="text-2xl font-bold">{stats.umd.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">UMD produzida no período</p>
-          </CardContent>
-           </Link>
-        </Card>
+         <Link to="/app/relatorios">
+           <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between space-y-0 pb-2">
+                 <p className="text-sm font-medium text-muted-foreground">Produtividade Total</p>
+                 <Activity className="h-4 w-4 text-blue-500" />
+               </div>
+               <div className="text-2xl font-bold">{stats.umd.toLocaleString()}</div>
+               <p className="text-xs text-muted-foreground mt-1">UMD produzida no período</p>
+             </CardContent>
+           </Card>
+         </Link>
 
-         <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer" asChild>
-           <Link to="/app/equipes">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground">Equipes Ativas</p>
-              <Users className="h-4 w-4 text-purple-500" />
-            </div>
-            <div className="text-2xl font-bold">{stats.equipes}</div>
-            <p className="text-xs text-muted-foreground mt-1">Operando hoje</p>
-          </CardContent>
-           </Link>
-        </Card>
+         <Link to="/app/equipes">
+           <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between space-y-0 pb-2">
+                 <p className="text-sm font-medium text-muted-foreground">Equipes Ativas</p>
+                 <Users className="h-4 w-4 text-purple-500" />
+               </div>
+               <div className="text-2xl font-bold">{stats.equipes}</div>
+               <p className="text-xs text-muted-foreground mt-1">Operando hoje</p>
+             </CardContent>
+           </Card>
+         </Link>
 
-         <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer" asChild>
-           <Link to="/app/obras">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground">Obras em Execução</p>
-              <Briefcase className="h-4 w-4 text-emerald-500" />
-            </div>
-            <div className="text-2xl font-bold">{stats.obrasExec}</div>
-            <p className="text-xs text-muted-foreground mt-1">Frentes de trabalho</p>
-          </CardContent>
-           </Link>
-        </Card>
+         <Link to="/app/obras">
+           <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between space-y-0 pb-2">
+                 <p className="text-sm font-medium text-muted-foreground">Obras em Execução</p>
+                 <Briefcase className="h-4 w-4 text-emerald-500" />
+               </div>
+               <div className="text-2xl font-bold">{stats.obrasExec}</div>
+               <p className="text-xs text-muted-foreground mt-1">Frentes de trabalho</p>
+             </CardContent>
+           </Card>
+         </Link>
 
-         <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer" asChild>
-           <Link to="/app/aprovacoes">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground">OS Críticas</p>
-              <AlertCircle className="h-4 w-4 text-red-500" />
-            </div>
-            <div className="text-2xl font-bold text-red-600">{stats.osRejeitadas}</div>
-            <p className="text-xs text-muted-foreground mt-1">Necessitam correção</p>
-          </CardContent>
-           </Link>
-        </Card>
+         <Link to="/app/aprovacoes">
+           <Card className="border-none shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between space-y-0 pb-2">
+                 <p className="text-sm font-medium text-muted-foreground">OS Críticas</p>
+                 <AlertCircle className="h-4 w-4 text-red-500" />
+               </div>
+               <div className="text-2xl font-bold text-red-600">{stats.osRejeitadas}</div>
+               <p className="text-xs text-muted-foreground mt-1">Necessitam correção</p>
+             </CardContent>
+           </Card>
+         </Link>
       </div>
 
        {isSupervisor && (

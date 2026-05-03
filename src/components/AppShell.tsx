@@ -41,9 +41,12 @@ export default function AppShell() {
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <Link to="/app" className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-sm bg-primary" />
-            <span className="text-sm font-medium tracking-tight">Energia · Operações</span>
+          <Link to="/app" className="flex items-center gap-2.5">
+            <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain" />
+            <div className="flex flex-col">
+              <span className="text-xs font-bold leading-none tracking-tight">Energia</span>
+              <span className="text-[10px] font-medium leading-none text-muted-foreground uppercase tracking-widest">Operações</span>
+            </div>
           </Link>
         </div>
         <div className="flex items-center gap-3">

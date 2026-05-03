@@ -80,7 +80,10 @@ export default function Login() {
         <p className="mb-6 text-sm text-muted-foreground">
           {mode === "login" ? "Use suas credenciais corporativas." : "Defina suas credenciais de acesso."}
         </p>
-        <form onSubmit={submit} className="space-y-4">
+         <form onSubmit={submit} className="space-y-4">
+           <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+             Dica: Para todas as contas de teste abaixo, a senha é <span className="font-bold">Energia123!</span>
+           </div>
           {mode === "signup" && (
             <div className="space-y-1.5">
               <Label htmlFor="nome">Nome completo</Label>

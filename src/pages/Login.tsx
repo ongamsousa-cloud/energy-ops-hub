@@ -14,7 +14,33 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
-  const [loading, setLoading] = useState(false);
+   const [loading, setLoading] = useState(false);
+ 
+   const testAccounts = [
+     { role: "Admin", email: "admin@teste.com", desc: "Acesso total" },
+     { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
+     { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
+     { role: "Campo", email: "campo@teste.com", desc: "Lançamentos" },
+     { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
+     { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+   ];
+ 
+   const quickLogin = async (email: string) => {
+     setEmail(email);
+     setPassword("senha123");
+     setMode("login");
+     // We'll let the user click submit or we can trigger it
+     // Triggering directly for convenience
+     setLoading(true);
+     try {
+       const { error } = await supabase.auth.signInWithPassword({ email, password: "senha123" });
+       if (error) throw error;
+       toast.success("Bem-vindo");
+       nav("/app");
+     } catch (e: any) {
+       toast.error(e.message ?? "Erro ao autenticar");
+     } finally { setLoading(false); }
+   };
 
   useEffect(() => { if (user) nav("/app", { replace: true }); }, [user, nav]);
 
@@ -79,12 +105,28 @@ export default function Login() {
             {loading ? "Aguarde…" : mode === "login" ? "Entrar" : "Criar conta"}
           </Button>
         </form>
-        <button
-          onClick={() => setMode(mode === "login" ? "signup" : "login")}
-          className="mt-4 w-full text-center text-xs text-muted-foreground hover:text-foreground"
-        >
-          {mode === "login" ? "Não tem conta? Criar" : "Já tem conta? Entrar"}
-        </button>
+         <div className="mt-8 pt-6 border-t border-border">
+           <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Contas de Teste</div>
+           <div className="grid grid-cols-2 gap-2">
+             {testAccounts.map((acc) => (
+               <button
+                 key={acc.role}
+                 onClick={() => quickLogin(acc.email)}
+                 className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
+               >
+                 <span className="text-[11px] font-semibold">{acc.role}</span>
+                 <span className="text-[9px] text-muted-foreground">{acc.desc}</span>
+               </button>
+             ))}
+           </div>
+         </div>
+ 
+         <button
+           onClick={() => setMode(mode === "login" ? "signup" : "login")}
+           className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+         >
+           {mode === "login" ? "Não tem conta? Criar" : "Já tem conta? Entrar"}
+         </button>
       </div>
     </div>
   );

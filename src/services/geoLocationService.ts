@@ -39,11 +39,15 @@
      const location = await this.capturarLocalizacaoAtual();
      if (!location) return false;
  
+     const { data: { user } } = await supabase.auth.getUser();
+     if (!user) return false;
+ 
      const { error } = await supabase.from("service_order_history").insert({
        service_order_id: serviceOrderId,
+       user_id: user.id,
        action: `Captura de Localização: ${stage}`,
-       gps_latitude: location.latitude,
-       gps_longitude: location.longitude,
+       gps_lat: location.latitude,
+       gps_lng: location.longitude,
        metadata: { accuracy: location.accuracy, stage },
      });
  

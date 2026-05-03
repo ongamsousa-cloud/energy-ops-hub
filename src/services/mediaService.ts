@@ -41,8 +41,8 @@
          file_size: file.size,
          description,
          stage,
-         gps_latitude: location?.latitude,
-         gps_longitude: location?.longitude,
+         gps_lat: location?.latitude,
+         gps_lng: location?.longitude,
        });
  
        if (dbError) throw dbError;

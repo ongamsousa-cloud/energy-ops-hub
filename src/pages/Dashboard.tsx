@@ -25,25 +25,50 @@
  
      (async () => {
        setLoading(true);
-        const umdQuery = supabase.from("ordens_servico").select("total_umd_aprovada, total_umd, operational_status, status");
-        const statusQuery = supabase.from("ordens_servico").select("status, operational_status");
+        const umdQuery = supabase.from("ordens_servico").select("total_umd_aprovada, total_umd, status");
+        const statusQuery = supabase.from("ordens_servico").select("status");
  
        if (isCampo) {
          umdQuery.eq("profissional_id", user.id);
          statusQuery.eq("profissional_id", user.id);
        }
+        
+        if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) {
+          umdQuery.eq("assigned_supervisor_id", user.id);
+          statusQuery.eq("assigned_supervisor_id", user.id);
+        }
  
         const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes] = await Promise.all([
          supabase.from("obras").select("id"),
          supabase.from("obras").select("id").eq("status", "execucao"),
-         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).eq("status", "reprovada"),
-         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).eq("status", "aprovada"),
-         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).in("status", ["aguardando_revisao", "em_revisao", "corrigida"]),
+          (() => {
+            let q = supabase.from("ordens_servico").select("id").eq("status", "reprovada");
+            if (isCampo) q = q.eq("profissional_id", user.id);
+            if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
+            return q;
+          })(),
+          (() => {
+            let q = supabase.from("ordens_servico").select("id").eq("status", "aprovada");
+            if (isCampo) q = q.eq("profissional_id", user.id);
+            if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
+            return q;
+          })(),
+          (() => {
+            let q = supabase.from("ordens_servico").select("id").in("status", ["aguardando_revisao", "em_revisao", "corrigida"]);
+            if (isCampo) q = q.eq("profissional_id", user.id);
+            if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
+            return q;
+          })(),
          umdQuery,
          supabase.from("profiles").select("id").eq("ativo", true),
          supabase.from("equipes").select("id").eq("ativo", true),
          statusQuery,
-          supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada").order("fim_em"),
+           (() => {
+             let q = supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada");
+             if (isCampo) q = q.eq("profissional_id", user.id);
+             if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
+             return q.order("fim_em");
+           })(),
           supabase.from("os_audit_logs").select("*, profile:profiles(nome), ordens_servico(numero)").order("created_at", { ascending: false }).limit(5),
         ]);
         setAuditHistory(auditRes.data ?? []);

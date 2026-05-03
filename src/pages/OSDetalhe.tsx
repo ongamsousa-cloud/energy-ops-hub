@@ -179,21 +179,36 @@ export default function OSDetalhe() {
      const obs = prompt("Comentário de aprovação (opcional):") || "";
      await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
      await supabase.from("ordens_servico").update({ status: "aprovada", aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-     await registrarAuditoria("aprovada", obs);
-     toast.success("OS aprovada"); load();
-   }
-   async function reprovar() {
-     const motivo = prompt("Motivo da reprovação:"); if (!motivo) return;
-     await supabase.from("ordens_servico").update({ status: "reprovada", motivo_reprovacao: motivo, aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-     await registrarAuditoria("reprovada", motivo);
-     toast.success("OS reprovada"); load();
-   }
-   async function correcao() {
-     const obs = prompt("Observação para correção:"); if (!obs) return;
-     await supabase.from("ordens_servico").update({ status: "correcao_solicitada", observacao_supervisor: obs }).eq("id", id);
-     await registrarAuditoria("correcao_solicitada", obs);
-     toast.success("Correção solicitada"); load();
-   }
+    await registrarAuditoria("aprovada", obs);
+    toast.success("OS aprovada"); load();
+  }
+
+  const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
+    open: false, type: null, comment: "" 
+  });
+
+  function openReview(type: "reprovar" | "correcao") {
+    setRevModal({ open: true, type, comment: "" });
+  }
+
+  async function handleReview() {
+    if (!revModal.comment && revModal.type === "reprovar") return toast.error("Motivo é obrigatório");
+    const status = revModal.type === "reprovar" ? "reprovada" : "correcao_solicitada";
+    const update: any = { status };
+    if (revModal.type === "reprovar") {
+      update.motivo_reprovacao = revModal.comment;
+      update.aprovado_por = user!.id;
+      update.aprovado_em = new Date().toISOString();
+    } else {
+      update.observacao_supervisor = revModal.comment;
+    }
+    const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
+    if (error) return toast.error(error.message);
+    await registrarAuditoria(status, revModal.comment);
+    toast.success(revModal.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+    setRevModal({ open: false, type: null, comment: "" });
+    load();
+  }
 
   if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
@@ -467,12 +482,18 @@ export default function OSDetalhe() {
              Registrar Chegada ao Local
            </Button>
          )}
-        {canApprove && ["aguardando_revisao","corrigida","em_revisao"].includes(os.status) && (
-          <>
-            <Button onClick={aprovar} className="bg-success text-success-foreground hover:bg-success/90">Aprovar</Button>
-            <Button onClick={correcao} variant="outline">Solicitar correção</Button>
-            <Button onClick={reprovar} variant="destructive">Reprovar</Button>
-          </>
+        {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={aprovar} className="gap-1.5 bg-green-600 hover:bg-green-700">
+              <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+              <History className="h-3.5 w-3.5" /> Solicitar Correção
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+              <XCircle className="h-3.5 w-3.5" /> Reprovar
+            </Button>
+          </div>
         )}
         <Button variant="ghost" onClick={()=>nav(-1)}>Voltar</Button>
       </div>

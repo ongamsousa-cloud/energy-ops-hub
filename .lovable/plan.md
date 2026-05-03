@@ -1,71 +1,65 @@
 
-# Auditoria honesta dos dashboards e plano de correção
+## Objetivo
 
-Antes de prometer "tudo refeito", aqui está o que está REALMENTE quebrado hoje no código (verificado linha a linha) e o que será corrigido.
+Adicionar três fluxos faltantes ao sistema:
 
-## Diagnóstico (problemas confirmados)
+1. **Cadastro de novo usuário com aprovação do administrador**
+2. **Reset de senha por email**
+3. **Botão "Baixar aplicativo" (instalação PWA)**
 
-### Críticos (quebram o sistema)
-1. `src/components/dashboards/AuditorDashboard.tsx` — JSX escrito FORA do `return`, antes da declaração de `dataPie`. O arquivo não compila quando o auditor entra. Por isso o dashboard do auditor "não existe" na prática.
-2. `src/App.tsx` — `FinanceiroOrdens` e `FinanceiroMateriais` são importados mas **nenhuma rota** está registrada. Qualquer link para `/app/financeiro/ordens` ou `/app/financeiro/materiais` cai em 404.
+---
 
-### Dashboard do Técnico (CampoDashboard)
-3. Não há botão de foto/vídeo no próprio dashboard. O técnico precisa entrar numa OS, achar a aba "Evidências" e só lá vê os botões. Vou adicionar uma ação rápida de **captura de foto/vídeo direto do dashboard**, ligada à OS ativa do técnico.
-4. Cards mostram `osAbertas` que vem hardcoded como `0` em `Dashboard.tsx` (linha 98). Vou calcular de verdade (status `iniciada` + `em_andamento` do técnico logado).
-5. Listagem "Minhas Atividades Recentes" só mostra OS criadas — não filtra por status que o técnico aceitou. Vou separar **"OS aceitas/em execução"** de **"aguardando aceite"**.
+## 1. Cadastro com aprovação do administrador
 
-### Dashboard do Gestor/Supervisor (GestorDashboard)
-6. Card "Status das Equipes" usa o mesmo número (`osPend`) em duas linhas diferentes ("Em execução" e "Aguardando validação"). Dado duplicado/falso.
-7. "Em deslocamento" mostra `osAbertas` que é sempre 0.
-8. "Alertas Operacionais" tem dois alertas **escritos no código** ("OS #10293", "OS #10442"). Vou trocar por dados reais de `operational_alerts` (tabela já existe).
+A tabela `profiles` já tem o campo `ativo` (boolean). Vamos usá-lo como flag de aprovação.
 
-### Dashboard do Admin (AdminDashboard)
-9. "Crescimento de +2% este mês" e "Produtividade em alta" são strings fixas — vou calcular variação real comparando 30 dias atuais vs 30 dias anteriores.
+**Banco (migration)**:
+- Alterar default de `profiles.ativo` para `false` (novos cadastros nascem pendentes).
+- Atualizar a função `handle_new_user` para criar o perfil com `ativo = false` e **NÃO** atribuir role automaticamente (o admin define a role ao aprovar). Remover/ajustar `handle_new_user_role` para só inserir role se o admin já existir aprovando.
+- Política RLS: admin pode listar/atualizar todos os perfis pendentes.
 
-### Dashboard Financeiro (FinanceiroDashboard)
-10. "Previsão R$" usa `umd * 12.5` chumbado. Vou ler de `financial_rules` (tabela existe) o valor unitário do UMD; se não houver, mostrar "—" em vez de mentir.
-11. "Divergências: 0" hardcoded. Vou contar `financial_order_records` com `financial_status = 'divergente'`.
-12. Cards usam `stats.umd` global em vez de somar `financial_order_records.approved_value`.
+**Frontend**:
+- `src/pages/Login.tsx`: já tem signup. Após cadastro, mostrar mensagem "Cadastro enviado. Aguarde aprovação do administrador." e bloquear login enquanto `ativo = false`.
+- `src/lib/auth.tsx`: no `loadUserData`, se `profile.ativo === false`, fazer signOut e exibir aviso "Conta aguardando aprovação".
+- Nova página `src/pages/AprovacoesUsuarios.tsx` (rota `/app/usuarios/aprovacoes`, role admin):
+  - Lista perfis com `ativo = false`.
+  - Botões "Aprovar" (define role escolhida via select + marca `ativo = true`) e "Rejeitar" (deleta o perfil).
+- Adicionar item no menu lateral (`AppShell.tsx`) visível só para admin: "Aprovações de Usuários".
 
-### Dashboard do Auditor
-13. Reescrever o arquivo do zero (está sintaticamente quebrado). Conectar a `audit_cases`, `audit_findings` e `os_audit_logs` reais (números de casos abertos, achados por severidade, fila de revisão).
+## 2. Reset de senha
 
-### Mídia / Evidências (técnico)
-14. Bucket `os-evidences` está sem `file_size_limit` — usuário pediu até 1 GB. Vou definir `1073741824`.
-15. Não há policy impedindo delete em `os_evidences` (a regra do usuário: nunca apagar). Vou adicionar política RLS bloqueando DELETE para todos os roles e usar coluna `deleted_at` apenas como soft-flag para auditor (sem remover storage).
-16. Fluxo de upload em `OSDetalhe` já existe mas não captura GPS de forma síncrona com a foto, e não mostra progresso para vídeos grandes. Vou adicionar: indicador de progresso, exigência de GPS antes do envio quando `atividade.exige_localizacao`.
+**Frontend**:
+- Em `src/pages/Login.tsx`: link "Esqueci minha senha" abre dialog para digitar email e chama `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`.
+- Nova página pública `src/pages/ResetPassword.tsx` (rota `/reset-password`):
+  - Detecta `type=recovery` no hash, mostra formulário de nova senha, chama `supabase.auth.updateUser({ password })` e redireciona para `/login`.
+- Registrar a rota em `src/App.tsx` fora do `ProtectedRoute`.
 
-## O que vai ser feito (ordem de execução)
+Os emails de reset usarão o template padrão da Lovable Cloud (sem necessidade de domínio customizado).
 
-1. **Corrigir build:** reescrever `AuditorDashboard.tsx` com estrutura JSX válida e dados reais.
-2. **Registrar rotas faltantes** (`financeiro/ordens`, `financeiro/materiais`) com proteção por role.
-3. **Reescrever `Dashboard.tsx`** para calcular `osAbertas`, variação mensal de UMD, divergências, alertas reais — uma única query consolidada por role.
-4. **CampoDashboard:** adicionar bloco "Ação rápida de campo" com botões nativos `<input capture="environment">` para foto e vídeo, ligados à OS em execução do técnico (se houver). Separar listas "Em execução" vs "Aguardando aceite".
-5. **GestorDashboard:** trocar "Status das Equipes" e "Alertas Operacionais" por dados reais (`operational_alerts` + contagens corretas por status).
-6. **AdminDashboard:** calcular % real de crescimento (mês atual vs anterior) e remover textos fixos.
-7. **FinanceiroDashboard:** ler `financial_rules` para valor do UMD; contar divergências de `financial_order_records`; somar `approved_value` em vez de `total_umd`.
-8. **AuditorDashboard:** cards de casos abertos / achados por severidade / OS aguardando auditoria; lista das últimas auditorias reais.
-9. **Migration:**
-   - `update storage.buckets set file_size_limit = 1073741824 where id = 'os-evidences';`
-   - Policy `revoke delete` em `os_evidences` para todos.
-10. **OSDetalhe (upload):** validar GPS quando exigido, mostrar barra de progresso para arquivos > 10 MB, bloquear botão durante upload.
+## 3. Botão "Baixar aplicativo" (PWA)
 
-## Estrutura técnica resumida
+O projeto já tem `public/manifest.webmanifest`, `public/sw.js` e `src/sw-register.ts` — está como PWA instalável.
 
-```text
-Dashboard.tsx
- └─ buildStatsForRole(role, userId)
-     ├─ campo:    OSs do user, mídia recente, OS ativa
-     ├─ supervisor: OSs da equipe + alertas
-     ├─ gestor:   tudo + variação mensal
-     ├─ financeiro: financial_order_records + financial_rules
-     └─ auditor:  audit_cases + findings + logs
-```
+**Frontend**:
+- Novo componente `src/components/InstallAppButton.tsx`:
+  - Captura o evento `beforeinstallprompt` e armazena.
+  - Renderiza botão "Baixar aplicativo" que dispara o prompt nativo.
+  - No iOS Safari (sem prompt), abre dialog explicando "Compartilhar → Adicionar à Tela de Início".
+  - Esconde o botão se já estiver instalado (`display-mode: standalone`).
+- Inserir o botão em:
+  - `src/pages/Login.tsx` (rodapé, sempre visível).
+  - `src/components/AppShell.tsx` (header, ícone de download).
 
-Não vou alterar visual (cores/animações já agradam) — só substituir dados falsos por reais e consertar o que está quebrado.
+## Resumo de arquivos
 
-## Fora do escopo desta rodada
-- Reescrever totalmente o sistema de mensageria entre roles (já funciona via `os_messages` e `conversations`).
-- Implementar exportação CSV/PDF de relatórios (já tem página `Relatorios.tsx` que precisa de auditoria separada).
+**Criar**
+- `supabase/migrations/<timestamp>_user_approval.sql`
+- `src/pages/ResetPassword.tsx`
+- `src/pages/AprovacoesUsuarios.tsx`
+- `src/components/InstallAppButton.tsx`
 
-Posso prosseguir?
+**Editar**
+- `src/App.tsx` (rota `/reset-password` e `/app/usuarios/aprovacoes`)
+- `src/pages/Login.tsx` (link esqueci senha + mensagem pós-cadastro + botão instalar)
+- `src/lib/auth.tsx` (bloquear login de perfis não aprovados)
+- `src/components/AppShell.tsx` (item de menu admin + botão instalar no header)

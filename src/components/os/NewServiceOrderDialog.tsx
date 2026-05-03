@@ -31,9 +31,11 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const { user, profile, hasRole } = useAuth();
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
-  const [atividades, setAtividades] = useState<any[]>([]);
-  const [categorias, setCategorias] = useState<any[]>([]);
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
+   const [atividades, setAtividades] = useState<any[]>([]);
+   const [categorias, setCategorias] = useState<any[]>([]);
+   const [servicos, setServicos] = useState<any[]>([]);
+   const [selectedServicoId, setSelectedServicoId] = useState<string>("");
+   const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
   const [equipes, setEquipes] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
@@ -59,25 +61,31 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }
   }, [open, initialObraId]);
 
-  async function fetchInitialData() {
-    const [resObras, resAtividades, resCats, resGestores, resEquipes] = await Promise.all([
-      supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
-      supabase.from("atividades").select("*, categoria:categorias(nome)").eq("ativo", true).order("codigo_item"),
-      supabase.from("categorias").select("*").order("nome"),
-      supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
-      supabase.from("equipes").select("id, nome").order("nome")
-    ]);
-
-    setObras(resObras.data ?? []);
-    setAtividades(resAtividades.data ?? []);
-    setCategorias(resCats.data ?? []);
-    setGestores(resGestores.data ?? []);
-    setEquipes(resEquipes.data ?? []);
-    
-    if (resGestores.data?.length === 1) {
-      setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
-    }
-  }
+   async function fetchInitialData() {
+     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes] = await Promise.all([
+       supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
+       supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
+       supabase.from("categorias").select("*").order("nome"),
+       supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
+       supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
+       supabase.from("equipes").select("id, nome").order("nome")
+     ]);
+ 
+     setObras(resObras.data ?? []);
+     setAtividades(resAtividades.data ?? []);
+     setCategorias(resCats.data ?? []);
+     setServicos(resServicos.data ?? []);
+     setGestores(resGestores.data ?? []);
+     setEquipes(resEquipes.data ?? []);
+     
+     if (resServicos.data?.length) {
+       setSelectedServicoId(resServicos.data[0].id);
+     }
+ 
+     if (resGestores.data?.length === 1) {
+       setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
+     }
+   }
 
   function addActivity(activity: any) {
     if (formData.itens.some(i => i.id === activity.id)) {
@@ -105,27 +113,28 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
-  async function handleSave() {
-    if (!formData.obraId) return toast.error("Selecione a obra");
-    if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
-    
-    setBusy(true);
-    try {
-      const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
-        obra_id: formData.obraId,
-        profissional_id: user!.id,
-        assigned_manager_id: formData.gestorId || null,
-        equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-        status: "iniciada",
-        operational_status: "pendente",
-        prioridade: formData.prioridade,
-        data_agendada: formData.data_agendada,
-        hora_agendada: formData.hora_agendada,
-        observacoes: formData.observacoes,
-        created_by: user!.id,
-      }).select("id").single();
-
-      if (osError) throw osError;
+   async function handleSave() {
+     if (!formData.obraId) return toast.error("Selecione a obra");
+     if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
+     
+     setBusy(true);
+     try {
+       const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
+         obra_id: formData.obraId,
+         servico_id: selectedServicoId || null,
+         profissional_id: user!.id,
+         assigned_manager_id: formData.gestorId || null,
+         equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
+         status: "iniciada",
+         operational_status: "pendente",
+         prioridade: formData.prioridade,
+         data_agendada: formData.data_agendada,
+         hora_agendada: formData.hora_agendada,
+         observacoes: formData.observacoes,
+         created_by: user!.id,
+       }).select("id").single();
+ 
+       if (osError) throw osError;
 
       const osAtividades = formData.itens.map(item => ({
         os_id: os.id,

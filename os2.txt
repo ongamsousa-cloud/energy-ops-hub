@@ -1,0 +1,341 @@
+      {items.length === 0 ? (
+        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
+      ) : (
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
+            </thead>
+            <tbody>
+              {items.map((i)=>(
+                <tr key={i.id} className="border-b border-border last:border-0">
+                  <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
+                  <td className="px-3 py-2">{i.atividade?.descricao}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
+                  <td className="px-3 py-2">{i.unidade}</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right">
+                    {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+       <Tabs defaultValue="atividades" className="mt-8">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
+            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
+            <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+            <TabsTrigger value="auditoria">Histórico</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="atividades" className="mt-4">
+            <div className="flex items-end justify-between mb-3">
+              <h2 className="text-sm font-medium">Lançamentos realizados</h2>
+              {canEdit && (
+                <Dialog open={add} onOpenChange={setAdd}>
+                  <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
+                    <div className="grid gap-3">
+                      <div>
+                        <Label>Categoria</Label>
+                        <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
+                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                          <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Atividade</Label>
+                        <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
+                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                          <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
+                          <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
+                        </div>
+                        <div>
+                          <Label>UMD calculada</Label>
+                          <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
+                        </div>
+                      </div>
+                      <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
+                      <Button onClick={addItem}>Salvar lançamento</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+            {items.length === 0 ? (
+              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
+            ) : (
+              <div className="overflow-hidden rounded-md border border-border bg-card">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
+                  </thead>
+                  <tbody>
+                    {items.map((i)=>(
+                      <tr key={i.id} className="border-b border-border last:border-0">
+                        <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
+                        <td className="px-3 py-2">{i.atividade?.descricao}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
+                        <td className="px-3 py-2">{i.unidade}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right">
+                          {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="comunicacao" className="mt-4">
+            <Card className="p-4 border-none shadow-none bg-muted/20 h-[400px] flex flex-col">
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+                {messages.length === 0 ? (
+                  <div className="text-center text-xs text-muted-foreground mt-10">Inicie uma conversa operacional sobre esta OS.</div>
+                ) : (
+                  messages.map(m => (
+                    <div key={m.id} className={cn("max-w-[80%] rounded-lg p-2 text-xs shadow-sm", m.sender_id === user?.id ? "bg-primary text-primary-foreground ml-auto" : "bg-card border border-border mr-auto")}>
+                      <div className="font-bold mb-0.5">{m.sender?.nome || "Usuário"}</div>
+                      <div>{m.content}</div>
+                      <div className="text-[10px] opacity-70 mt-1">{new Date(m.created_at).toLocaleTimeString()}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="Mensagem para supervisor/gestor..." value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} className="text-xs h-9 bg-background" />
+                <Button size="sm" onClick={sendMessage}><Send className="h-3.5 w-3.5" /></Button>
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="evidencias" className="mt-4">
+            <div className="flex flex-col gap-4 mb-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium">Evidências do Campo</h2>
+                <span className="text-[10px] text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded-full">{evid.length} arquivos</span>
+              </div>
+              
+              {canEdit && !mediaUpload.previewUrl && (
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row">
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm active:scale-95">
+                    <Camera className="h-5 w-5" strokeWidth={2}/> Tirar Foto
+                    <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                  </label>
+                  
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors shadow-sm active:scale-95">
+                    <Video className="h-5 w-5" strokeWidth={2}/> Gravar Vídeo
+                    <input type="file" accept="video/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                  </label>
+
+                  <label className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors shadow-sm active:scale-95 sm:flex-none">
+                    <Plus className="h-5 w-5" strokeWidth={2}/> Arquivo
+                    <input type="file" accept="image/*,video/*" className="hidden" onChange={handleFileSelect} />
+                  </label>
+                </div>
+              )}
+
+              {mediaUpload.previewUrl && (
+                <Card className="p-4 border-primary/20 bg-primary/5 overflow-hidden">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="relative h-40 w-full sm:w-40 bg-black rounded-md overflow-hidden shrink-0">
+                      {mediaUpload.file?.type.startsWith('video/') ? (
+                        <video src={mediaUpload.previewUrl} className="h-full w-full object-contain" controls />
+                      ) : (
+                        <img src={mediaUpload.previewUrl} className="h-full w-full object-contain" alt="Preview" />
+                      )}
+                    </div>
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold truncate max-w-[200px]">{mediaUpload.file?.name}</p>
+                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setMediaUpload({ file: null, previewUrl: null, uploading: false, error: null })}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground uppercase">{mediaUpload.file?.type} · {(mediaUpload.file!.size / 1024 / 1024).toFixed(2)} MB</p>
+                        {mediaUpload.error && (
+                          <div className="mt-2 p-2 rounded bg-destructive/10 text-[11px] text-destructive flex items-center gap-1.5 font-medium">
+                            <AlertCircle className="h-3.5 w-3.5" /> {mediaUpload.error}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 mt-4 sm:mt-0">
+                        <Button 
+                          className="flex-1 sm:flex-none font-bold" 
+                          onClick={executeUpload} 
+                          disabled={mediaUpload.uploading}
+                        >
+                          {mediaUpload.uploading ? (
+                            <><RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Enviando...</>
+                          ) : mediaUpload.error ? (
+                            <><RefreshCw className="mr-2 h-4 w-4" /> Retentar Upload</>
+                          ) : (
+                            <><CheckCircle className="mr-2 h-4 w-4" /> Confirmar e Enviar</>
+                          )}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 sm:flex-none" 
+                          onClick={() => setMediaUpload({ file: null, previewUrl: null, uploading: false, error: null })}
+                          disabled={mediaUpload.uploading}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+            </div>
+
+           <div className="space-y-4">
+             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-2 flex items-center gap-2">
+               <Eye className="h-3 w-3" /> Galeria de Evidências
+             </h3>
+             {evid.length === 0 ? (
+               <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground bg-muted/10">
+                 <div className="flex flex-col items-center gap-2">
+                   <Camera className="h-8 w-8 opacity-20" />
+                   <p>Nenhuma evidência capturada para esta OS.</p>
+                 </div>
+               </div>
+             ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+                  {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
+                </div>
+             )}
+           </div>
+          </TabsContent>
+
+         <TabsContent value="auditoria" className="mt-4">
+           <div className="space-y-4">
+             {auditLogs.length === 0 ? (
+               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem histórico de auditoria.</div>
+             ) : (
+               <div className="relative pl-6 border-l border-border space-y-6">
+                 {auditLogs.map((log) => (
+                   <div key={log.id} className="relative">
+                     <div className="absolute -left-[31px] bg-card border border-border rounded-full p-1">
+                       {log.status_novo === 'aprovada' ? <CheckCircle className="h-4 w-4 text-success" /> : 
+                        log.status_novo === 'reprovada' ? <XCircle className="h-4 w-4 text-destructive" /> : 
+                        <History className="h-4 w-4 text-muted-foreground" />}
+                     </div>
+                     <div className="bg-muted/30 rounded-lg p-3">
+                       <div className="flex justify-between items-start mb-1">
+                         <div className="text-xs font-semibold">
+                           {log.profile?.nome} alterou para <StatusBadge status={log.status_novo} />
+                         </div>
+                         <div className="text-[10px] text-muted-foreground">
+                           {new Date(log.created_at).toLocaleString('pt-BR')}
+                         </div>
+                       </div>
+                       {log.comentario && <p className="text-sm text-muted-foreground mt-2 italic">"{log.comentario}"</p>}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
+         </TabsContent>
+       </Tabs>
+
+      {/* Ações de fluxo */}
+       <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
+         {canEdit && os.status !== "aguardando_revisao" && (
+           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar}>
+             <CheckCircle className="mr-2 h-5 w-5" />
+             Finalizar e enviar para revisão
+           </Button>
+         )}
+         
+         {os.status === "iniciada" && isOwner && (
+           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+             const geo = await getGeo();
+             await supabase.from("ordens_servico").update({ 
+               operational_status: "chegou_ao_local",
+               status: "em_andamento",
+               inicio_atendimento: new Date().toISOString()
+             }).eq("id", id);
+             toast.success("Atendimento iniciado");
+             load();
+           }}>
+             Registrar Chegada ao Local
+           </Button>
+         )}
+        {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={aprovar} className="gap-1.5 bg-green-600 hover:bg-green-700">
+              <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+              <History className="h-3.5 w-3.5" /> Solicitar Correção
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+              <XCircle className="h-3.5 w-3.5" /> Reprovar
+            </Button>
+          </div>
+        )}
+        <Button variant="ghost" onClick={()=>nav(-1)}>Voltar</Button>
+      </div>
+
+      {os.motivo_reprovacao && (
+        <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <strong>Reprovada:</strong> {os.motivo_reprovacao}
+        </div>
+      )}
+      {os.observacao_supervisor && os.status === "correcao_solicitada" && (
+        <div className="mt-4 rounded-md border border-warning/30 bg-warning/5 p-3 text-sm text-warning">
+          <strong>Correção solicitada:</strong> {os.observacao_supervisor}
+        </div>
+      )}
+    </div>
+  );
+}
+
+   function EvImg({ ev }: { ev: any }) {
+     const [url, setUrl] = useState<string>("");
+     useEffect(() => {
+       supabase.storage.from("os-evidences").createSignedUrl(ev.url, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
+     }, [ev.url]);
+     
+     const isVideo = ev.tipo === "video";
+     
+     return (
+       <div className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+         {url ? (
+           isVideo ? (
+             <video src={url} className="h-full w-full object-cover" />
+           ) : (
+             <img src={url} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+           )
+         ) : null}
+         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+           <a href={url} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
+             <Download className="h-4 w-4" />
+           </a>
+           {ev.localizacao?.lat && (
+             <a href={`https://maps.google.com/?q=${ev.localizacao.lat},${ev.localizacao.lng}`} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
+               <MapPin className="h-4 w-4" />
+             </a>
+           )}
+         </div>
+         <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
+           <div className="text-[9px] text-white truncate">{ev.profile?.nome}</div>
+           <div className="text-[8px] text-white/70">{new Date(ev.created_at).toLocaleDateString()}</div>
+         </div>
+       </div>
+     );
+   }

@@ -82,26 +82,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const mockSignIn = async (email: string) => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.from("profiles").select("id, nome").eq("email", email).single();
-      if (error || !data) throw new Error("Usuário não encontrado no banco de dados.");
-
-      const mockData = {
-        user: { id: data.id, email, user_metadata: { nome: data.nome } } as any,
-      };
-      localStorage.setItem("lovable_mock_user", JSON.stringify(mockData));
-      setUser(mockData.user);
-      setIsMock(true);
-      await loadUserData(data.id);
-    } catch (e: any) {
-      console.error(e);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  };
+   const mockSignIn = async (email: string) => {
+     setLoading(true);
+     try {
+       // Tentar login real primeiro com a senha padrão de teste
+       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+         email,
+         password: "Energia123!",
+       });
+ 
+       if (authError) {
+         // Se falhar o login real (ex: usuário não existe no Auth), tenta o mock local
+         const { data, error } = await supabase.from("profiles").select("id, nome").eq("email", email).single();
+         if (error || !data) throw new Error("Usuário não encontrado no banco de dados.");
+ 
+         const mockData = {
+           user: { id: data.id, email, user_metadata: { nome: data.nome } } as any,
+         };
+         localStorage.setItem("lovable_mock_user", JSON.stringify(mockData));
+         setUser(mockData.user);
+         setIsMock(true);
+         await loadUserData(data.id);
+       } else {
+         // Login real funcionou
+         setUser(authData.user);
+         setIsMock(false);
+         localStorage.removeItem("lovable_mock_user");
+         await loadUserData(authData.user.id);
+       }
+     } catch (e: any) {
+       console.error(e);
+       throw e;
+     } finally {
+       setLoading(false);
+     }
+   };
 
   return (
     <Ctx.Provider value={{ user, session, roles, profile, loading, signOut, hasRole, mockSignIn }}>

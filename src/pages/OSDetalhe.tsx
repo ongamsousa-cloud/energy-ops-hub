@@ -12,15 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, Camera } from "lucide-react";
+ import { Plus, Trash2, MapPin, Camera, History, CheckCircle, XCircle, AlertCircle, Download } from "lucide-react";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function OSDetalhe() {
   const { id } = useParams();
   const nav = useNavigate();
   const { user, hasRole } = useAuth();
   const [os, setOS] = useState<any>(null);
-  const [items, setItems] = useState<any[]>([]);
-  const [evid, setEvid] = useState<any[]>([]);
+   const [items, setItems] = useState<any[]>([]);
+   const [evid, setEvid] = useState<any[]>([]);
+   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [cats, setCats] = useState<any[]>([]);
   const [atvs, setAtvs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
@@ -30,16 +32,18 @@ export default function OSDetalhe() {
   const canApprove = hasRole(["admin","gestor","supervisor"]);
   const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
 
-  const load = useCallback(async () => {
-    const { data: o } = await supabase.from("ordens_servico")
-      .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
-      .eq("id", id).maybeSingle();
-    setOS(o);
-    const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
-    setItems(it ?? []);
-    const { data: ev } = await supabase.from("evidencias").select("*").eq("os_id", id).order("created_at");
-    setEvid(ev ?? []);
-  }, [id]);
+   const load = useCallback(async () => {
+     const { data: o } = await supabase.from("ordens_servico")
+       .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
+       .eq("id", id).maybeSingle();
+     setOS(o);
+     const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
+     setItems(it ?? []);
+     const { data: ev } = await supabase.from("os_evidences").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at");
+     setEvid(ev ?? []);
+     const { data: logs } = await supabase.from("os_audit_logs").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at", { ascending: false });
+     setAuditLogs(logs ?? []);
+   }, [id]);
 
   useEffect(() => {
     load();
@@ -95,16 +99,25 @@ export default function OSDetalhe() {
     load();
   }
 
-  async function uploadFoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return;
-    const path = `${id}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("evidencias").upload(path, f, { contentType: f.type });
-    if (error) return toast.error(error.message);
-    await supabase.from("evidencias").insert({ os_id: id, storage_path: path, created_by: user!.id, tipo: "depois" });
-    e.target.value = "";
-    toast.success("Foto anexada");
-    load();
-  }
+   async function uploadEvidencia(e: React.ChangeEvent<HTMLInputElement>) {
+     const f = e.target.files?.[0]; if (!f) return;
+     const isVideo = f.type.startsWith("video/");
+     const path = `${id}/${crypto.randomUUID()}-${f.name}`;
+     const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
+     if (error) return toast.error(error.message);
+     const geo = await getGeo();
+     await supabase.from("os_evidences").insert({ 
+       os_id: id, 
+       url: path, 
+       user_id: user!.id, 
+       tipo: isVideo ? "video" : "foto",
+       localizacao: geo,
+       metadata: { size: f.size, name: f.name, type: f.type }
+     });
+     e.target.value = "";
+     toast.success("Evidência enviada");
+     load();
+   }
 
   async function finalizar() {
     if (!items.length) return toast.error("OS sem atividades");
@@ -117,21 +130,35 @@ export default function OSDetalhe() {
     load();
   }
 
-  async function aprovar() {
-    await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
-    await supabase.from("ordens_servico").update({ status: "aprovada", aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-    toast.success("OS aprovada"); load();
-  }
-  async function reprovar() {
-    const motivo = prompt("Motivo da reprovação:"); if (!motivo) return;
-    await supabase.from("ordens_servico").update({ status: "reprovada", motivo_reprovacao: motivo, aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-    toast.success("OS reprovada"); load();
-  }
-  async function correcao() {
-    const obs = prompt("Observação para correção:"); if (!obs) return;
-    await supabase.from("ordens_servico").update({ status: "correcao_solicitada", observacao_supervisor: obs }).eq("id", id);
-    toast.success("Correção solicitada"); load();
-  }
+   async function registrarAuditoria(statusNovo: string, comentario: string = "") {
+     await supabase.from("os_audit_logs").insert({
+       os_id: id,
+       user_id: user!.id,
+       status_anterior: os.status,
+       status_novo: statusNovo,
+       comentario
+     });
+   }
+
+   async function aprovar() {
+     const obs = prompt("Comentário de aprovação (opcional):") || "";
+     await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
+     await supabase.from("ordens_servico").update({ status: "aprovada", aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
+     await registrarAuditoria("aprovada", obs);
+     toast.success("OS aprovada"); load();
+   }
+   async function reprovar() {
+     const motivo = prompt("Motivo da reprovação:"); if (!motivo) return;
+     await supabase.from("ordens_servico").update({ status: "reprovada", motivo_reprovacao: motivo, aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
+     await registrarAuditoria("reprovada", motivo);
+     toast.success("OS reprovada"); load();
+   }
+   async function correcao() {
+     const obs = prompt("Observação para correção:"); if (!obs) return;
+     await supabase.from("ordens_servico").update({ status: "correcao_solicitada", observacao_supervisor: obs }).eq("id", id);
+     await registrarAuditoria("correcao_solicitada", obs);
+     toast.success("Correção solicitada"); load();
+   }
 
   if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
@@ -232,22 +259,131 @@ export default function OSDetalhe() {
       )}
 
       {/* Evidências */}
-      <div className="mt-8 mb-3 flex items-end justify-between">
-        <h2 className="text-sm font-medium">Evidências fotográficas</h2>
-        {canEdit && (
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs hover:bg-accent">
-            <Camera className="h-3.5 w-3.5" strokeWidth={1.5}/> Adicionar foto
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={uploadFoto} />
-          </label>
-        )}
-      </div>
-      {evid.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem fotos.</div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-          {evid.map((e)=>(<EvImg key={e.id} ev={e}/>))}
-        </div>
-      )}
+       <Tabs defaultValue="atividades" className="mt-8">
+         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
+           <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
+           <TabsTrigger value="evidencias">Evidências</TabsTrigger>
+           <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
+         </TabsList>
+         
+         <TabsContent value="atividades" className="mt-4">
+           {/* Conteúdo de Atividades moved from lines 169-232 */}
+           <div className="flex items-end justify-between mb-3">
+             <h2 className="text-sm font-medium">Lançamentos realizados</h2>
+             {canEdit && (
+               <Dialog open={add} onOpenChange={setAdd}>
+                 <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
+                 <DialogContent>
+                   <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
+                   <div className="grid gap-3">
+                     <div>
+                       <Label>Categoria</Label>
+                       <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
+                         <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                         <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
+                       </Select>
+                     </div>
+                     <div>
+                       <Label>Atividade</Label>
+                       <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
+                         <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                         <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
+                       </Select>
+                     </div>
+                     <div className="grid grid-cols-2 gap-3">
+                       <div>
+                         <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
+                         <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
+                       </div>
+                       <div>
+                         <Label>UMD calculada</Label>
+                         <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
+                       </div>
+                     </div>
+                     <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
+                     <Button onClick={addItem}>Salvar lançamento</Button>
+                   </div>
+                 </DialogContent>
+               </Dialog>
+             )}
+           </div>
+           {items.length === 0 ? (
+             <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
+           ) : (
+             <div className="overflow-hidden rounded-md border border-border bg-card">
+               <table className="w-full text-sm">
+                 <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                   <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
+                 </thead>
+                 <tbody>
+                   {items.map((i)=>(
+                     <tr key={i.id} className="border-b border-border last:border-0">
+                       <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
+                       <td className="px-3 py-2">{i.atividade?.descricao}</td>
+                       <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
+                       <td className="px-3 py-2">{i.unidade}</td>
+                       <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
+                       <td className="px-3 py-2 text-right">
+                         {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           )}
+         </TabsContent>
+
+         <TabsContent value="evidencias" className="mt-4">
+           <div className="flex items-end justify-between mb-3">
+             <h2 className="text-sm font-medium">Fotos e vídeos do campo</h2>
+             {canEdit && (
+               <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs hover:bg-accent transition-colors">
+                 <Camera className="h-3.5 w-3.5" strokeWidth={1.5}/> Enviar evidência
+                 <input type="file" accept="image/*,video/*" capture="environment" className="hidden" onChange={uploadEvidencia} />
+               </label>
+             )}
+           </div>
+           {evid.length === 0 ? (
+             <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem evidências registradas.</div>
+           ) : (
+             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+               {evid.map((e)=>(<EvImg key={e.id} ev={e}/>))}
+             </div>
+           )}
+         </TabsContent>
+
+         <TabsContent value="auditoria" className="mt-4">
+           <div className="space-y-4">
+             {auditLogs.length === 0 ? (
+               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sem histórico de auditoria.</div>
+             ) : (
+               <div className="relative pl-6 border-l border-border space-y-6">
+                 {auditLogs.map((log) => (
+                   <div key={log.id} className="relative">
+                     <div className="absolute -left-[31px] bg-card border border-border rounded-full p-1">
+                       {log.status_novo === 'aprovada' ? <CheckCircle className="h-4 w-4 text-success" /> : 
+                        log.status_novo === 'reprovada' ? <XCircle className="h-4 w-4 text-destructive" /> : 
+                        <History className="h-4 w-4 text-muted-foreground" />}
+                     </div>
+                     <div className="bg-muted/30 rounded-lg p-3">
+                       <div className="flex justify-between items-start mb-1">
+                         <div className="text-xs font-semibold">
+                           {log.profile?.nome} alterou para <StatusBadge status={log.status_novo} />
+                         </div>
+                         <div className="text-[10px] text-muted-foreground">
+                           {new Date(log.created_at).toLocaleString('pt-BR')}
+                         </div>
+                       </div>
+                       {log.comentario && <p className="text-sm text-muted-foreground mt-2 italic">"{log.comentario}"</p>}
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </div>
+         </TabsContent>
+       </Tabs>
 
       {/* Ações de fluxo */}
       <div className="mt-8 flex flex-wrap gap-2">
@@ -278,14 +414,37 @@ export default function OSDetalhe() {
   );
 }
 
-function EvImg({ ev }: { ev: any }) {
-  const [url, setUrl] = useState<string>("");
-  useEffect(() => {
-    supabase.storage.from("evidencias").createSignedUrl(ev.storage_path, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
-  }, [ev.storage_path]);
-  return (
-    <a href={url} target="_blank" className="block aspect-square overflow-hidden rounded border border-border bg-muted">
-      {url && <img src={url} className="h-full w-full object-cover" />}
-    </a>
-  );
-}
+   function EvImg({ ev }: { ev: any }) {
+     const [url, setUrl] = useState<string>("");
+     useEffect(() => {
+       supabase.storage.from("os-evidences").createSignedUrl(ev.url, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
+     }, [ev.url]);
+     
+     const isVideo = ev.tipo === "video";
+     
+     return (
+       <div className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+         {url ? (
+           isVideo ? (
+             <video src={url} className="h-full w-full object-cover" />
+           ) : (
+             <img src={url} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+           )
+         ) : null}
+         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+           <a href={url} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
+             <Download className="h-4 w-4" />
+           </a>
+           {ev.localizacao?.lat && (
+             <a href={`https://maps.google.com/?q=${ev.localizacao.lat},${ev.localizacao.lng}`} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
+               <MapPin className="h-4 w-4" />
+             </a>
+           )}
+         </div>
+         <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
+           <div className="text-[9px] text-white truncate">{ev.profile?.nome}</div>
+           <div className="text-[8px] text-white/70">{new Date(ev.created_at).toLocaleDateString()}</div>
+         </div>
+       </div>
+     );
+   }

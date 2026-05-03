@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { Label } from "@/components/ui/label";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 
@@ -12,8 +13,9 @@ export default function Login() {
   const { user, mockSignIn } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [nome, setNome] = useState("");
+   const [password, setPassword] = useState("");
+   const [nome, setNome] = useState("");
+   const [selectedRole, setSelectedRole] = useState("campo");
    const [loading, setLoading] = useState(false);
  
    const testAccounts = [
@@ -48,13 +50,16 @@ export default function Login() {
         toast.success("Bem-vindo");
         nav("/app");
       } else {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { nome },
-          },
-        });
+         const { error } = await supabase.auth.signUp({
+           email, password,
+           options: {
+             emailRedirectTo: window.location.origin,
+             data: { 
+               nome,
+               role: selectedRole
+             },
+           },
+         });
         if (error) throw error;
         toast.success("Conta criada. Verifique seu email para confirmar.");
         setMode("login");
@@ -84,12 +89,31 @@ export default function Login() {
            <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
              Dica: Para todas as contas de teste abaixo, a senha é <span className="font-bold">Energia123!</span>
            </div>
-          {mode === "signup" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="nome">Nome completo</Label>
-              <Input id="nome" value={nome} onChange={(e)=>setNome(e.target.value)} required />
-            </div>
-          )}
+           {mode === "signup" && (
+             <>
+               <div className="space-y-1.5">
+                 <Label htmlFor="nome">Nome completo</Label>
+                 <Input id="nome" value={nome} onChange={(e)=>setNome(e.target.value)} required />
+               </div>
+               <div className="space-y-1.5">
+                 <Label>Função / Perfil</Label>
+                 <Select value={selectedRole} onValueChange={setSelectedRole}>
+                   <SelectTrigger>
+                     <SelectValue placeholder="Selecione uma função" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="admin">Administrador</SelectItem>
+                     <SelectItem value="gestor">Gestor</SelectItem>
+                     <SelectItem value="supervisor">Supervisor</SelectItem>
+                     <SelectItem value="campo">Técnico de Campo</SelectItem>
+                     <SelectItem value="financeiro">Financeiro</SelectItem>
+                     <SelectItem value="auditor">Auditor</SelectItem>
+                   </SelectContent>
+                 </Select>
+                 <p className="text-[10px] text-muted-foreground">O perfil selecionado definirá seus acessos iniciais.</p>
+               </div>
+             </>
+           )}
           <div className="space-y-1.5">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required autoComplete="email" />

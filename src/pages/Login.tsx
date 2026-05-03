@@ -23,15 +23,14 @@ export default function Login() {
    const [forgotEmail, setForgotEmail] = useState("");
    const [forgotLoading, setForgotLoading] = useState(false);
  
-   const testAccounts = [
-     { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
-     { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
-     { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
-     { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
-     { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
-     { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
-     { role: "Estoque", email: "estoque@energyops.demo", desc: "Almoxarifado" },
-   ];
+    const testAccounts = [
+      { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
+      { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
+      { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
+      { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
+      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
+      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+    ];
  
    const quickLogin = async (email: string) => {
      setLoading(true);
@@ -60,7 +59,12 @@ export default function Login() {
      } finally { setForgotLoading(false); }
    };
 
-  useEffect(() => { if (user) nav("/app", { replace: true }); }, [user, nav]);
+   useEffect(() => { 
+     if (user) {
+       const isEstoque = user.email === "estoque@energyops.demo";
+       nav(isEstoque ? "/estoque-app" : "/app", { replace: true });
+     }
+   }, [user, nav]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,9 +112,10 @@ export default function Login() {
           {mode === "login" ? "Use suas credenciais corporativas." : "Defina suas credenciais de acesso."}
         </p>
          <form onSubmit={submit} className="space-y-4">
-           <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-             Dica: Para todas as contas de teste abaixo, a senha é <span className="font-bold">Energia123!</span>
-           </div>
+            <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 space-y-1">
+              <div>Dica: Para todas as contas (incluindo Almoxarifado), a senha é <span className="font-bold">Energia123!</span></div>
+              <div className="opacity-70 font-medium">Conta Estoque: estoque@energyops.demo</div>
+            </div>
            {mode === "signup" && (
              <>
                <div className="space-y-1.5">
@@ -153,21 +158,37 @@ export default function Login() {
             </button>
           )}
         </form>
-         <div className="mt-8 pt-6 border-t border-border">
-           <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Contas de Teste</div>
-           <div className="grid grid-cols-2 gap-2">
-             {testAccounts.map((acc) => (
-               <button
-                 key={acc.role}
-                 onClick={() => quickLogin(acc.email)}
-                 className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
-               >
-                 <span className="text-[11px] font-semibold">{acc.role}</span>
-                 <span className="text-[9px] text-muted-foreground">{acc.desc}</span>
-               </button>
-             ))}
-           </div>
-         </div>
+          <div className="mt-8 pt-6 border-t border-border space-y-4">
+            <div className="rounded-lg border-2 border-orange-200 bg-orange-50/50 p-4 dark:border-orange-900/30 dark:bg-orange-900/10">
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Portal Especializado</div>
+              <button
+                onClick={() => quickLogin("estoque@energyops.demo")}
+                className="flex w-full items-center justify-between rounded-md bg-orange-600 p-3 text-white shadow-sm transition-all hover:bg-orange-700 active:scale-[0.98]"
+              >
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-sm font-bold">Estoque · Almoxarifado</span>
+                  <span className="text-[10px] opacity-90">Acesso direto ao centro de logística</span>
+                </div>
+                <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
+              </button>
+            </div>
+
+            <div>
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Painéis Operacionais</div>
+              <div className="grid grid-cols-2 gap-2">
+                {testAccounts.map((acc) => (
+                  <button
+                    key={acc.role}
+                    onClick={() => quickLogin(acc.email)}
+                    className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
+                  >
+                    <span className="text-[11px] font-semibold">{acc.role}</span>
+                    <span className="text-[9px] text-muted-foreground">{acc.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
  
          <button
            onClick={() => setMode(mode === "login" ? "signup" : "login")}

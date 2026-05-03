@@ -2877,6 +2877,32 @@ export type Database = {
         | "campo"
         | "financeiro"
         | "auditor"
+      audit_status:
+        | "Não auditada"
+        | "Pendente de auditoria"
+        | "Em auditoria"
+        | "Aprovada na auditoria"
+        | "Reprovada na auditoria"
+        | "Com ressalva"
+        | "Com inconsistência"
+        | "Em investigação"
+        | "Aguardando resposta"
+        | "Corrigida após auditoria"
+        | "Encerrada"
+      financial_status:
+        | "Sem impacto financeiro"
+        | "Aguardando análise financeira"
+        | "Em análise financeira"
+        | "Aprovada financeiramente"
+        | "Reprovada financeiramente"
+        | "Com divergência"
+        | "Aguardando correção operacional"
+        | "Faturável"
+        | "Não faturável"
+        | "Aguardando faturamento"
+        | "Faturada"
+        | "Cancelada financeiramente"
+        | "Em auditoria financeira"
       lancamento_status: "pendente" | "aprovado" | "reprovado" | "correcao"
       obra_status:
         | "aberta"
@@ -2887,6 +2913,26 @@ export type Database = {
         | "aguardando_aprovacao"
         | "concluida"
         | "cancelada"
+      operational_status:
+        | "Pendente"
+        | "Atribuída"
+        | "Em deslocamento"
+        | "Chegou ao local"
+        | "Em execução"
+        | "Execução pausada"
+        | "Não executada"
+        | "Aguardando validação"
+        | "Correção solicitada"
+        | "Reaberta"
+        | "Reprovada"
+        | "Aprovada"
+        | "Concluída"
+        | "Cancelada"
+        | "Crítica"
+        | "Em auditoria"
+        | "Aguardando exceção"
+        | "Exceção aprovada"
+        | "Exceção negada"
       os_audit_status:
         | "nao_auditada"
         | "pendente_auditoria"
@@ -3081,6 +3127,34 @@ export const Constants = {
         "financeiro",
         "auditor",
       ],
+      audit_status: [
+        "Não auditada",
+        "Pendente de auditoria",
+        "Em auditoria",
+        "Aprovada na auditoria",
+        "Reprovada na auditoria",
+        "Com ressalva",
+        "Com inconsistência",
+        "Em investigação",
+        "Aguardando resposta",
+        "Corrigida após auditoria",
+        "Encerrada",
+      ],
+      financial_status: [
+        "Sem impacto financeiro",
+        "Aguardando análise financeira",
+        "Em análise financeira",
+        "Aprovada financeiramente",
+        "Reprovada financeiramente",
+        "Com divergência",
+        "Aguardando correção operacional",
+        "Faturável",
+        "Não faturável",
+        "Aguardando faturamento",
+        "Faturada",
+        "Cancelada financeiramente",
+        "Em auditoria financeira",
+      ],
       lancamento_status: ["pendente", "aprovado", "reprovado", "correcao"],
       obra_status: [
         "aberta",
@@ -3091,6 +3165,27 @@ export const Constants = {
         "aguardando_aprovacao",
         "concluida",
         "cancelada",
+      ],
+      operational_status: [
+        "Pendente",
+        "Atribuída",
+        "Em deslocamento",
+        "Chegou ao local",
+        "Em execução",
+        "Execução pausada",
+        "Não executada",
+        "Aguardando validação",
+        "Correção solicitada",
+        "Reaberta",
+        "Reprovada",
+        "Aprovada",
+        "Concluída",
+        "Cancelada",
+        "Crítica",
+        "Em auditoria",
+        "Aguardando exceção",
+        "Exceção aprovada",
+        "Exceção negada",
       ],
       os_audit_status: [
         "nao_auditada",

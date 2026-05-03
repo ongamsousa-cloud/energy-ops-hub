@@ -137,6 +137,14 @@ export default function OSDetalhe() {
     load();
   }
 
+  async function sendMessage() {
+    if (!newMessage.trim()) return;
+    const { error } = await supabase.from("os_messages").insert({ os_id: id, sender_id: user!.id, content: newMessage });
+    if (error) return toast.error(error.message);
+    setNewMessage("");
+    load();
+  }
+
    async function uploadEvidencia(e: React.ChangeEvent<HTMLInputElement>, isCamera: boolean = false) {
      const f = e.target.files?.[0]; if (!f) return;
      toast.info("Processando arquivo...");

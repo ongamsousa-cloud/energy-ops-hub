@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft } from "lucide-react";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,7 +33,7 @@ export default function Mensagens() {
   const [contatos, setContatos] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
    const [openNew, setOpenNew] = useState(false);
-   const [selectedContact, setSelectedContact] = useState<Profile | null>(null);
+   const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');

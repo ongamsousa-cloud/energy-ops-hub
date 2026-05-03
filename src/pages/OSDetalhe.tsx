@@ -12,8 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download } from "lucide-react";
+ import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ import { cn } from "@/lib/utils";
 
 export default function OSDetalhe() {
   const { id } = useParams();
@@ -295,11 +296,12 @@ export default function OSDetalhe() {
 
       {/* Evidências */}
        <Tabs defaultValue="atividades" className="mt-8">
-         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-           <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
-           <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-           <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
-         </TabsList>
+          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+            <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
+            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
+            <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+            <TabsTrigger value="auditoria">Histórico</TabsTrigger>
+          </TabsList>
          
          <TabsContent value="atividades" className="mt-4">
            {/* Conteúdo de Atividades moved from lines 169-232 */}

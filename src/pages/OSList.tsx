@@ -24,7 +24,8 @@ export default function OSList() {
     if (!user) return;
 
      // Técnicos (campo) só veem suas próprias OS
-     const isTechnician = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
+      const isTechnician = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
+      const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
     
     let query = supabase.from("ordens_servico")
        .select(`
@@ -33,8 +34,10 @@ export default function OSList() {
          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
        `);
 
-     if (isTechnician) {
+      if (isTechnician) {
       query = query.eq("profissional_id", user.id);
+      } else if (isSupervisor) {
+        query = query.eq("assigned_supervisor_id", user.id);
     }
 
     query.order("created_at", { ascending: false }).limit(200)

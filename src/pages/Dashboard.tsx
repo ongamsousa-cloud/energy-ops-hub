@@ -33,14 +33,14 @@
        }
  
        const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes] = await Promise.all([
-         supabase.from("obras").select("id", { count: "exact", head: true }),
-         supabase.from("obras").select("id", { count: "exact", head: true }).eq("status", "execucao"),
-         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "reprovada"),
-         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "aprovada"),
-         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).in("status", ["aguardando_revisao", "em_revisao", "corrigida"]),
+         supabase.from("obras").select("id"),
+         supabase.from("obras").select("id").eq("status", "execucao"),
+         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).eq("status", "reprovada"),
+         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).eq("status", "aprovada"),
+         (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).in("status", ["aguardando_revisao", "em_revisao", "corrigida"]),
          umdQuery,
-         supabase.from("profiles").select("id", { count: "exact", head: true }).eq("ativo", true),
-         supabase.from("equipes").select("id", { count: "exact", head: true }).eq("ativo", true),
+         supabase.from("profiles").select("id").eq("ativo", true),
+         supabase.from("equipes").select("id").eq("ativo", true),
          statusQuery,
          supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada").order("fim_em"),
        ]);
@@ -59,15 +59,15 @@
  
        setUmdHistory(Object.entries(history).map(([date, umd]) => ({ date, umd })));
        setStats({
-         obras: obrasRes.count ?? 0,
-         obrasExec: obrasExecRes.count ?? 0,
-         osAbertas: 0, // Calculated or simplified for now
-         osAprov: osAprovRes.count ?? 0,
-         osPend: osPendRes.count ?? 0,
-         osRejeitadas: osRejeitadasRes.count ?? 0,
+         obras: (obrasRes.data ?? []).length,
+         obrasExec: (obrasExecRes.data ?? []).length,
+         osAbertas: 0,
+         osAprov: (osAprovRes.data ?? []).length,
+         osPend: (osPendRes.data ?? []).length,
+         osRejeitadas: (osRejeitadasRes.data ?? []).length,
          umd: Math.round(totalUmd * 100) / 100,
-         profs: profsRes.count ?? 0,
-         equipes: equipesRes.count ?? 0,
+         profs: (profsRes.data ?? []).length,
+         equipes: (equipesRes.data ?? []).length,
        });
        setLoading(false);
      })();

@@ -35,8 +35,11 @@ export default function Mensagens() {
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
+   const [recordingDuration, setRecordingDuration] = useState(0);
+   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
+   const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
@@ -55,12 +58,46 @@ export default function Mensagens() {
    );
  
    const isRecording = recorderControls.isRecording;
+ 
+   useEffect(() => {
+     if (isRecording) {
+       setRecordingDuration(0);
+       recordingTimerRef.current = setInterval(() => {
+         setRecordingDuration(prev => prev + 1);
+       }, 1000);
+     } else {
+       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+     }
+     return () => {
+       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+     };
+   }, [isRecording]);
+ 
+   const formatDuration = (seconds: number) => {
+     const mins = Math.floor(seconds / 60);
+     const secs = seconds % 60;
+     return `${mins}:${secs.toString().padStart(2, '0')}`;
+   };
 
    const addAudioElement = (blob: Blob) => {
      console.log("Gravação concluída:", blob.size, "bytes");
+     if (blob.size < 100) {
+       console.warn("Áudio muito pequeno, possível erro de captura");
+       toast.error("Falha ao capturar áudio. Tente novamente.");
+       setRecordingMode(null);
+       return;
+     }
      setAudioBlob(blob);
+     if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+     setAudioPreviewUrl(URL.createObjectURL(blob));
      setRecordingMode(null);
    };
+ 
+   useEffect(() => {
+     return () => {
+       if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+     };
+   }, [audioPreviewUrl]);
 
   async function enviarAudio() {
     if (!audioBlob || !active) return;
@@ -78,7 +115,8 @@ export default function Mensagens() {
     
     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo: "audio" });
-    setAudioBlob(null);
+      setAudioBlob(null);
+      setAudioPreviewUrl(null);
   }
 
   const myRole = roles[0];
@@ -340,6 +378,7 @@ export default function Mensagens() {
 
        setText("");
        setAudioBlob(null);
+       setAudioPreviewUrl(null);
        setPendingAudioUrl(null);
        setSelectedContacts([]);
        setOpenNew(false);
@@ -415,8 +454,9 @@ export default function Mensagens() {
        anexo_tipo: finalAnexo?.tipo ?? null,
     });
     if (error) return toast.error(error.message);
-    if (messageText === undefined) setText("");
-     setAudioBlob(null);
+     if (messageText === undefined) setText("");
+      setAudioBlob(null);
+      setAudioPreviewUrl(null);
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -633,19 +673,24 @@ export default function Mensagens() {
                         <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                           <Mic className="h-4 w-4" />
                         </div>
-                        <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
-                        <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                         <audio src={audioPreviewUrl || ""} controls className="h-8 flex-1" />
+                         <Button size="icon" variant="ghost" onClick={() => { setAudioBlob(null); setAudioPreviewUrl(null); }} className="h-8 w-8 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     ) : isRecording ? (
                       <div className="flex items-center justify-between bg-red-50 p-3 rounded-2xl mb-3 border border-red-100 shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                          <span className="text-xs font-black text-red-600 uppercase tracking-tighter">
-                            Gravando Áudio...
-                          </span>
-                        </div>
+                         <div className="flex items-center gap-3">
+                           <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                           <div className="flex flex-col">
+                             <span className="text-xs font-black text-red-600 uppercase tracking-tighter">
+                               Gravando Áudio...
+                             </span>
+                             <span className="text-[10px] font-mono text-red-400">
+                               {formatDuration(recordingDuration)}
+                             </span>
+                           </div>
+                         </div>
                          <Button 
                            size="sm" 
                            variant="destructive"
@@ -680,16 +725,22 @@ export default function Mensagens() {
                             isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                             selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
                           )}
-                           onClick={() => { 
+                           onClick={async () => { 
                              if (selectedContacts.length === 0) return;
-                             if (!isRecording) { 
-                               setRecordingMode('broadcast');
-                               recorderControls.startRecording();
-                               toast.info("Iniciando gravação...");
-                             } else { 
-                               recorderControls.stopRecording();
-                               toast.info("Processando áudio...");
-                             } 
+                             try {
+                               if (!isRecording) { 
+                                 setRecordingMode('broadcast');
+                                 await recorderControls.startRecording();
+                                 toast.info("Iniciando gravação...");
+                               } else { 
+                                 await recorderControls.stopRecording();
+                                 toast.info("Processando áudio...");
+                               }
+                             } catch (err: any) {
+                               console.error("Erro ao gerenciar gravação:", err);
+                               toast.error("Erro ao acessar microfone. Verifique as permissões.");
+                               setRecordingMode(null);
+                             }
                            }}
                           disabled={selectedContacts.length === 0}
                         >
@@ -829,9 +880,9 @@ export default function Mensagens() {
                       <Mic className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 w-full" />
+                       <audio src={audioPreviewUrl || ""} controls className="h-8 w-full" />
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                     <Button size="icon" variant="ghost" onClick={() => { setAudioBlob(null); setAudioPreviewUrl(null); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     <Button size="icon" className="bg-emerald-600 hover:bg-emerald-700" onClick={enviarAudio}>
@@ -840,10 +891,15 @@ export default function Mensagens() {
                   </div>
                 ) : isRecording ? (
                   <div className="flex items-center justify-between bg-card p-2 rounded-lg border border-red-200 animate-pulse">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                      <span className="text-xs font-medium text-red-600">Gravando...</span>
-                    </div>
+                       <div className="flex items-center gap-3">
+                         <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                         <div className="flex flex-col">
+                           <span className="text-xs font-medium text-red-600">Gravando...</span>
+                           <span className="text-[10px] font-mono text-red-400">
+                             {formatDuration(recordingDuration)}
+                           </span>
+                         </div>
+                       </div>
                      <div className="flex items-center gap-2">
                        <Button size="sm" variant="ghost" onClick={() => recorderControls.stopRecording()} className="text-muted-foreground h-8">
                          Cancelar
@@ -880,10 +936,16 @@ export default function Mensagens() {
                            "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
                            isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
                          )}
-                          onClick={() => { 
-                            setRecordingMode('direct');
-                            recorderControls.startRecording();
-                            toast.info("Iniciando gravação...");
+                          onClick={async () => { 
+                            try {
+                              setRecordingMode('direct');
+                              await recorderControls.startRecording();
+                              toast.info("Iniciando gravação...");
+                            } catch (err: any) {
+                              console.error("Erro ao iniciar gravação direta:", err);
+                              toast.error("Erro ao acessar microfone.");
+                              setRecordingMode(null);
+                            }
                           }}
                          title="Gravar Áudio"
                        >

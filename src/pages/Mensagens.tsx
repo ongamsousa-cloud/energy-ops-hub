@@ -13,8 +13,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-type Profile = { id: string; nome: string; email: string; role?: AppRole };
-type Conv = { id: string; titulo: string | null; created_at: string; outros: Profile[]; ultima?: string };
+ type Profile = { id: string; nome: string; email: string; role?: AppRole; foto_url?: string };
+ type Conv = { 
+   id: string; 
+   titulo: string | null; 
+   created_at: string; 
+   outros: Profile[]; 
+   ultima_msg?: string;
+   unread_count?: number;
+ };
 
 export default function Mensagens() {
   const { user, roles } = useAuth();
@@ -116,38 +123,68 @@ export default function Mensagens() {
   }, [user, roles]);
 
   // Carrega conversas
-  async function loadConvs() {
-    if (!user) return;
-    const { data: parts } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", user.id);
-    const ids = (parts ?? []).map((p: any) => p.conversation_id);
-    if (!ids.length) { setConvs([]); return; }
-    const { data: cs } = await supabase
-      .from("conversations")
-      .select("id, titulo, created_at")
-      .in("id", ids)
-      .order("created_at", { ascending: false });
-    const { data: allParts } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id, user_id, profiles:profiles!conversation_participants_user_id_fkey(id,nome,email)")
-      .in("conversation_id", ids);
-    // fallback: profiles join may not work without FK; fetch separately
-    const otherIds = Array.from(new Set((allParts ?? []).map((p: any) => p.user_id).filter((u: string) => u !== user.id)));
-    const { data: profs } = otherIds.length
-      ? await supabase.from("profiles").select("id, nome, email").in("id", otherIds)
-      : { data: [] as any[] };
-    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
-    const result: Conv[] = (cs ?? []).map((c: any) => {
-      const others = (allParts ?? [])
-        .filter((p: any) => p.conversation_id === c.id && p.user_id !== user.id)
-        .map((p: any) => profMap.get(p.user_id))
-        .filter(Boolean) as Profile[];
-      return { ...c, outros: others };
-    });
-    setConvs(result);
-  }
+   async function loadConvs() {
+     if (!user) return;
+     
+     const { data: convData, error } = await supabase
+       .from('conversations')
+       .select(`
+         id, 
+         titulo, 
+         created_at,
+         conversation_participants!inner(user_id)
+       `)
+       .eq('conversation_participants.user_id', user.id)
+       .order('created_at', { ascending: false });
+
+     if (error) {
+       console.error("Erro ao carregar conversas:", error);
+       return;
+     }
+
+     const convIds = convData.map(c => c.id);
+     if (!convIds.length) {
+       setConvs([]);
+       return;
+     }
+
+     // Buscar participantes de todas essas conversas
+     const { data: allParticipants } = await supabase
+       .from('conversation_participants')
+       .select(`
+         conversation_id,
+         user_id,
+         profiles:profiles(id, nome, email, role, foto_url)
+       `)
+       .in('conversation_id', convIds);
+
+     // Buscar última mensagem de cada conversa
+     const { data: lastMessages } = await supabase
+       .from('messages')
+       .select('conversation_id, conteudo, created_at')
+       .in('conversation_id', convIds)
+       .order('created_at', { ascending: false });
+
+     const result: Conv[] = convData.map(c => {
+       const participants = allParticipants?.filter(p => p.conversation_id === c.id) || [];
+       const others = participants
+         .filter(p => p.user_id !== user.id)
+         .map(p => (p.profiles as unknown as Profile))
+         .filter(Boolean);
+       
+       const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
+
+       return {
+         id: c.id,
+         titulo: c.titulo,
+         created_at: c.created_at,
+         outros: others,
+         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
+       };
+     });
+
+     setConvs(result);
+   }
 
   useEffect(() => { loadConvs(); }, [user]);
 

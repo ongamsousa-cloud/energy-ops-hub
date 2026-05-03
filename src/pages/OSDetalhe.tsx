@@ -59,13 +59,14 @@ export default function OSDetalhe() {
   const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
 
    const load = useCallback(async () => {
-      const { data: o, error: osError } = await supabase.from("ordens_servico")
-        .select(`
-          *, 
-          obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
-          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
-        `)
-        .eq("id", id).maybeSingle();
+       const { data: o, error: osError } = await supabase.from("ordens_servico")
+         .select(`
+           *, 
+           obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
+           profissional:profiles!ordens_servico_profissional_id_fkey(nome),
+           servico:servicos(nome)
+         `)
+         .eq("id", id).maybeSingle();
 
       if (!o && !osError) {
         toast.error("Você não possui permissão para acessar esta ordem de serviço.");
@@ -381,9 +382,10 @@ export default function OSDetalhe() {
       />
 
       <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
-        <span><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
-        {os.equipe_id && <span><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
-      </div>
+      <span><strong>Serviço:</strong> {os.servico?.nome || "Geral"}</span>
+      <span><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
+      {os.equipe_id && <span><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
+    </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="rounded-md border-border p-4 shadow-none">

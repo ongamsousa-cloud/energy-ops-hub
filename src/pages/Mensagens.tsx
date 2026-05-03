@@ -234,10 +234,10 @@ export default function Mensagens() {
        }
 
        // Tenta buscar no banco se já existe uma conversa entre esses dois
-       const { data: existingParts, error: searchError } = await supabase
+       const { data: existingParts, error: searchError } = await (supabase as any)
          .rpc('get_conversation_between_users', { user1: user!.id, user2: other.id });
        
-       if (!searchError && existingParts && existingParts.length > 0) {
+       if (!searchError && Array.isArray(existingParts) && existingParts.length > 0) {
          setActive(existingParts[0].conversation_id);
          setOpenNew(false);
          return;

@@ -38,7 +38,8 @@ export default function OSDetalhe() {
    const [checklist, setChecklist] = useState<Record<string, any>>({});
 
   const isOwner = os && user && os.profissional_id === user.id;
-  const canApprove = hasRole(["admin","gestor","supervisor"]);
+   const canApprove = hasRole(["admin","gestor","supervisor"]);
+   const isGestor = hasRole(["admin", "gestor"]);
   const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
 
    const load = useCallback(async () => {

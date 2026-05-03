@@ -442,6 +442,47 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          read_at: string | null
+          service_order_id: string | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          read_at?: string | null
+          service_order_id?: string | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          service_order_id?: string | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obra_equipes: {
         Row: {
           equipe_id: string
@@ -558,16 +599,74 @@ export type Database = {
           },
         ]
       }
+      operational_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          service_order_id: string | null
+          severity: string | null
+          status: string | null
+          supervisor_id: string | null
+          technician_id: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          service_order_id?: string | null
+          severity?: string | null
+          status?: string | null
+          supervisor_id?: string | null
+          technician_id?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          service_order_id?: string | null
+          severity?: string | null
+          status?: string | null
+          supervisor_id?: string | null
+          technician_id?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operational_alerts_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordens_servico: {
         Row: {
           aprovado_em: string | null
           aprovado_por: string | null
+          assigned_supervisor_id: string | null
           bairro: string | null
           cep: string | null
           cidade: string | null
           created_at: string
           created_by: string | null
           data_agendada: string | null
+          due_at: string | null
           endereco_completo: string | null
           equipe_id: string | null
           estado: string | null
@@ -592,21 +691,26 @@ export type Database = {
           observacoes_admin: string | null
           prioridade: string | null
           profissional_id: string
+          region_id: string | null
           status: Database["public"]["Enums"]["os_status"]
           supervisor_id: string | null
           total_umd: number
           total_umd_aprovada: number
           updated_at: string
+          validated_at: string | null
+          validated_by: string | null
         }
         Insert: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          assigned_supervisor_id?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
           created_at?: string
           created_by?: string | null
           data_agendada?: string | null
+          due_at?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
           estado?: string | null
@@ -631,21 +735,26 @@ export type Database = {
           observacoes_admin?: string | null
           prioridade?: string | null
           profissional_id: string
+          region_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
         }
         Update: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          assigned_supervisor_id?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
           created_at?: string
           created_by?: string | null
           data_agendada?: string | null
+          due_at?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
           estado?: string | null
@@ -670,11 +779,14 @@ export type Database = {
           observacoes_admin?: string | null
           prioridade?: string | null
           profissional_id?: string
+          region_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
         }
         Relationships: [
           {
@@ -1111,6 +1223,53 @@ export type Database = {
           },
         ]
       }
+      service_order_messages: {
+        Row: {
+          attachment_url: string | null
+          created_at: string | null
+          id: string
+          message: string
+          read_at: string | null
+          receiver_id: string | null
+          sender_id: string
+          service_order_id: string
+          updated_at: string | null
+          visibility: string | null
+        }
+        Insert: {
+          attachment_url?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          read_at?: string | null
+          receiver_id?: string | null
+          sender_id: string
+          service_order_id: string
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Update: {
+          attachment_url?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          receiver_id?: string | null
+          sender_id?: string
+          service_order_id?: string
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_messages_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_order_validations: {
         Row: {
           id: string
@@ -1145,6 +1304,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supervisors: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          department_id: string | null
+          id: string
+          name: string
+          permission_level: string | null
+          region_id: string | null
+          team_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          name: string
+          permission_level?: string | null
+          region_id?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          name?: string
+          permission_level?: string | null
+          region_id?: string | null
+          team_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       technicians: {
         Row: {

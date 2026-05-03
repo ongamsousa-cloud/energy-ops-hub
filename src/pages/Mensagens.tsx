@@ -235,7 +235,7 @@ export default function Mensagens() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length]);
 
-   async function getOrCreateConversa(other: Profile) {
+    async function getOrCreateConversa(other: Profile, skipLoad = false) {
      try {
        const existing = convs.find((c) => c.outros.length === 1 && c.outros[0].id === other.id);
        if (existing) return existing.id;
@@ -259,7 +259,7 @@ export default function Mensagens() {
          { conversation_id: c.id, user_id: other.id },
        ]);
 
-       await loadConvs();
+        if (!skipLoad) await loadConvs();
        return c.id;
      } catch (err) {
        console.error(err);
@@ -314,8 +314,8 @@ export default function Mensagens() {
      let lastConvId: string | null = null;
      let okCount = 0;
 
-      for (const contact of selectedContacts) {
-        const convId = await getOrCreateConversa(contact);
+       for (const contact of selectedContacts) {
+         const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;
         lastConvId = convId;
 
@@ -334,13 +334,14 @@ export default function Mensagens() {
         okCount++;
       }
 
-      setText("");
-      setAudioBlob(null);
-      setPendingAudioUrl(null);
-     setSelectedContacts([]);
-     setOpenNew(false);
-     if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
-     toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
+       setText("");
+       setAudioBlob(null);
+       setPendingAudioUrl(null);
+       setSelectedContacts([]);
+       setOpenNew(false);
+       await loadConvs(); // Carrega tudo uma vez no final
+       if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
+       toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
    }
 
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);

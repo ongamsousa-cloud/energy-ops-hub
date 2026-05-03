@@ -755,7 +755,12 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
         </TabsContent>
       </Tabs>
 
-      <NewMaterialDialog open={newMaterialOpen} onOpenChange={setNewMaterialOpen} onSuccess={loadMaterials}/>
+       <NewMaterialDialog 
+         open={newMaterialOpen} 
+         onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
+         onSuccess={loadMaterials} 
+         material={editMaterial}
+       />
       <StockMovementDialog open={movementOpen} onOpenChange={setMovementOpen} onSuccess={loadAll} defaultType={movementType as any}/>
       <WarehouseDialog open={warehouseOpen} onOpenChange={setWarehouseOpen} onSuccess={loadWarehouses} warehouse={editWarehouse}/>
     </div>

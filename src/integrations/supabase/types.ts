@@ -414,6 +414,266 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_history: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          financial_record_id: string | null
+          id: string
+          new_status: string | null
+          new_value: number | null
+          previous_status: string | null
+          previous_value: number | null
+          service_order_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          financial_record_id?: string | null
+          id?: string
+          new_status?: string | null
+          new_value?: number | null
+          previous_status?: string | null
+          previous_value?: number | null
+          service_order_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          financial_record_id?: string | null
+          id?: string
+          new_status?: string | null
+          new_value?: number | null
+          previous_status?: string | null
+          previous_value?: number | null
+          service_order_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_history_financial_record_id_fkey"
+            columns: ["financial_record_id"]
+            isOneToOne: false
+            referencedRelation: "financial_order_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_history_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_material_records: {
+        Row: {
+          created_at: string | null
+          execution_record_id: string | null
+          expected_quantity: number | null
+          financial_status: string | null
+          id: string
+          is_extra: boolean | null
+          material_code: string | null
+          material_name: string
+          notes: string | null
+          quantity: number
+          service_order_id: string
+          supervisor_id: string | null
+          technician_id: string | null
+          total_cost: number | null
+          unit: string | null
+          unit_cost: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          execution_record_id?: string | null
+          expected_quantity?: number | null
+          financial_status?: string | null
+          id?: string
+          is_extra?: boolean | null
+          material_code?: string | null
+          material_name: string
+          notes?: string | null
+          quantity: number
+          service_order_id: string
+          supervisor_id?: string | null
+          technician_id?: string | null
+          total_cost?: number | null
+          unit?: string | null
+          unit_cost?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          execution_record_id?: string | null
+          expected_quantity?: number | null
+          financial_status?: string | null
+          id?: string
+          is_extra?: boolean | null
+          material_code?: string | null
+          material_name?: string
+          notes?: string | null
+          quantity?: number
+          service_order_id?: string
+          supervisor_id?: string | null
+          technician_id?: string | null
+          total_cost?: number | null
+          unit?: string | null
+          unit_cost?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_material_records_execution_record_id_fkey"
+            columns: ["execution_record_id"]
+            isOneToOne: false
+            referencedRelation: "service_execution_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_material_records_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_order_records: {
+        Row: {
+          adjusted_value: number | null
+          adjustment_reason: string | null
+          analyzed_at: string | null
+          analyzed_by: string | null
+          approved_value: number | null
+          created_at: string | null
+          estimated_cost: number | null
+          financial_status: string | null
+          id: string
+          is_billable: boolean | null
+          notes: string | null
+          real_cost: number | null
+          service_order_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          adjusted_value?: number | null
+          adjustment_reason?: string | null
+          analyzed_at?: string | null
+          analyzed_by?: string | null
+          approved_value?: number | null
+          created_at?: string | null
+          estimated_cost?: number | null
+          financial_status?: string | null
+          id?: string
+          is_billable?: boolean | null
+          notes?: string | null
+          real_cost?: number | null
+          service_order_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          adjusted_value?: number | null
+          adjustment_reason?: string | null
+          analyzed_at?: string | null
+          analyzed_by?: string | null
+          approved_value?: number | null
+          created_at?: string | null
+          estimated_cost?: number | null
+          financial_status?: string | null
+          id?: string
+          is_billable?: boolean | null
+          notes?: string | null
+          real_cost?: number | null
+          service_order_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_order_records_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: true
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_reports_cache: {
+        Row: {
+          created_at: string | null
+          data_snapshot: Json | null
+          filters: Json | null
+          generated_by: string | null
+          id: string
+          period_end: string | null
+          period_start: string | null
+          report_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_snapshot?: Json | null
+          filters?: Json | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_type: string
+        }
+        Update: {
+          created_at?: string | null
+          data_snapshot?: Json | null
+          filters?: Json | null
+          generated_by?: string | null
+          id?: string
+          period_end?: string | null
+          period_start?: string | null
+          report_type?: string
+        }
+        Relationships: []
+      }
+      financial_rules: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          rule_config: Json | null
+          rule_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          rule_config?: Json | null
+          rule_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          rule_config?: Json | null
+          rule_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       management_exceptions: {
         Row: {
           created_at: string | null
@@ -927,12 +1187,15 @@ export type Database = {
           profissional_id: string
           region_id: string | null
           status: Database["public"]["Enums"]["os_status"]
+          status_financeiro: string | null
           supervisor_id: string | null
           total_umd: number
           total_umd_aprovada: number
           updated_at: string
           validated_at: string | null
           validated_by: string | null
+          valor_aprovado: number | null
+          valor_previsto: number | null
         }
         Insert: {
           aprovado_em?: string | null
@@ -972,12 +1235,15 @@ export type Database = {
           profissional_id: string
           region_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
+          status_financeiro?: string | null
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
           validated_at?: string | null
           validated_by?: string | null
+          valor_aprovado?: number | null
+          valor_previsto?: number | null
         }
         Update: {
           aprovado_em?: string | null
@@ -1017,12 +1283,15 @@ export type Database = {
           profissional_id?: string
           region_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
+          status_financeiro?: string | null
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
           validated_at?: string | null
           validated_by?: string | null
+          valor_aprovado?: number | null
+          valor_previsto?: number | null
         }
         Relationships: [
           {

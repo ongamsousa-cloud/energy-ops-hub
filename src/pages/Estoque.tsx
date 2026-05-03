@@ -6,7 +6,8 @@ import PageHeader from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+ import { Input } from "@/components/ui/input";
+ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,8 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { cn } from "@/lib/utils";
 import {
    Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-    TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2,
-    Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks,
+    TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2, X,
+    Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks, Filter
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";
@@ -67,17 +68,29 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
    const [editMaterial, setEditMaterial] = useState<any>(null);
    const [movementOpen, setMovementOpen] = useState(false);
   const [warehouseOpen, setWarehouseOpen] = useState(false);
-  const [editWarehouse, setEditWarehouse] = useState<any>(null);
-  const [movementType, setMovementType] = useState<string>("entrada");
+   const [editWarehouse, setEditWarehouse] = useState<any>(null);
+   const [movementType, setMovementType] = useState<string>("entrada");
+   const [filters, setFilters] = useState({
+     type: 'all',
+     warehouse: 'all',
+     material: 'all',
+   });
 
    useEffect(() => { loadAll(); }, []);
  
-   async function deleteMaterial(id: string) {
-     if (!confirm("Tem certeza que deseja desativar este material?")) return;
-     const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
-     if (error) toast.error("Erro ao desativar: " + error.message);
-     else { toast.success("Material desativado"); loadMaterials(); }
-   }
+    async function deleteMaterial(id: string) {
+      if (!confirm("Tem certeza que deseja desativar este material?")) return;
+      const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
+      if (error) toast.error("Erro ao desativar: " + error.message);
+      else { toast.success("Material desativado"); loadMaterials(); }
+    }
+ 
+    async function deleteWarehouse(id: string) {
+      if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+      const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
+      if (err) toast.error("Erro ao desativar: " + err.message);
+      else { toast.success("Almoxarifado desativado"); loadWarehouses(); }
+    }
 
   useEffect(() => {
     const ch = supabase.channel("stock-realtime")
@@ -150,12 +163,12 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
       setMaterials(enriched);
     }
   }
-  async function loadMovements() {
-    const { data } = await supabase.from("stock_movements")
-      .select("*, materials(name, code, unit), profiles!stock_movements_professional_id_fkey(nome), creator:profiles!stock_movements_created_by_fkey(nome), from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name), to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name), ordens_servico(numero)")
-      .order("created_at", { ascending: false }).limit(100);
-    if (data) setMovements(data);
-  }
+   async function loadMovements() {
+     const { data } = await supabase.from("stock_movements")
+       .select("*, materials(name, code, unit), profiles!stock_movements_professional_id_fkey(nome), creator:profiles!stock_movements_created_by_fkey(nome), from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name), to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name), ordens_servico(numero, assigned_supervisor_id, equipe_id)")
+       .order("created_at", { ascending: false }).limit(200);
+     if (data) setMovements(data);
+   }
   async function loadWarehouses() {
     const { data } = await supabase.from("warehouses")
       .select("*, stock_levels(quantity, materials(cost_price))")
@@ -183,19 +196,21 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     if (data) setAlerts(data);
   }
 
-  const kpis = useMemo(() => {
-    const total = materials.length;
-    const lowStock = materials.filter(m => m.total_quantity > 0 && m.total_quantity <= Number(m.minimum_stock || 0)).length;
-    const critical = materials.filter(m => m.total_quantity <= Number(m.critical_stock || 0)).length;
-    const outOfStock = materials.filter(m => m.total_quantity <= 0).length;
-    const totalValue = materials.reduce((s, m) => s + m.total_value, 0);
-    const today = startOfDay(new Date());
-    const movToday = movements.filter(m => new Date(m.created_at) >= today).length;
-    const reservedActive = reservations.filter(r => r.status === "reservado").length;
-    const lossMonth = movements.filter(m => m.type === "ajuste" && new Date(m.created_at).getMonth() === new Date().getMonth())
-      .reduce((s,m) => s + Number(m.total_cost || 0), 0);
-    return { total, lowStock, critical, outOfStock, totalValue, movToday, reservedActive, lossMonth };
-  }, [materials, movements, reservations]);
+   const kpis = useMemo(() => {
+     const total = materials.length;
+     const lowStock = materials.filter(m => m.total_quantity > 0 && m.total_quantity <= Number(m.minimum_stock || 0)).length;
+     const critical = materials.filter(m => m.total_quantity <= Number(m.critical_stock || 0)).length;
+     const outOfStock = materials.filter(m => m.total_quantity <= 0).length;
+     const totalValue = materials.reduce((s, m) => s + m.total_value, 0);
+     const today = startOfDay(new Date());
+     const movToday = movements.filter(m => new Date(m.created_at) >= today);
+     const entriesToday = movToday.filter(m => m.type === 'entrada').length;
+     const exitsToday = movToday.filter(m => m.type === 'saida').length;
+     const reservedActive = reservations.filter(r => r.status === "reservado").length;
+     const lossMonth = movements.filter(m => m.type === "ajuste" && new Date(m.created_at).getMonth() === new Date().getMonth())
+       .reduce((s,m) => s + Number(m.total_cost || 0), 0);
+     return { total, lowStock, critical, outOfStock, totalValue, movToday: movToday.length, entriesToday, exitsToday, reservedActive, lossMonth };
+   }, [materials, movements, reservations]);
 
   const chartFlow = useMemo(() => {
     const days: any[] = [];
@@ -236,14 +251,16 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [materials]);
 
-   const filteredMovements = useMemo(() => {
-     return movements.filter(m => {
-       const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
-       // Como não temos equipe direto no stock_movements, filtramos pela OS que pertence à equipe
-       const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
-       return matchOS && matchEquipe;
-     });
-   }, [movements, osFilter, equipeFilter]);
+    const filteredMovements = useMemo(() => {
+      return movements.filter(m => {
+        const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
+        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
+        const matchType = filters.type === 'all' || m.type === filters.type;
+        const matchWarehouse = filters.warehouse === 'all' || m.from_warehouse_id === filters.warehouse || m.to_warehouse_id === filters.warehouse;
+        const matchMaterial = filters.material === 'all' || m.material_id === filters.material;
+        return matchOS && matchEquipe && matchType && matchWarehouse && matchMaterial;
+      });
+    }, [movements, osFilter, equipeFilter, filters]);
  
    const filteredMaterials = useMemo(() => {
      let filtered = materials;
@@ -289,119 +306,155 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
         )}
       />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-         <Kpi icon={Package} label="Patrimônio Ativo" value={kpis.total} hint={`${kpis.outOfStock} itens sem saldo`}/>
-         <Kpi icon={TrendingUp} label="Valorização Total" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo médio total"/>
-         <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
-         <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
-      </div>
+       {/* KPIs */}
+       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Kpi icon={ArrowDownToLine} label="Entradas (Hoje)" value={kpis.entriesToday} hint="Novos recebimentos" tone="success"/>
+          <Kpi icon={ArrowUpFromLine} label="Saídas (Hoje)" value={kpis.exitsToday} hint="Liberações para OS" tone="info"/>
+          <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
+          <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
+       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        {!isEstoquePortal && (
-          <TabsList className="flex w-full overflow-x-auto">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-background"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
-            <TabsTrigger value="materials" className="data-[state=active]:bg-background"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
-            <TabsTrigger value="entradas" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-            <TabsTrigger value="liberacao" className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberação (OS)</TabsTrigger>
-            <TabsTrigger value="warehouses" className="data-[state=active]:bg-background"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
-            <TabsTrigger value="movements" className="data-[state=active]:bg-background"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
-            <TabsTrigger value="alerts" className="data-[state=active]:bg-background"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-          </TabsList>
-        )}
+         <TabsList className="flex w-full overflow-x-auto bg-muted/50 p-1 mb-4">
+           <TabsTrigger value="overview" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
+           <TabsTrigger value="entradas" className="flex-1 min-w-[120px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
+           <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberações (OS)</TabsTrigger>
+           <TabsTrigger value="materials" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
+           <TabsTrigger value="warehouses" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
+           <TabsTrigger value="movements" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
+           <TabsTrigger value="alerts" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+         </TabsList>
 
          <TabsContent value="overview" className="mt-4 space-y-6">
            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
              {/* Main Analytics Area (3/4) */}
              <div className="xl:col-span-3 space-y-6">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <Card className="p-6 border-none shadow-sm bg-card/50">
-                   <div className="flex items-center justify-between mb-6">
-                     <div>
-                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Fluxo Logístico</h3>
-                       <p className="text-[10px] text-muted-foreground">Entradas vs Saídas (14 dias)</p>
-                     </div>
-                     <Badge variant="secondary" className="text-[10px]">OPERACIONAL</Badge>
-                   </div>
-                   <div className="h-[250px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <LineChart data={chartFlow}>
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                         <XAxis dataKey="dia" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                         <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
-                         <Legend verticalAlign="top" align="right" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                         <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
-                         <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={3} dot={{ r: 4, fill: 'hsl(var(--destructive))' }} />
-                       </LineChart>
-                     </ResponsiveContainer>
-                   </div>
-                 </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="p-4 bg-emerald-500/5 border-emerald-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Entradas (Hoje)</p>
+                      <p className="text-2xl font-black text-emerald-700">{kpis.entriesToday}</p>
+                    </div>
+                    <ArrowDownToLine className="h-8 w-8 text-emerald-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-red-500/5 border-red-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Saídas (Hoje)</p>
+                      <p className="text-2xl font-black text-red-700">{kpis.exitsToday}</p>
+                    </div>
+                    <ArrowUpFromLine className="h-8 w-8 text-red-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-amber-500/5 border-amber-500/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Críticos</p>
+                      <p className="text-2xl font-black text-amber-700">{kpis.critical}</p>
+                    </div>
+                    <AlertTriangle className="h-8 w-8 text-amber-500/20" />
+                  </Card>
+                  <Card className="p-4 bg-primary/5 border-primary/10 flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Atendimentos</p>
+                      <p className="text-2xl font-black text-primary/80">{new Set(movements.filter(m => m.type === 'saida' && new Date(m.created_at) >= startOfDay(new Date())).map(m => m.os_id).filter(Boolean)).size}</p>
+                    </div>
+                    <Activity className="h-8 w-8 text-primary/20" />
+                  </Card>
+                </div>
+ 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <ArrowDownToLine className="h-4 w-4 text-emerald-500" />
+                        Entradas Recentes
+                      </h3>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("entradas")}>Ver Todas</Button>
+                    </div>
+                    <div className="space-y-4">
+                      {movements.filter(m => m.type === 'entrada').slice(0, 5).map(m => (
+                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold">{m.materials?.name}</span>
+                            <span className="text-[10px] text-muted-foreground">NF: {m.invoice_number || '—'} · {m.to_wh?.name}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-mono font-bold text-emerald-600">+{Number(m.quantity)} {m.materials?.unit}</span>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+ 
+                  <Card className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <ArrowUpFromLine className="h-4 w-4 text-red-500" />
+                        Liberações p/ OS
+                      </h3>
+                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("liberacao")}>Ver Todas</Button>
+                    </div>
+                    <div className="space-y-4">
+                      {movements.filter(m => m.type === 'saida').slice(0, 5).map(m => (
+                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold">{m.materials?.name}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {m.ordens_servico?.numero && <Badge variant="outline" className="text-[9px] h-4 font-mono">OS {m.ordens_servico.numero}</Badge>}
+                              <span className="text-[10px] text-muted-foreground">{m.profiles?.nome}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-mono font-bold text-red-600">-{Number(m.quantity)} {m.materials?.unit}</span>
+                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
 
                  <Card className="p-6 border-none shadow-sm bg-card/50">
                    <div className="flex items-center justify-between mb-6">
                      <div>
-                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Consumo de Materiais</h3>
-                       <p className="text-[10px] text-muted-foreground">Itens com maior giro</p>
+                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Distribuição Patrimonial</h3>
+                       <p className="text-[10px] text-muted-foreground">Valor por Categoria</p>
                      </div>
-                     <Boxes className="h-4 w-4 text-amber-500" />
+                     <TrendingUp className="h-4 w-4 text-primary" />
                    </div>
-                   <div className="h-[250px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <BarChart data={chartTopConsumed} layout="vertical">
-                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                         <XAxis type="number" hide />
-                         <YAxis dataKey="nome" type="category" width={100} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                         <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: "12px" }} />
-                         <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />
-                       </BarChart>
-                     </ResponsiveContainer>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                     <div className="h-[280px]">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <PieChart>
+                           <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
+                             {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                           </Pie>
+                           <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
+                         </PieChart>
+                       </ResponsiveContainer>
+                     </div>
+                     <div className="space-y-4">
+                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
+                         <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                         <div className="mt-2 flex items-center text-[10px] text-destructive italic">
+                           <AlertCircle className="h-3 w-3 mr-1" />
+                           Quebras, extravios e ajustes manuais
+                         </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
+                           <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
+                         </div>
+                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Depósitos</h4>
+                           <p className="text-lg font-bold text-primary">{warehouses.length}</p>
+                         </div>
+                       </div>
+                     </div>
                    </div>
                  </Card>
-               </div>
-
-               <Card className="p-6 border-none shadow-sm bg-card/50">
-                 <div className="flex items-center justify-between mb-6">
-                   <div>
-                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Valorização por Categoria</h3>
-                     <p className="text-[10px] text-muted-foreground">Concentração de capital</p>
-                   </div>
-                   <TrendingUp className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                   <div className="h-[300px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <PieChart>
-                         <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
-                           {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                         </Pie>
-                         <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
-                         <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
-                       </PieChart>
-                     </ResponsiveContainer>
-                   </div>
-                   <div className="space-y-4">
-                     <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                       <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
-                       <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
-                       <div className="mt-2 flex items-center text-[10px] text-destructive">
-                         <AlertCircle className="h-3 w-3 mr-1" />
-                         Refere-se a quebras, extravios e ajustes manuais
-                       </div>
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
-                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
-                         <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
-                       </div>
-                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Armazéns</h4>
-                         <p className="text-lg font-bold text-primary">{warehouses.length}</p>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               </Card>
              </div>
 
              {/* Sidebar Area: Activity & Status (The "Sides") */}
@@ -672,35 +725,98 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                   </div>
                   {!w.active && <Badge variant="secondary">Inativo</Badge>}
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t">
-                  <div><div className="text-[10px] text-muted-foreground uppercase">Itens</div><div className="font-bold">{w.items_count}</div></div>
-                  <div><div className="text-[10px] text-muted-foreground uppercase">Valor</div><div className="font-bold text-xs">{w.total_value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div></div>
-                </div>
-              </Card>
+               <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t relative">
+                 <div><div className="text-[10px] text-muted-foreground uppercase">Itens</div><div className="font-bold">{w.items_count}</div></div>
+                 <div><div className="text-[10px] text-muted-foreground uppercase">Valor</div><div className="font-bold text-xs">{w.total_value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div></div>
+                 {canWrite && (
+                   <Button
+                     variant="ghost"
+                     size="icon"
+                     className="h-6 w-6 text-destructive absolute right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                     onClick={(e) => { e.stopPropagation(); deleteWarehouse(w.id); }}
+                   >
+                     <Trash2 className="h-3 w-3" />
+                   </Button>
+                 )}
+               </div>
+             </Card>
             ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="movements" className="mt-4">
-          <Card>
-            <Table>
+         <TabsContent value="movements" className="mt-4 space-y-4">
+           <Card className="p-4 bg-muted/20 border-none shadow-none">
+             <div className="flex flex-wrap gap-4 items-end">
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Tipo</Label>
+                 <Select value={filters.type} onValueChange={(v) => setFilters({ ...filters, type: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os tipos</SelectItem>
+                     {Object.entries(TYPE_LABEL).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Almoxarifado</Label>
+                 <Select value={filters.warehouse} onValueChange={(v) => setFilters({ ...filters, warehouse: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os almoxarifados</SelectItem>
+                     {warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Material</Label>
+                 <Select value={filters.material} onValueChange={(v) => setFilters({ ...filters, material: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os materiais</SelectItem>
+                     {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => { setFilters({ type: 'all', warehouse: 'all', material: 'all' }); setOsFilter('all'); setEquipeFilter('all'); }} title="Limpar Filtros">
+                 <X className="h-4 w-4" />
+               </Button>
+               <Button size="sm" variant="outline" className="h-9" onClick={exportMovementsToCSV}>
+                 <Download className="h-4 w-4 mr-2" /> Exportar
+               </Button>
+             </div>
+           </Card>
+ 
+           <Card>
+             <Table>
               <TableHeader><TableRow>
                 <TableHead>Data</TableHead><TableHead>Tipo</TableHead><TableHead>Material</TableHead>
                 <TableHead className="text-right">Qtd</TableHead><TableHead>Origem → Destino</TableHead>
                 <TableHead>OS</TableHead><TableHead>Profissional</TableHead><TableHead>Por</TableHead>
               </TableRow></TableHeader>
-              <TableBody>
-                {movements.map(m => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs whitespace-nowrap">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
-                    <TableCell><Badge variant="outline" className={TYPE_COLOR[m.type]}>{TYPE_LABEL[m.type]}</Badge></TableCell>
-                    <TableCell><div className="font-medium text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground">{m.materials?.code}</div></TableCell>
-                    <TableCell className="text-right font-mono">{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.from_wh?.name || "—"} {m.to_wh?.name && `→ ${m.to_wh.name}`}</TableCell>
-                    <TableCell className="text-xs">{m.ordens_servico?.numero || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.profiles?.nome || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.creator?.nome || "—"}</TableCell>
-                  </TableRow>
+               <TableBody>
+                 {filteredMovements.map(m => (
+                    <TableRow key={m.id} className="hover:bg-muted/30">
+                     <TableCell className="text-xs whitespace-nowrap py-3">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
+                     <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
+                     <TableCell className="py-3"><div className="font-bold text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground font-mono">{m.materials?.code}</div></TableCell>
+                     <TableCell className={cn("text-right font-mono font-bold py-3", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : '')}>
+                       {m.type === 'entrada' ? '+' : m.type === 'saida' ? '-' : ''}{Number(m.quantity)} {m.materials?.unit}
+                     </TableCell>
+                     <TableCell className="text-xs py-3">
+                       <div className="flex flex-col gap-0.5">
+                         {m.from_wh?.name && <span className="text-muted-foreground line-through decoration-muted-foreground/30">{m.from_wh.name}</span>}
+                         {m.to_wh?.name && <span className="font-medium text-primary flex items-center gap-1"><ArrowDownToLine className="h-3 w-3" /> {m.to_wh.name}</span>}
+                         {!m.to_wh?.name && m.from_wh?.name && <span className="font-medium text-destructive flex items-center gap-1"><ArrowUpFromLine className="h-3 w-3" /> {m.from_wh.name}</span>}
+                       </div>
+                     </TableCell>
+                     <TableCell className="py-3">
+                       {m.ordens_servico?.numero ? (
+                         <Badge variant="secondary" className="font-mono text-[9px] bg-blue-50 text-blue-700 border-blue-100 uppercase tracking-tighter">OS {m.ordens_servico.numero}</Badge>
+                       ) : <span className="text-muted-foreground text-[10px]">—</span>}
+                     </TableCell>
+                     <TableCell className="text-xs font-medium py-3">{m.profiles?.nome || "—"}</TableCell>
+                     <TableCell className="text-xs text-muted-foreground py-3 italic">{m.creator?.nome || "—"}</TableCell>
+                   </TableRow>
                 ))}
                 {movements.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Sem movimentações registradas.</TableCell></TableRow>}
               </TableBody>
@@ -767,18 +883,27 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, hint, tone }: any) {
-  return (
-    <Card className={cn(
-      "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
-      tone === 'warn' ? "bg-amber-500/5" : "bg-primary/[0.03]"
-    )}>
+ function Kpi({ icon: Icon, label, value, hint, tone }: any) {
+   const toneClass = 
+     tone === 'warn' ? "bg-amber-500/5" : 
+     tone === 'success' ? "bg-emerald-500/5" : 
+     tone === 'info' ? "bg-blue-500/5" : 
+     "bg-primary/[0.03]";
+     
+   const iconClass = 
+     tone === 'warn' ? "bg-amber-100 text-amber-600" : 
+     tone === 'success' ? "bg-emerald-100 text-emerald-600" : 
+     tone === 'info' ? "bg-blue-100 text-blue-600" : 
+     "bg-primary/10 text-primary";
+ 
+   return (
+     <Card className={cn(
+       "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
+       toneClass
+     )}>
       <div className="flex items-center justify-between relative z-10">
         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</div>
-        <div className={cn(
-          "p-1.5 rounded-lg",
-          tone === 'warn' ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"
-        )}>
+         <div className={cn("p-1.5 rounded-lg", iconClass)}>
           <Icon className="h-4 w-4" />
         </div>
       </div>

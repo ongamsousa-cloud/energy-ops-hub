@@ -351,12 +351,13 @@ import { useState } from "react";
                     contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                   />
                   <Bar dataKey="count" name="Novas O.S." fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-         </TabsContent>
+               </BarChart>
+             </ResponsiveContainer>
+           </div>
+         </CardContent>
+       </Card>
+     </div>
+   </TabsContent>
  
          <TabsContent value="estoque" className="animate-in slide-in-from-right-2 duration-300">
            <AdminStockView 

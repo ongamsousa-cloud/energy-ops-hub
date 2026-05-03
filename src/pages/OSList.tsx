@@ -24,7 +24,7 @@ export default function OSList() {
     if (!user) return;
 
      // Técnicos (campo) só veem suas próprias OS
-     const isTechnician = (hasRole("campo") || hasRole("profissional")) && !hasRole(["admin", "gestor", "supervisor"]);
+     const isTechnician = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
     
     let query = supabase.from("ordens_servico")
        .select(`

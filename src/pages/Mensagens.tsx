@@ -640,19 +640,16 @@ export default function Mensagens() {
                             Gravando Áudio...
                           </span>
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
-                          onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }}
-                        >
-                          Parar Gravação
-                        </Button>
-                      </div>
-                    ) : null}
-                    <div className="hidden">
-                      <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
-                    </div>
+                         <Button 
+                           size="sm" 
+                           variant="destructive"
+                           className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
+                           onClick={() => recorderControls.stopRecording()}
+                         >
+                           Parar Gravação
+                         </Button>
+                       </div>
+                     ) : null}
 
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
@@ -677,16 +674,15 @@ export default function Mensagens() {
                             isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                             selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
                           )}
-                          onClick={() => { 
-                            if (selectedContacts.length === 0) return;
-                            if (!isRecording) { 
-                              recorderControls.startRecording(); 
-                              setIsRecording(true); 
-                            } else { 
-                              recorderControls.stopRecording(); 
-                              setIsRecording(false);
-                            } 
-                          }}
+                           onClick={() => { 
+                             if (selectedContacts.length === 0) return;
+                             if (!isRecording) { 
+                               setRecordingMode('broadcast');
+                               recorderControls.startRecording(); 
+                             } else { 
+                               recorderControls.stopRecording(); 
+                             } 
+                           }}
                           disabled={selectedContacts.length === 0}
                         >
                           <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />

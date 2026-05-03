@@ -572,13 +572,30 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
 
 function Kpi({ icon: Icon, label, value, hint, tone }: any) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
-        <Icon className={`h-4 w-4 ${tone === 'warn' ? 'text-amber-500' : 'text-primary'}`}/>
+    <Card className={cn(
+      "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
+      tone === 'warn' ? "bg-amber-500/5" : "bg-primary/[0.03]"
+    )}>
+      <div className="flex items-center justify-between relative z-10">
+        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</div>
+        <div className={cn(
+          "p-1.5 rounded-lg",
+          tone === 'warn' ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"
+        )}>
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
-      {hint && <div className="text-[10px] text-muted-foreground mt-1">{hint}</div>}
+      <div className="mt-3 relative z-10">
+        <div className="text-2xl font-black tracking-tight">{value}</div>
+        {hint && <div className="text-[10px] font-medium text-muted-foreground mt-1 flex items-center gap-1.5">
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+          {hint}
+        </div>}
+      </div>
+      {/* Subtle background decoration */}
+      <div className="absolute -right-2 -bottom-2 opacity-[0.05] pointer-events-none">
+        <Icon size={64} />
+      </div>
     </Card>
   );
 }

@@ -11,32 +11,33 @@ class MediaService {
   ) {
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `${serviceOrderId}/${stage}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `service-orders/${fileName}`;
+      const fileName = `${serviceOrderId}/${crypto.randomUUID()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
       const location = await geoLocationService.capturarLocalizacaoAtual();
 
       const { error: uploadError } = await supabase.storage
-        .from("service-orders-media")
+        .from("os-evidences")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from("service-orders-media").getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from("os-evidences").getPublicUrl(filePath);
 
-      const { error: dbError } = await supabase.from("service_order_media").insert({
-        service_order_id: serviceOrderId,
+      const { error: dbError } = await supabase.from("os_evidences").insert({
+        os_id: serviceOrderId,
         user_id: userId,
-        media_url: publicUrl,
-        media_type: file.type.startsWith("image") ? "image" : "video",
-        description,
-        category: stage,
-        lat: location?.latitude,
-        lng: location?.longitude,
-        file_path: filePath,
-        file_name: file.name,
-        file_size: file.size
-      } as any);
+        url: filePath,
+        tipo: file.type.startsWith("image") ? "foto" : "video",
+        metadata: { 
+          size: file.size, 
+          name: file.name, 
+          type: file.type,
+          description,
+          stage
+        },
+        localizacao: location ? { lat: location.latitude, lng: location.longitude } : null
+      });
 
       if (dbError) throw dbError;
 

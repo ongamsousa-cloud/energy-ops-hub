@@ -33,7 +33,10 @@ class MediaService {
         category: stage,
         lat: location?.latitude,
         lng: location?.longitude,
-      });
+        file_path: filePath,
+        file_name: file.name,
+        file_size: file.size
+      } as any);
 
       if (dbError) throw dbError;
 

@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2 } from "lucide-react";
+import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft } from "lucide-react";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -27,9 +27,14 @@ export default function Mensagens() {
   const [openNew, setOpenNew] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (active) setMobileView('thread');
+  }, [active]);
 
   const recorderControls = useAudioRecorder();
 
@@ -242,11 +247,14 @@ export default function Mensagens() {
   return (
     <div className="pb-8">
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
-      <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[280px_1fr]">
+      <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}
-        <div className="flex flex-col rounded-md border border-border bg-card overflow-hidden">
+        <div className={cn(
+          "flex flex-col rounded-md border border-border bg-card overflow-hidden transition-all duration-300",
+          mobileView === 'thread' ? "hidden md:flex" : "flex"
+        )}>
           <div className="flex items-center justify-between border-b border-border p-2">
-            <span className="text-xs font-medium text-muted-foreground">Conversas</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
             <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) setSearchTerm(""); }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
@@ -331,16 +339,41 @@ export default function Mensagens() {
         </div>
 
         {/* Thread */}
-        <div className="flex flex-col rounded-md border border-border bg-card overflow-hidden">
+        <div className={cn(
+          "flex flex-col rounded-md border border-border bg-card overflow-hidden transition-all duration-300",
+          mobileView === 'list' ? "hidden md:flex" : "flex"
+        )}>
           {!active ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              Selecione uma conversa para começar
+            <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground bg-muted/5">
+              <div className="p-6 bg-muted/20 rounded-full mb-4">
+                <MessageSquare className="h-10 w-10 opacity-40" />
+              </div>
+              <p className="text-sm font-medium">Selecione uma conversa para começar</p>
+              <p className="text-[11px] opacity-60 mt-1">Sua comunicação segura e direta</p>
             </div>
           ) : (
             <>
-              <div className="border-b border-border p-3">
-                <div className="text-sm font-medium">
-                  {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
+              <div className="border-b border-border p-3 flex items-center gap-3 bg-card/50">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="md:hidden h-8 w-8" 
+                  onClick={() => setMobileView('list')}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                    {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <div className="text-sm font-bold truncate">
+                      {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                      {activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Online"}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 space-y-2">

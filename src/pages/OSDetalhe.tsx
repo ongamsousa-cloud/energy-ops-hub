@@ -401,47 +401,70 @@ export default function OSDetalhe() {
     }
   }, [addMat]);
 
-   async function useMaterial(osMaterial: any, qty: number, warehouseId: string, type: "saida" | "devolucao" = "saida", originalMovementId?: string) {
-     if (!user) return;
-     setBusy(true);
-     try {
-       const movementPayload: any = {
-         material_id: osMaterial.material_id,
-         quantity: qty,
-         type: type,
-         os_id: id,
-         professional_id: user.id,
-         created_by: user.id,
-         notes: type === "saida" ? `Retirada OS #${os.numero}` : `Devolução OS #${os.numero}`,
-       };
+    async function useMaterial(osMaterial: any, qty: number, warehouseId: string, type: "saida" | "devolucao" = "saida", originalMovementId?: string) {
+      if (!user) return;
+      if (!qty || qty <= 0) return toast.error("Informe a quantidade");
+      if (!warehouseId) return toast.error("Selecione o almoxarifado");
+
+      // Validation: Available stock for "saida"
+      if (type === "saida") {
+        const level = stockLevels.find(l => l.material_id === osMaterial.material_id && l.warehouse_id === warehouseId);
+        const available = level ? Number(level.quantity) : 0;
+        if (qty > available) {
+          return toast.error(`Saldo insuficiente no almoxarifado. Disponível: ${available}`);
+        }
+      }
+
+      // Validation: Return limit for "devolucao"
+      if (type === "devolucao") {
+        const maxReturn = Number(osMaterial.quantity_used || 0);
+        if (qty > maxReturn) {
+          return toast.error(`Quantidade de devolução excede o saldo utilizado na OS. Máximo: ${maxReturn}`);
+        }
+      }
+
+      setBusy(true);
+      try {
+        const movementPayload: any = {
+          material_id: osMaterial.material_id,
+          quantity: qty,
+          type: type,
+          os_id: id,
+          professional_id: user.id,
+          created_by: user.id,
+          notes: type === "saida" ? `Retirada OS #${os.numero}` : `Devolução OS #${os.numero}`,
+          unit_cost: osMaterial.materials?.cost_price || 0,
+          total_cost: qty * (osMaterial.materials?.cost_price || 0)
+        };
  
-       if (type === "saida") {
-         movementPayload.from_warehouse_id = warehouseId;
-       } else {
-         movementPayload.to_warehouse_id = warehouseId;
-         movementPayload.parent_movement_id = originalMovementId;
-       }
+        if (type === "saida") {
+          movementPayload.from_warehouse_id = warehouseId;
+        } else {
+          movementPayload.to_warehouse_id = warehouseId;
+          movementPayload.parent_movement_id = originalMovementId;
+        }
  
-       const { error: moveError } = await supabase.from("stock_movements").insert(movementPayload);
-       if (moveError) throw moveError;
+        const { error: moveError } = await supabase.from("stock_movements").insert(movementPayload);
+        if (moveError) throw moveError;
  
-       const newUsedQty = type === "saida" 
-         ? (Number(osMaterial.quantity_used) || 0) + qty 
-         : (Number(osMaterial.quantity_used) || 0) - qty;
+        const newUsedQty = type === "saida" 
+          ? (Number(osMaterial.quantity_used) || 0) + qty 
+          : (Number(osMaterial.quantity_used) || 0) - qty;
  
-       const { error: updateError } = await supabase.from("os_materials")
-         .update({ quantity_used: Math.max(0, newUsedQty) })
-         .eq("id", osMaterial.id);
-       if (updateError) throw updateError;
+        const { error: updateError } = await supabase.from("os_materials")
+          .update({ quantity_used: Math.max(0, newUsedQty) })
+          .eq("id", osMaterial.id);
+        if (updateError) throw updateError;
  
-       toast.success(type === "saida" ? "Material retirado com sucesso" : "Devolução registrada com sucesso");
-       load();
-     } catch (err: any) {
-       toast.error("Erro ao registrar: " + err.message);
-     } finally {
-       setBusy(false);
-     }
-   }
+        toast.success(type === "saida" ? "Material retirado com sucesso" : "Devolução registrada com sucesso");
+        load();
+        loadStockLevels();
+      } catch (err: any) {
+        toast.error("Erro ao registrar: " + err.message);
+      } finally {
+        setBusy(false);
+      }
+    }
 
    const [consumeDialog, setConsumeDialog] = useState<{ 
      open: boolean; 

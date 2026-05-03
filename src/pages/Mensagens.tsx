@@ -79,19 +79,19 @@ export default function Mensagens() {
      return `${mins}:${secs.toString().padStart(2, '0')}`;
    };
 
-   const addAudioElement = (blob: Blob) => {
-     console.log("Gravação concluída:", blob.size, "bytes");
-     if (blob.size < 100) {
-       console.warn("Áudio muito pequeno, possível erro de captura");
-       toast.error("Falha ao capturar áudio. Tente novamente.");
-       setRecordingMode(null);
-       return;
-     }
-     setAudioBlob(blob);
-     if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
-     setAudioPreviewUrl(URL.createObjectURL(blob));
-     setRecordingMode(null);
-   };
+    const addAudioElement = (blob: Blob) => {
+      console.log("Gravação concluída:", blob.size, "bytes");
+      if (blob.size < 500) {
+        console.warn("Áudio muito pequeno, possível erro de captura ou gravação muito curta");
+        toast.error("Áudio muito curto ou falha na captura. Tente novamente.");
+        setRecordingMode(null);
+        return;
+      }
+      setAudioBlob(blob);
+      if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
+      setAudioPreviewUrl(URL.createObjectURL(blob));
+      setRecordingMode(null);
+    };
  
    useEffect(() => {
      return () => {

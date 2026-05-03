@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Search, Plus, Trash2, X } from "lucide-react";
+ import { Search, Plus, Trash2, X, AlertCircle } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
    const [atividades, setAtividades] = useState<any[]>([]);
+   const [servicoHasNoActivities, setServicoHasNoActivities] = useState(false);
    const [categorias, setCategorias] = useState<any[]>([]);
    const [servicos, setServicos] = useState<any[]>([]);
    const [selectedServicoId, setSelectedServicoId] = useState<string>("");
@@ -72,14 +73,21 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      ]);
  
      setObras(resObras.data ?? []);
-     setAtividades(resAtividades.data ?? []);
-     setCategorias(resCats.data ?? []);
-     setServicos(resServicos.data ?? []);
+      const allAtividades = resAtividades.data ?? [];
+      setAtividades(allAtividades);
+      setCategorias(resCats.data ?? []);
+      const allServicos = resServicos.data ?? [];
+      setServicos(allServicos);
      setGestores(resGestores.data ?? []);
      setEquipes(resEquipes.data ?? []);
      
-     if (resServicos.data?.length) {
-       setSelectedServicoId(resServicos.data[0].id);
+      if (allServicos.length) {
+        const firstServId = allServicos[0].id;
+        setSelectedServicoId(firstServId);
+        // Check if this service has any activities via its categories
+        const servCats = resCats.data?.filter(c => c.servico_id === firstServId) || [];
+        const hasAtvs = allAtividades.some(a => servCats.some(c => c.id === a.categoria_id));
+        setServicoHasNoActivities(!hasAtvs);
      }
  
      if (resGestores.data?.length === 1) {
@@ -234,10 +242,19 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
              <div className="space-y-2">
                <Label>Serviço Principal <span className="text-destructive">*</span></Label>
-               <Select value={selectedServicoId} onValueChange={(v) => {
-                 setSelectedServicoId(v);
-                 setSelectedCategoriaId("all");
-               }}>
+               <Select 
+                 value={selectedServicoId} 
+                 onValueChange={(v) => {
+                   setSelectedServicoId(v);
+                   setSelectedCategoriaId("all");
+                   const servCats = categorias.filter(c => c.servico_id === v);
+                   const hasAtvs = atividades.some(a => servCats.some(c => c.id === a.categoria_id));
+                   setServicoHasNoActivities(!hasAtvs);
+                   if (!hasAtvs) {
+                     toast.warning("Atenção: Este serviço não possui atividades cadastradas nas suas categorias.");
+                   }
+                 }}
+               >
                  <SelectTrigger>
                    <SelectValue placeholder="Selecione o serviço" />
                  </SelectTrigger>
@@ -267,6 +284,16 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
              </div>
            )}
 
+            {servicoHasNoActivities && (
+              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md flex items-start gap-2 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Nenhuma atividade configurada</p>
+                  <p>Este serviço ou suas categorias não possuem itens cadastrados no catálogo técnico. Verifique as configurações do banco de dados.</p>
+                </div>
+              </div>
+            )}
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">Atividades / Serviços <span className="text-destructive">*</span></Label>
@@ -285,7 +312,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                            <SelectValue placeholder="Filtrar por Categoria" />
                          </SelectTrigger>
                          <SelectContent>
-                           <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                            <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                            <SelectItem value="all_global">Catálogo Completo (Sem Filtros)</SelectItem>
                            {categorias
                              .filter(c => !selectedServicoId || c.servico_id === selectedServicoId)
                              .map((c) => (
@@ -297,10 +325,14 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
                       <CommandList className="max-h-[450px]">
                        <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
-                       {categorias
-                         .filter(c => (selectedCategoriaId === "all" || c.id === selectedCategoriaId) && (!selectedServicoId || c.servico_id === selectedServicoId))
-                         .map(cat => {
-                           const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
+                        {categorias
+                          .filter(cat => {
+                            if (selectedCategoriaId === "all_global") return true;
+                            if (selectedCategoriaId === "all") return !selectedServicoId || cat.servico_id === selectedServicoId;
+                            return cat.id === selectedCategoriaId;
+                          })
+                          .map(cat => {
+                            const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
                            if (catAtividades.length === 0) return null;
                            return (
                              <CommandGroup key={cat.id} heading={cat.nome}>

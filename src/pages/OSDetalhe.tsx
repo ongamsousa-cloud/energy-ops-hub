@@ -10,9 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart } from "lucide-react";
+ import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter } from "lucide-react";
+ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
 import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
@@ -33,7 +35,10 @@ export default function OSDetalhe() {
    const [newMessage, setNewMessage] = useState("");
    const [busy, setBusy] = useState(false);
    const [cats, setCats] = useState<any[]>([]);
-   const [atvs, setAtvs] = useState<any[]>([]);
+    const [atvs, setAtvs] = useState<any[]>([]);
+    const [allAtvs, setAllAtvs] = useState<any[]>([]);
+    const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
+    const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
    const [equipes, setEquipes] = useState<any[]>([]);
    const [profs, setProfs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
@@ -102,10 +107,28 @@ export default function OSDetalhe() {
     setEvCheck(checkEvidenceCompleteness(evid, items, evRules));
   }, [evid, items, evRules]);
 
-  useEffect(() => {
-    if (!form.categoria_id) { setAtvs([]); return; }
-    supabase.from("atividades").select("*").eq("categoria_id", form.categoria_id).eq("ativo", true).order("codigo_item").then(({ data }) => setAtvs(data ?? []));
-  }, [form.categoria_id]);
+    useEffect(() => {
+      // Load catalog for all authorized profiles
+      if (os?.servico_id || hasRole(['admin', 'gestor', 'supervisor', 'campo'])) {
+        supabase.from("atividades")
+          .select("*, categoria:categorias(nome, servico_id)")
+          .eq("ativo", true)
+          .order("codigo_item")
+          .then(({ data }) => {
+            setAllAtvs(data ?? []);
+          });
+      }
+    }, [os?.servico_id, roles, hasRole]);
+
+    useEffect(() => {
+      let filtered = allAtvs;
+      if (selectedCategoriaId !== "all") {
+        filtered = allAtvs.filter(a => a.categoria_id === selectedCategoriaId);
+      } else if (os?.servico_id) {
+        filtered = allAtvs.filter(a => a.categoria?.servico_id === os.servico_id);
+      }
+      setAtvs(filtered);
+    }, [allAtvs, selectedCategoriaId, os?.servico_id]);
 
    useEffect(() => {
      const code = codes.find(c => c.id === form.execution_code_id);
@@ -129,19 +152,29 @@ export default function OSDetalhe() {
     });
   }
 
-  async function addItem() {
-    if (!form.categoria_id || !form.atividade_id || !form.quantidade) return toast.error("Preencha todos os campos");
-    const q = Number(form.quantidade);
-    if (!(q > 0)) return toast.error("Quantidade inválida");
-    const geo = ativSel?.exige_localizacao ? await getGeo() : {};
+   async function addItem(activity?: any) {
+     const activityId = activity?.id || form.atividade_id;
+     const categoryId = activity?.categoria_id || form.categoria_id;
+     
+     if (!activityId || !form.quantidade) {
+       if (!form.quantidade) toast.error("Informe a quantidade");
+       else toast.error("Selecione a atividade");
+       return;
+     }
+
+     const targetAtv = activity || atvs.find(a => a.id === activityId);
+     const q = Number(form.quantidade);
+     if (!(q > 0)) return toast.error("Quantidade inválida");
+     const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
+
     const { error } = await supabase.from("os_atividades").insert({
       os_id: id,
-      atividade_id: form.atividade_id,
-      categoria_id: form.categoria_id,
+       atividade_id: activityId,
+       categoria_id: categoryId,
       quantidade: q,
-      umd_unitaria: ativSel.umd_unitaria,
-      umd_total: q * Number(ativSel.umd_unitaria),
-      unidade: ativSel.unidade,
+       umd_unitaria: targetAtv.umd_unitaria,
+       umd_total: q * Number(targetAtv.umd_unitaria),
+       unidade: targetAtv.unidade,
       observacao: form.observacao || null,
       latitude: geo.lat, longitude: geo.lng,
       created_by: user!.id,
@@ -479,103 +512,6 @@ export default function OSDetalhe() {
          </Card>
       </div>
 
-      {/* Itens */}
-      <div className="mt-8 mb-3 flex items-end justify-between">
-        <h2 className="text-sm font-medium">Lançamentos</h2>
-        {canEdit && (
-          <Dialog open={add} onOpenChange={setAdd}>
-            <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
-              <div className="grid gap-3">
-                <div>
-                  <Label>Categoria</Label>
-                  <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
-                    <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                    <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
-                  </Select>
-                </div>
-                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                   <div>
-                     <Label>Atividade</Label>
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                          placeholder="Buscar atividade..." 
-                          className="pl-9 h-9" 
-                          value={searchTerm} 
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          disabled={!form.categoria_id}
-                        />
-                      </div>
-                      <Select 
-                        value={form.atividade_id} 
-                        onValueChange={(v)=>setForm({...form, atividade_id: v})} 
-                        disabled={!form.categoria_id}
-                      >
-                        <SelectTrigger><SelectValue placeholder="Selecione na lista"/></SelectTrigger>
-                        <SelectContent>
-                          {atvs
-                            .filter(a => !searchTerm || a.codigo_item.toLowerCase().includes(searchTerm.toLowerCase()) || a.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
-                            .map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                   </div>
-                   <div>
-                     <Label>Código Técnico (Base Técnica)</Label>
-                     <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
-                       <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="none">Nenhum</SelectItem>
-                         {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
-                       </SelectContent>
-                     </Select>
-                   </div>
-                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                    <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
-                  </div>
-                  <div>
-                    <Label>UMD calculada</Label>
-                    <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
-                  </div>
-                </div>
-                <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
-                <Button onClick={addItem}>Salvar lançamento</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-      {items.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
-      ) : (
-        <div className="overflow-hidden rounded-md border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
-            </thead>
-            <tbody>
-              {items.map((i)=>(
-                <tr key={i.id} className="border-b border-border last:border-0">
-                  <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
-                  <td className="px-3 py-2">{i.atividade?.descricao}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
-                  <td className="px-3 py-2">{i.unidade}</td>
-                  <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
-                  <td className="px-3 py-2 text-right">
-                    {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
 
        <Tabs defaultValue="atividades" className="mt-8">
           <TabsList className="grid w-full grid-cols-5">
@@ -587,45 +523,129 @@ export default function OSDetalhe() {
           </TabsList>
 
           <TabsContent value="atividades" className="mt-4">
-            <div className="flex items-end justify-between mb-3">
-              <h2 className="text-sm font-medium">Lançamentos realizados</h2>
-              {canEdit && (
-                <Dialog open={add} onOpenChange={setAdd}>
-                  <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
-                    <div className="grid gap-3">
-                      <div>
-                        <Label>Categoria</Label>
-                        <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
-                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                          <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Atividade</Label>
-                        <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                          <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                          <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
-                        </div>
-                        <div>
-                          <Label>UMD calculada</Label>
-                          <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
-                        </div>
-                      </div>
-                      <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
-                      <Button onClick={addItem}>Salvar lançamento</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
+             <div className="flex items-end justify-between mb-3">
+               <h2 className="text-sm font-medium uppercase text-muted-foreground tracking-wider">Histórico de Lançamentos</h2>
+               {canEdit && (
+                 <Dialog open={add} onOpenChange={setAdd}>
+                   <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4"/>Lançar Atividade</Button></DialogTrigger>
+                   <DialogContent className="max-w-xl">
+                     <DialogHeader>
+                       <DialogTitle>Novo Lançamento Técnico</DialogTitle>
+                       <DialogDescription>Selecione a atividade do catálogo e informe a produtividade realizada.</DialogDescription>
+                     </DialogHeader>
+                     <div className="grid gap-4 py-4">
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">Catálogo de Atividades</Label>
+                         <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                           <PopoverTrigger asChild>
+                             <Button variant="outline" className="w-full justify-start text-left font-normal h-12">
+                               {form.atividade_id ? (
+                                 <div className="flex flex-col">
+                                   <span className="font-bold text-primary text-xs">{allAtvs.find(a => a.id === form.atividade_id)?.codigo_item}</span>
+                                   <span className="truncate text-sm">{allAtvs.find(a => a.id === form.atividade_id)?.descricao}</span>
+                                 </div>
+                               ) : (
+                                 <span className="text-muted-foreground flex items-center gap-2"><Search className="h-4 w-4" /> Pesquisar no catálogo completo...</span>
+                               )}
+                             </Button>
+                           </PopoverTrigger>
+                           <PopoverContent className="w-[500px] p-0" align="start">
+                             <Command>
+                               <div className="p-2 border-b flex gap-2 bg-muted/30">
+                                 <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
+                                   <SelectTrigger className="h-9 text-xs flex-1">
+                                     <SelectValue placeholder="Filtrar por Categoria" />
+                                   </SelectTrigger>
+                                   <SelectContent>
+                                     <SelectItem value="all">Todas as Atividades do Serviço</SelectItem>
+                                     <SelectItem value="all_global">Exibir Catálogo Completo (Sem Filtros)</SelectItem>
+                                     {cats.filter(c => !os.servico_id || c.servico_id === os.servico_id).map((c) => (
+                                       <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                                     ))}
+                                   </SelectContent>
+                                 </Select>
+                               </div>
+                               <CommandInput placeholder="Digite o código ou descrição..." className="h-10" />
+                               <CommandList className="max-h-[300px]">
+                                 <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
+                                 {cats
+                                   .filter(cat => {
+                                     if (selectedCategoriaId === "all_global") return true;
+                                     if (selectedCategoriaId === "all") return !os.servico_id || cat.servico_id === os.servico_id;
+                                     return cat.id === selectedCategoriaId;
+                                   })
+                                   .map(cat => {
+                                     const catAtividades = allAtvs.filter(a => a.categoria_id === cat.id);
+                                     if (catAtividades.length === 0) return null;
+                                     return (
+                                       <CommandGroup key={cat.id} heading={cat.nome}>
+                                         {catAtividades.map((a) => (
+                                           <CommandItem
+                                             key={a.id}
+                                             value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
+                                             onSelect={() => {
+                                               setForm({...form, atividade_id: a.id, categoria_id: a.categoria_id});
+                                               setActivityPopoverOpen(false);
+                                             }}
+                                             className="cursor-pointer"
+                                           >
+                                             <div className="flex flex-col w-full py-1">
+                                               <div className="flex justify-between items-center mb-0.5">
+                                                 <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
+                                                 <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full uppercase font-medium">{a.unidade}</span>
+                                               </div>
+                                               <span className="text-sm line-clamp-2 leading-tight">{a.descricao}</span>
+                                             </div>
+                                           </CommandItem>
+                                         ))}
+                                       </CommandGroup>
+                                     );
+                                   })}
+                               </CommandList>
+                             </Command>
+                           </PopoverContent>
+                         </Popover>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                           <Label>Código Técnico</Label>
+                           <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
+                             <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="none">Nenhum</SelectItem>
+                               {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div className="space-y-2">
+                           <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
+                           <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
+                         </div>
+                       </div>
+
+                       <div className="p-3 bg-muted/20 rounded-md border border-dashed flex justify-between items-center">
+                         <span className="text-xs text-muted-foreground uppercase font-bold">Produtividade Estimada</span>
+                         <span className="text-lg font-mono font-bold text-primary">{umdTotal.toFixed(4)} <span className="text-xs font-normal">UMD</span></span>
+                       </div>
+
+                       <div className="space-y-2">
+                         <Label>Observações</Label>
+                         <Textarea 
+                           placeholder="Detalhes adicionais..."
+                           value={form.observacao} 
+                           onChange={(e)=>setForm({...form, observacao: e.target.value})}
+                         />
+                       </div>
+                       
+                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade}>
+                         Confirmar Lançamento
+                       </Button>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
+               )}
+             </div>
             {items.length === 0 ? (
               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
             ) : (

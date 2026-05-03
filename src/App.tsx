@@ -56,7 +56,11 @@ const App = () => (
 
             {/* Departamento de Estoque - shell isolado */}
             <Route path="/estoque-app" element={<ProtectedRoute><EstoqueShell /></ProtectedRoute>}>
-              <Route index element={<Estoque />} />
+              <Route index element={<Estoque defaultTab="overview" />} />
+              <Route path="materiais" element={<Estoque defaultTab="materials" />} />
+              <Route path="almoxarifados" element={<Estoque defaultTab="warehouses" />} />
+              <Route path="movimentacoes" element={<Estoque defaultTab="movements" />} />
+              <Route path="alertas" element={<Estoque defaultTab="alerts" />} />
             </Route>
 
             {/* Demais departamentos */}

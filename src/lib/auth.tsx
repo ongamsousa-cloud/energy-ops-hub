@@ -57,8 +57,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadUserData(uid: string) {
     const [{ data: r }, { data: p }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase.from("profiles").select("id,nome,email").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("id,nome,email,ativo").eq("id", uid).maybeSingle(),
     ]);
+    if (p && (p as any).ativo === false) {
+      // Conta pendente de aprovação — desloga imediatamente
+      await supabase.auth.signOut();
+      localStorage.removeItem("lovable_mock_user");
+      setUser(null);
+      setSession(null);
+      setRoles([]);
+      setProfile(null);
+      setIsMock(false);
+      setLoading(false);
+      const { toast } = await import("sonner");
+      toast.error("Sua conta está aguardando aprovação do administrador.");
+      return;
+    }
     setRoles((r ?? []).map((x: any) => x.role as AppRole));
     setProfile(p as any);
     setLoading(false);

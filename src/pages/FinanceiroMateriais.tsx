@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 export default function FinanceiroMateriais() {
   const [rows, setRows] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [consumoTrend, setConsumoTrend] = useState<number>(0);
+  const [itensExtras, setItensExtras] = useState<number>(0);
 
   useEffect(() => {
     supabase.from("os_atividades")
@@ -20,6 +22,33 @@ export default function FinanceiroMateriais() {
       `)
       .order("created_at", { ascending: false })
       .then(({ data }) => setRows(data ?? []));
+
+    // Consumo mensal: variação % entre últimos 30d e os 30d anteriores
+    (async () => {
+      const now = new Date();
+      const d30 = new Date(now); d30.setDate(d30.getDate() - 30);
+      const d60 = new Date(now); d60.setDate(d60.getDate() - 60);
+      const { data: mov } = await supabase
+        .from("stock_movements")
+        .select("quantity, type, created_at")
+        .gte("created_at", d60.toISOString());
+      let atual = 0, anterior = 0;
+      (mov ?? []).forEach((m: any) => {
+        if (m.type !== "saida") return;
+        const t = new Date(m.created_at).getTime();
+        if (t >= d30.getTime()) atual += Number(m.quantity || 0);
+        else anterior += Number(m.quantity || 0);
+      });
+      const trend = anterior > 0 ? Math.round(((atual - anterior) / anterior) * 1000) / 10 : (atual > 0 ? 100 : 0);
+      setConsumoTrend(trend);
+
+      // Itens extras: registros financeiros marcados is_extra
+      const { count } = await supabase
+        .from("financial_material_records")
+        .select("id", { count: "exact", head: true })
+        .eq("is_extra", true);
+      setItensExtras(count ?? 0);
+    })();
   }, []);
 
   const filteredRows = useMemo(() => {
@@ -48,7 +77,9 @@ export default function FinanceiroMateriais() {
             <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><TrendingUp className="h-5 w-5" /></div>
             <div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Consumo Mensal</p>
-              <p className="text-xl font-bold">+12.4%</p>
+              <p className={`text-xl font-bold ${consumoTrend >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                {consumoTrend >= 0 ? "+" : ""}{consumoTrend.toFixed(1)}%
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -57,7 +88,7 @@ export default function FinanceiroMateriais() {
             <div className="p-2 bg-red-100 rounded-lg text-red-600"><AlertTriangle className="h-5 w-5" /></div>
             <div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Itens Extras</p>
-              <p className="text-xl font-bold text-red-700">05</p>
+              <p className="text-xl font-bold text-red-700">{String(itensExtras).padStart(2,"0")}</p>
             </div>
           </CardContent>
         </Card>

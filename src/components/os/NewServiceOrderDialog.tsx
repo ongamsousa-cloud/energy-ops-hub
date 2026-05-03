@@ -97,10 +97,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess }:
     
     setBusy(true);
     try {
-      const osNumber = `OS-${Math.floor(1000 + Math.random() * 9000)}`;
-
       const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
-        numero: osNumber,
         obra_id: formData.obraId,
         profissional_id: user!.id,
         assigned_manager_id: formData.gestorId || null,

@@ -867,10 +867,15 @@ export default function Mensagens() {
                   </div>
                 ) : isRecording ? (
                   <div className="flex items-center justify-between bg-card p-2 rounded-lg border border-red-200 animate-pulse">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                      <span className="text-xs font-medium text-red-600">Gravando...</span>
-                    </div>
+                       <div className="flex items-center gap-3">
+                         <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                         <div className="flex flex-col">
+                           <span className="text-xs font-medium text-red-600">Gravando...</span>
+                           <span className="text-[10px] font-mono text-red-400">
+                             {formatDuration(recordingDuration)}
+                           </span>
+                         </div>
+                       </div>
                      <div className="flex items-center gap-2">
                        <Button size="sm" variant="ghost" onClick={() => recorderControls.stopRecording()} className="text-muted-foreground h-8">
                          Cancelar

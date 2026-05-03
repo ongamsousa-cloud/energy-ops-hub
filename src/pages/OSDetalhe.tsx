@@ -404,7 +404,7 @@ export default function OSDetalhe() {
     });
     if (error) return toast.error(error.message);
     setAddMat(false);
-    setMatForm({ material_id: "", quantity: "1" });
+    setMatForm({ material_id: "", quantity: "1", warehouse_id: "" });
     toast.success("Material adicionado");
     load();
   }

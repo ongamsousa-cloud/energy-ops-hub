@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
- import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare } from "lucide-react";
+import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
 
@@ -41,6 +41,12 @@ export default function OSDetalhe() {
      observacao: "" 
    });
    const [checklist, setChecklist] = useState<Record<string, any>>({});
+   const [mediaUpload, setMediaUpload] = useState<{
+     file: File | null;
+     previewUrl: string | null;
+     uploading: boolean;
+     error: string | null;
+   }>({ file: null, previewUrl: null, uploading: false, error: null });
 
   const isOwner = os && user && os.profissional_id === user.id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
@@ -149,25 +155,59 @@ export default function OSDetalhe() {
     load();
   }
 
-   async function uploadEvidencia(e: React.ChangeEvent<HTMLInputElement>, isCamera: boolean = false) {
-     const f = e.target.files?.[0]; if (!f) return;
-     toast.info("Processando arquivo...");
-     const isVideo = f.type.startsWith("video/");
-     const path = `${id}/${crypto.randomUUID()}-${f.name}`;
-     const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
-     if (error) return toast.error(error.message);
-     const geo = await getGeo();
-     await supabase.from("os_evidences").insert({ 
-       os_id: id, 
-       url: path, 
-       user_id: user!.id, 
-       tipo: isVideo ? "video" : "foto",
-       localizacao: geo,
-       metadata: { size: f.size, name: f.name, type: f.type }
+   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+     const file = e.target.files?.[0];
+     if (!file) return;
+     
+     if (mediaUpload.previewUrl) URL.revokeObjectURL(mediaUpload.previewUrl);
+     
+     setMediaUpload({
+       file,
+       previewUrl: URL.createObjectURL(file),
+       uploading: false,
+       error: null
      });
      e.target.value = "";
-     toast.success("Evidência enviada");
-     load();
+   }
+
+   async function executeUpload() {
+     if (!mediaUpload.file) return;
+     
+     setMediaUpload(prev => ({ ...prev, uploading: true, error: null }));
+     const f = mediaUpload.file;
+     const isVideo = f.type.startsWith("video/");
+     const path = `${id}/${crypto.randomUUID()}-${f.name}`;
+     
+     try {
+       const { error: storageError } = await supabase.storage.from("os-evidences").upload(path, f, { 
+         contentType: f.type,
+         cacheControl: '3600',
+         upsert: false
+       });
+       
+       if (storageError) throw storageError;
+       
+       const geo = await getGeo();
+       const { error: dbError } = await supabase.from("os_evidences").insert({ 
+         os_id: id, 
+         url: path, 
+         user_id: user!.id, 
+         tipo: isVideo ? "video" : "foto",
+         localizacao: geo,
+         metadata: { size: f.size, name: f.name, type: f.type }
+       });
+       
+       if (dbError) throw dbError;
+       
+       toast.success("Evidência enviada com sucesso!");
+       setMediaUpload({ file: null, previewUrl: null, uploading: false, error: null });
+       load();
+     } catch (err: any) {
+       console.error("Upload error:", err);
+       const errorMessage = err.message || "Falha ao enviar arquivo";
+       setMediaUpload(prev => ({ ...prev, uploading: false, error: errorMessage }));
+       toast.error(errorMessage);
+     }
    }
 
   async function finalizar() {

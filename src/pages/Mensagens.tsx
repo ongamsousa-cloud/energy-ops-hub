@@ -44,10 +44,40 @@ export default function Mensagens() {
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      // Simplificando fluxo de contatos para permitir comunicação entre departamentos
-      // A pedido do usuário: "cada departamento consiga enviar uma mensagem exclusiva pra determinado"
-      // Isso implica em acesso total ou por departamento. Vamos liberar a busca geral.
-      setContatos(all);
+      let filtered: Profile[] = [];
+      const isAdminGestor = roles.some((r) => r === "admin" || r === "gestor");
+      
+      if (isAdminGestor) {
+        filtered = all;
+      } else if (roles.includes("supervisor")) {
+        // gestores/admin + técnicos das equipes que ele supervisiona
+        const { data: eqs } = await supabase.from("equipes").select("id").eq("supervisor_id", user.id);
+        const eqIds = (eqs ?? []).map((e: any) => e.id);
+        let tecIds: string[] = [];
+        if (eqIds.length) {
+          const { data: mems } = await supabase.from("equipe_membros").select("profissional_id").in("equipe_id", eqIds);
+          tecIds = (mems ?? []).map((m: any) => m.profissional_id);
+        }
+        filtered = all.filter((p) =>
+          p.role === "admin" || p.role === "gestor" || p.role === "supervisor" || (p.role === "campo" && tecIds.includes(p.id))
+        );
+      } else if (roles.includes("campo")) {
+        // só supervisores das equipes em que o técnico participa + gestores/admin
+        const { data: mems } = await supabase.from("equipe_membros").select("equipe_id").eq("profissional_id", user.id);
+        const eqIds = (mems ?? []).map((m: any) => m.equipe_id);
+        let supIds: string[] = [];
+        if (eqIds.length) {
+          const { data: eqs } = await supabase.from("equipes").select("supervisor_id").in("id", eqIds);
+          supIds = (eqs ?? []).map((e: any) => e.supervisor_id).filter(Boolean);
+        }
+        filtered = all.filter((p) => supIds.includes(p.id) || p.role === "admin" || p.role === "gestor");
+      } else if (roles.includes("financeiro") || roles.includes("auditor")) {
+        filtered = all.filter((p) => p.role === "admin" || p.role === "gestor");
+      } else {
+        filtered = all.filter(p => p.role === "admin" || p.role === "gestor");
+      }
+      
+      setContatos(filtered);
     })();
   }, [user, roles]);
 

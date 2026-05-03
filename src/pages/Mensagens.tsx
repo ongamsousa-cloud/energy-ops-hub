@@ -34,7 +34,7 @@ export default function Mensagens() {
   const [searchTerm, setSearchTerm] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+   const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
@@ -46,12 +46,20 @@ export default function Mensagens() {
     if (active) setMobileView('thread');
   }, [active]);
 
-  const recorderControls = useAudioRecorder();
+   const recorderControls = useAudioRecorder(
+     {
+       noiseSuppression: true,
+       echoCancellation: true,
+     },
+     (err) => console.error("Erro no gravador:", err)
+   );
+ 
+   const isRecording = recorderControls.isRecording;
 
-   const addAudioElement = async (blob: Blob) => {
+   const addAudioElement = (blob: Blob) => {
      console.log("Gravação concluída:", blob.size, "bytes");
      setAudioBlob(blob);
-     setIsRecording(false);
+     setRecordingMode(null);
    };
 
   async function enviarAudio() {
@@ -227,7 +235,7 @@ export default function Mensagens() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length]);
 
-   async function getOrCreateConversa(other: Profile) {
+    async function getOrCreateConversa(other: Profile, skipLoad = false) {
      try {
        const existing = convs.find((c) => c.outros.length === 1 && c.outros[0].id === other.id);
        if (existing) return existing.id;
@@ -251,7 +259,7 @@ export default function Mensagens() {
          { conversation_id: c.id, user_id: other.id },
        ]);
 
-       await loadConvs();
+        if (!skipLoad) await loadConvs();
        return c.id;
      } catch (err) {
        console.error(err);
@@ -269,7 +277,8 @@ export default function Mensagens() {
      }
    }
 
-   async function sendBroadcast() {
+    async function sendBroadcast() {
+      if (isUploading) return;
      if (selectedContacts.length === 0) {
        toast.error("Selecione ao menos um destinatário.");
        return;
@@ -283,31 +292,34 @@ export default function Mensagens() {
      let audioUrl: string | null = null;
      // Se já temos uma URL pendente (upload já feito), usamos ela.
      // Senão, se temos um blob, fazemos o upload agora.
-     audioUrl = pendingAudioUrl;
-     if (audioBlob && !audioUrl) {
-       try {
-         const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-         const path = `chat/broadcast/${file.name}`;
-         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
-         if (upErr) { 
-           console.error("Erro no upload do broadcast:", upErr);
-           toast.error("Erro no upload do áudio: " + upErr.message); 
-           return; 
-         }
-         audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
-       } catch (e: any) {
-         console.error("Exceção no upload:", e);
-         toast.error("Falha ao processar áudio.");
-         return;
-       }
-     }
+      setIsUploading(true);
+      try {
+        audioUrl = pendingAudioUrl;
+        if (audioBlob && !audioUrl) {
+          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+          const path = `chat/broadcast/${file.name}`;
+          const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+          if (upErr) { 
+            console.error("Erro no upload do broadcast:", upErr);
+            toast.error("Erro no upload do áudio: " + upErr.message); 
+            setIsUploading(false);
+            return; 
+          }
+          audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+        }
+      } catch (e: any) {
+        console.error("Exceção no upload:", e);
+        toast.error("Falha ao processar áudio.");
+        setIsUploading(false);
+        return;
+      }
 
      const conteudo = text.trim() || null;
      let lastConvId: string | null = null;
      let okCount = 0;
 
-      for (const contact of selectedContacts) {
-        const convId = await getOrCreateConversa(contact);
+       for (const contact of selectedContacts) {
+         const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;
         lastConvId = convId;
 
@@ -326,13 +338,15 @@ export default function Mensagens() {
         okCount++;
       }
 
-      setText("");
-      setAudioBlob(null);
-      setPendingAudioUrl(null);
-     setSelectedContacts([]);
-     setOpenNew(false);
-     if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
-     toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
+       setText("");
+       setAudioBlob(null);
+       setPendingAudioUrl(null);
+       setSelectedContacts([]);
+       setOpenNew(false);
+       await loadConvs(); // Carrega tudo uma vez no final
+       if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
+      setIsUploading(false);
+      toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
    }
 
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
@@ -438,8 +452,18 @@ export default function Mensagens() {
     return groups;
   }, [filteredContatos]);
 
-  return (
-    <div className="pb-8">
+   return (
+     <div className="pb-8 relative">
+       {/* Headless Audio Recorder logic - always rendered but invisible */}
+       <div className="fixed -top-96 -left-96 opacity-0 pointer-events-none">
+         <AudioRecorder 
+           onRecordingComplete={addAudioElement} 
+           recorderControls={recorderControls}
+           downloadOnSavePress={false}
+           downloadFileExtension="webm"
+         />
+       </div>
+ 
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
       <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}
@@ -622,19 +646,16 @@ export default function Mensagens() {
                             Gravando Áudio...
                           </span>
                         </div>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
-                          onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }}
-                        >
-                          Parar Gravação
-                        </Button>
-                      </div>
-                    ) : null}
-                    <div className="hidden">
-                      <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
-                    </div>
+                         <Button 
+                           size="sm" 
+                           variant="destructive"
+                           className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
+                           onClick={() => recorderControls.stopRecording()}
+                         >
+                           Parar Gravação
+                         </Button>
+                       </div>
+                     ) : null}
 
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
@@ -659,16 +680,17 @@ export default function Mensagens() {
                             isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                             selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
                           )}
-                          onClick={() => { 
-                            if (selectedContacts.length === 0) return;
-                            if (!isRecording) { 
-                              recorderControls.startRecording(); 
-                              setIsRecording(true); 
-                            } else { 
-                              recorderControls.stopRecording(); 
-                              setIsRecording(false);
-                            } 
-                          }}
+                           onClick={() => { 
+                             if (selectedContacts.length === 0) return;
+                             if (!isRecording) { 
+                               setRecordingMode('broadcast');
+                               recorderControls.startRecording();
+                               toast.info("Iniciando gravação...");
+                             } else { 
+                               recorderControls.stopRecording();
+                               toast.info("Processando áudio...");
+                             } 
+                           }}
                           disabled={selectedContacts.length === 0}
                         >
                           <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />
@@ -822,14 +844,14 @@ export default function Mensagens() {
                       <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
                       <span className="text-xs font-medium text-red-600">Gravando...</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }} className="text-muted-foreground h-8">
-                        Cancelar
-                      </Button>
-                      <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
-                        Parar Gravação
-                      </Button>
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Button size="sm" variant="ghost" onClick={() => recorderControls.stopRecording()} className="text-muted-foreground h-8">
+                         Cancelar
+                       </Button>
+                       <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
+                         Parar Gravação
+                       </Button>
+                     </div>
                   </div>
                  ) : (
                    <div className="flex items-center gap-2">
@@ -858,7 +880,11 @@ export default function Mensagens() {
                            "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
                            isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
                          )}
-                         onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
+                          onClick={() => { 
+                            setRecordingMode('direct');
+                            recorderControls.startRecording();
+                            toast.info("Iniciando gravação...");
+                          }}
                          title="Gravar Áudio"
                        >
                          <Mic className="h-4 w-4" />

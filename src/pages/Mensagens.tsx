@@ -679,9 +679,11 @@ export default function Mensagens() {
                              if (selectedContacts.length === 0) return;
                              if (!isRecording) { 
                                setRecordingMode('broadcast');
-                               recorderControls.startRecording(); 
+                               recorderControls.startRecording();
+                               toast.info("Iniciando gravação...");
                              } else { 
-                               recorderControls.stopRecording(); 
+                               recorderControls.stopRecording();
+                               toast.info("Processando áudio...");
                              } 
                            }}
                           disabled={selectedContacts.length === 0}
@@ -875,7 +877,8 @@ export default function Mensagens() {
                          )}
                           onClick={() => { 
                             setRecordingMode('direct');
-                            recorderControls.startRecording(); 
+                            recorderControls.startRecording();
+                            toast.info("Iniciando gravação...");
                           }}
                          title="Gravar Áudio"
                        >

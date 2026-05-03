@@ -30,21 +30,25 @@ export default function OSList() {
       const isTechnician = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
       const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
     
-    let query = supabase.from("ordens_servico")
+    const fetchRows = () => {
+      let query = supabase.from("ordens_servico")
        .select(`
          *, 
          obra:obras(numero, nome, endereco, cidade, estado), 
          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
        `);
 
-      if (isTechnician) {
-      query = query.eq("profissional_id", user.id);
-      } else if (isSupervisor) {
-        query = query.eq("assigned_supervisor_id", user.id);
-    }
-
-    query.order("created_at", { ascending: false }).limit(200)
-      .then(({ data }) => setRows(data ?? []));
+      if (isTechnician) query = query.eq("profissional_id", user.id);
+      else if (isSupervisor) query = query.eq("assigned_supervisor_id", user.id);
+      query.order("created_at", { ascending: false }).limit(200)
+        .then(({ data }) => setRows(data ?? []));
+    };
+    fetchRows();
+    const ch = supabase
+      .channel("os-list-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico" }, fetchRows)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
   }, [user, hasRole]);
 
     const filteredRows = useMemo(() => {

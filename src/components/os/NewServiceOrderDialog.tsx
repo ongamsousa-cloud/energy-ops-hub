@@ -218,88 +218,115 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Gestor Responsável</Label>
-              <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o gestor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {gestores.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+             <div className="space-y-2">
+               <Label>Gestor Responsável</Label>
+               <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione o gestor" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {gestores.map((g) => (
+                     <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
 
-          {(hasRole(['admin', 'gestor', 'supervisor'])) && (
-            <div className="space-y-2">
-              <Label>Equipe Executora (Opcional)</Label>
-              <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">A definir pelo Gestor</SelectItem>
-                  {equipes.map((e) => (
-                    <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+             <div className="space-y-2">
+               <Label>Serviço Principal <span className="text-destructive">*</span></Label>
+               <Select value={selectedServicoId} onValueChange={(v) => {
+                 setSelectedServicoId(v);
+                 setSelectedCategoriaId("all");
+               }}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione o serviço" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {servicos.map((s) => (
+                     <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+           </div>
+ 
+           {(hasRole(['admin', 'gestor', 'supervisor'])) && (
+             <div className="space-y-2">
+               <Label>Equipe Executora (Opcional)</Label>
+               <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="none">A definir pelo Gestor</SelectItem>
+                   {equipes.map((e) => (
+                     <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+           )}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">Atividades / Serviços <span className="text-destructive">*</span></Label>
               
-              <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 gap-1">
-                    <Plus className="h-3.5 w-3.5" /> Adicionar Item
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="end">
-                  <Command>
-                    <div className="p-2 border-b">
-                      <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
-                        <SelectTrigger className="h-8 text-xs">
-                          <SelectValue placeholder="Filtrar por Categoria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas as Categorias</SelectItem>
-                          {categorias.map((c) => (
-                            <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <CommandInput placeholder="Buscar código ou descrição..." />
-                    <CommandList>
-                      <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
-                      <CommandGroup>
-                        {atividades
-                          .filter(a => selectedCategoriaId === "all" || a.categoria_id === selectedCategoriaId)
-                          .map((a) => (
-                          <CommandItem
-                            key={a.id}
-                            value={`${a.codigo_item} ${a.descricao}`}
-                            onSelect={() => addActivity(a)}
-                            className="cursor-pointer"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
-                              <span className="text-sm line-clamp-1">{a.descricao}</span>
-                              <span className="text-[10px] text-muted-foreground uppercase">{a.categoria?.nome} — {a.unidade}</span>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+               <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                 <PopoverTrigger asChild>
+                   <Button variant="outline" size="sm" className="h-8 gap-1">
+                     <Plus className="h-3.5 w-3.5" /> Adicionar Item do Catálogo
+                   </Button>
+                 </PopoverTrigger>
+                 <PopoverContent className="w-[500px] p-0" align="end">
+                   <Command>
+                     <div className="p-2 border-b space-y-2">
+                       <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
+                         <SelectTrigger className="h-8 text-xs">
+                           <SelectValue placeholder="Filtrar por Categoria" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
+                           {categorias
+                             .filter(c => !selectedServicoId || c.servico_id === selectedServicoId)
+                             .map((c) => (
+                               <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                             ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
+                     <CommandList className="max-h-[300px]">
+                       <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
+                       {categorias
+                         .filter(c => (selectedCategoriaId === "all" || c.id === selectedCategoriaId) && (!selectedServicoId || c.servico_id === selectedServicoId))
+                         .map(cat => {
+                           const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
+                           if (catAtividades.length === 0) return null;
+                           return (
+                             <CommandGroup key={cat.id} heading={cat.nome}>
+                               {catAtividades.map((a) => (
+                                 <CommandItem
+                                   key={a.id}
+                                   value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
+                                   onSelect={() => addActivity(a)}
+                                   className="cursor-pointer"
+                                 >
+                                   <div className="flex flex-col w-full">
+                                     <div className="flex justify-between items-start">
+                                       <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
+                                       <span className="text-[10px] text-muted-foreground uppercase">{a.unidade}</span>
+                                     </div>
+                                     <span className="text-sm line-clamp-2">{a.descricao}</span>
+                                   </div>
+                                 </CommandItem>
+                               ))}
+                             </CommandGroup>
+                           );
+                         })}
+                     </CommandList>
+                   </Command>
+                 </PopoverContent>
+               </Popover>
             </div>
 
             <div className="border rounded-md overflow-hidden">

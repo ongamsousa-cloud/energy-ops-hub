@@ -39,8 +39,13 @@
    const taxaAprov = (totalAprov / total) * 100;
  
    const dataPie = [
-     { name: "Aprovadas", value: totalAprov, color: "#10b981" },
-     { name: "Reprovadas", value: totalReprov, color: "#ef4444" },
+     { name: "Aprovadas", value: totalAprov || 0, color: "#10b981" },
+     { name: "Reprovadas", value: totalReprov || 0, color: "#ef4444" },
+   ];
+
+   // Bar chart config for quality
+   const barData = [
+     { name: 'Qualidade', aprov: totalAprov, reprov: totalReprov }
    ];
  
    return (
@@ -80,26 +85,33 @@
        </div>
  
        <div className="grid gap-6 md:grid-cols-2">
-         <Card className="p-4 shadow-none flex flex-col items-center">
-           <h4 className="text-sm font-semibold mb-4 w-full">Qualidade de Entrega</h4>
-           <div className="h-64 w-full">
+         <Card className="p-6 border-none shadow-sm flex flex-col">
+           <h4 className="text-sm font-semibold mb-6 flex items-center gap-2">
+             <ShieldCheck className="h-4 w-4 text-primary" />
+             Taxa de Qualidade Acumulada
+           </h4>
+           <div className="h-[250px] w-full">
              <ResponsiveContainer width="100%" height="100%">
-               <PieChart>
-                 <Pie
-                   data={dataPie}
-                   innerRadius={60}
-                   outerRadius={80}
-                   paddingAngle={5}
-                   dataKey="value"
-                 >
-                   {dataPie.map((entry, index) => (
-                     <Cell key={`cell-${index}`} fill={entry.color} />
-                   ))}
-                 </Pie>
-                 <Tooltip />
-                 <Legend verticalAlign="bottom" height={36} />
-               </PieChart>
+               <BarChart data={barData} layout="vertical" margin={{ left: -40, right: 20 }}>
+                 <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                 <XAxis type="number" hide />
+                 <YAxis dataKey="name" type="category" hide />
+                 <Tooltip 
+                   cursor={{ fill: 'transparent' }}
+                   contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "8px", border: "1px solid hsl(var(--border))" }}
+                 />
+                 <Bar dataKey="aprov" name="Aprovadas" stackId="a" fill="#10b981" radius={[4, 0, 0, 4]} barSize={40} animationDuration={1500} />
+                 <Bar dataKey="reprov" name="Reprovadas" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={40} animationDuration={1500} />
+               </BarChart>
              </ResponsiveContainer>
+             <div className="flex justify-center gap-6 mt-4 text-[11px] font-medium text-muted-foreground">
+               <div className="flex items-center gap-2">
+                 <div className="h-2.5 w-2.5 rounded-full bg-[#10b981]" /> Aprovadas ({totalAprov})
+               </div>
+               <div className="flex items-center gap-2">
+                 <div className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" /> Reprovadas ({totalReprov})
+               </div>
+             </div>
            </div>
          </Card>
  

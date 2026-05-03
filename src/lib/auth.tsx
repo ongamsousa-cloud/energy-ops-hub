@@ -12,6 +12,7 @@ interface AuthCtx {
   loading: boolean;
   signOut: () => Promise<void>;
   hasRole: (r: AppRole | AppRole[]) => boolean;
+  mockSignIn: (email: string) => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx | undefined>(undefined);
@@ -22,8 +23,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [profile, setProfile] = useState<AuthCtx["profile"]>(null);
   const [loading, setLoading] = useState(true);
+  const [isMock, setIsMock] = useState(false);
 
   useEffect(() => {
+    const mockUser = localStorage.getItem("lovable_mock_user");
+    if (mockUser) {
+      const data = JSON.parse(mockUser);
+      setUser(data.user);
+      setIsMock(true);
+      loadUserData(data.user.id);
+      return;
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setUser(s?.user ?? null);
@@ -59,11 +70,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (isMock) {
+      localStorage.removeItem("lovable_mock_user");
+      setUser(null);
+      setSession(null);
+      setRoles([]);
+      setProfile(null);
+      setIsMock(false);
+    } else {
+      await supabase.auth.signOut();
+    }
+  };
+
+  const mockSignIn = async (email: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from("profiles").select("id, nome").eq("email", email).single();
+      if (error || !data) throw new Error("Usuário não encontrado no banco de dados.");
+
+      const mockData = {
+        user: { id: data.id, email, user_metadata: { nome: data.nome } } as any,
+      };
+      localStorage.setItem("lovable_mock_user", JSON.stringify(mockData));
+      setUser(mockData.user);
+      setIsMock(true);
+      await loadUserData(data.id);
+    } catch (e: any) {
+      console.error(e);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Ctx.Provider value={{ user, session, roles, profile, loading, signOut, hasRole }}>
+    <Ctx.Provider value={{ user, session, roles, profile, loading, signOut, hasRole, mockSignIn }}>
       {children}
     </Ctx.Provider>
   );

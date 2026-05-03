@@ -604,17 +604,17 @@ export default function Mensagens() {
                        </button>
                      </div>
 
-                     <Button 
-                       size="icon" 
-                       onClick={() => enviar()} 
-                       disabled={!text.trim()}
-                       className={cn(
-                         "h-10 w-10 shrink-0 rounded-full shadow-md transition-all active:scale-95",
-                         text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
-                       )}
-                     >
-                       <Send className="h-4 w-4" />
-                     </Button>
+                      <Button 
+                        size="icon" 
+                        onClick={() => enviar()} 
+                        disabled={!text.trim() && !audioBlob}
+                        className={cn(
+                          "h-10 w-10 shrink-0 rounded-full shadow-md transition-all active:scale-95",
+                          (text.trim() || audioBlob) ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
                    </div>
                  )}
               </div>

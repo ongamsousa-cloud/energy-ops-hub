@@ -390,37 +390,47 @@ export default function OSDetalhe() {
     }
   }, [addMat]);
 
-  async function useMaterial(osMaterial: any, qty: number, warehouseId: string) {
-    if (!user) return;
-    setBusy(true);
-    try {
-      // 1. Registrar movimentação de saída
-      const { error: moveError } = await supabase.from("stock_movements").insert({
-        material_id: osMaterial.material_id,
-        from_warehouse_id: warehouseId,
-        quantity: qty,
-        type: "saida",
-        os_id: id,
-        professional_id: os.profissional_id,
-        created_by: user.id,
-        notes: `Consumo OS #${os.numero}`
-      });
-      if (moveError) throw moveError;
-
-      // 2. Atualizar quantidade usada no os_materials
-      const { error: updateError } = await supabase.from("os_materials")
-        .update({ quantity_used: (osMaterial.quantity_used || 0) + qty })
-        .eq("id", osMaterial.id);
-      if (updateError) throw updateError;
-
-      toast.success("Consumo registrado no estoque");
-      load();
-    } catch (err: any) {
-      toast.error("Erro ao registrar consumo: " + err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+   async function useMaterial(osMaterial: any, qty: number, warehouseId: string, type: "saida" | "devolucao" = "saida", originalMovementId?: string) {
+     if (!user) return;
+     setBusy(true);
+     try {
+       const movementPayload: any = {
+         material_id: osMaterial.material_id,
+         quantity: qty,
+         type: type,
+         os_id: id,
+         professional_id: user.id,
+         created_by: user.id,
+         notes: type === "saida" ? `Retirada OS #${os.numero}` : `Devolução OS #${os.numero}`,
+       };
+ 
+       if (type === "saida") {
+         movementPayload.from_warehouse_id = warehouseId;
+       } else {
+         movementPayload.to_warehouse_id = warehouseId;
+         movementPayload.parent_movement_id = originalMovementId;
+       }
+ 
+       const { error: moveError } = await supabase.from("stock_movements").insert(movementPayload);
+       if (moveError) throw moveError;
+ 
+       const newUsedQty = type === "saida" 
+         ? (Number(osMaterial.quantity_used) || 0) + qty 
+         : (Number(osMaterial.quantity_used) || 0) - qty;
+ 
+       const { error: updateError } = await supabase.from("os_materials")
+         .update({ quantity_used: Math.max(0, newUsedQty) })
+         .eq("id", osMaterial.id);
+       if (updateError) throw updateError;
+ 
+       toast.success(type === "saida" ? "Material retirado com sucesso" : "Devolução registrada com sucesso");
+       load();
+     } catch (err: any) {
+       toast.error("Erro ao registrar: " + err.message);
+     } finally {
+       setBusy(false);
+     }
+   }
 
    const [consumeDialog, setConsumeDialog] = useState<{ 
      open: boolean; 

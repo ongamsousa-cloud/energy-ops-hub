@@ -419,17 +419,17 @@ export default function Mensagens() {
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
-               <DialogContent className="sm:max-w-2xl overflow-hidden p-0 gap-0">
+               <DialogContent className="sm:max-w-3xl h-[90vh] sm:h-[600px] overflow-hidden p-0 gap-0 flex flex-col">
                  <DialogHeader className="p-4 border-b">
                    <DialogTitle className="flex items-center gap-2">
                      <MessageSquare className="h-5 w-5 text-primary" />
                      Nova Mensagem
                    </DialogTitle>
                  </DialogHeader>
-                 <div className="flex flex-col md:flex-row h-[500px]">
+                  <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                    {/* Departamentos */}
-                   <div className="w-full md:w-1/3 border-r bg-muted/20 p-2 overflow-y-auto">
-                     <p className="text-[10px] font-bold uppercase text-muted-foreground px-2 mb-2">Filtrar por Departamento</p>
+                    <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
+                      <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Filtrar por Departamento</p>
                      <div className="space-y-1">
                        <Button 
                          variant={!searchTerm ? "secondary" : "ghost"} 
@@ -455,158 +455,212 @@ export default function Mensagens() {
                      </div>
                    </div>
 
-                    {/* Contatos ou Interface de Mensagem */}
+                    {/* Contatos */}
                     <div className="flex-1 flex flex-col overflow-hidden bg-card">
-                      <div className="flex flex-col h-full">
-                        {/* Destinatários selecionados */}
-                        {selectedContacts.length > 0 && (
-                          <div className="px-3 py-2 border-b bg-muted/10 flex flex-wrap gap-1.5 items-center">
-                            <span className="text-[10px] font-bold uppercase text-muted-foreground mr-1">Para:</span>
-                            {selectedContacts.map(c => (
-                              <Badge key={c.id} variant="secondary" className="gap-1 pr-1">
-                                {c.nome}
-                                <button onClick={() => toggleContact(c)} className="ml-0.5 hover:text-destructive">
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </Badge>
-                            ))}
-                            <button onClick={() => setSelectedContacts([])} className="text-[10px] text-muted-foreground hover:text-destructive ml-auto">
-                              Limpar
-                            </button>
-                          </div>
-                        )}
+                      {/* Destinatários selecionados (Badges) */}
+                      {selectedContacts.length > 0 && (
+                        <div className="px-4 py-3 border-b bg-muted/30 flex flex-wrap gap-2 items-center">
+                          <span className="text-[10px] font-bold uppercase text-muted-foreground">Para:</span>
+                          {selectedContacts.map(c => (
+                            <Badge key={c.id} variant="secondary" className="pl-2 pr-1 py-1 gap-1">
+                              <span className="max-w-[120px] truncate">{c.nome}</span>
+                              <button onClick={() => toggleContact(c)} className="ml-1 rounded-full hover:bg-muted p-0.5">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                          <Button variant="link" onClick={() => setSelectedContacts([])} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-destructive ml-auto">
+                            Limpar Tudo
+                          </Button>
+                        </div>
+                      )}
 
-                        {/* Busca */}
-                        <div className="p-3 border-b">
-                          <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                              placeholder="Pesquisar profissional..."
-                              className="pl-9 h-9"
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                          </div>
-                          {filteredContatos.length > 0 && (
-                            <button
+                      {/* Busca e Seleção em Massa */}
+                      <div className="p-4 border-b space-y-3">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Pesquisar por nome ou e-mail..."
+                            className="pl-10 h-10 border-muted"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                        {filteredContatos.length > 0 && (
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] text-muted-foreground font-medium">
+                              {filteredContatos.length} profissional(is) encontrado(s)
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-3 text-[10px] font-bold border-primary/20 text-primary hover:bg-primary/5"
                               onClick={() => {
-                                const allSelected = filteredContatos.every(c => isContactSelected(c.id));
-                                if (allSelected) {
+                                const allInFilterSelected = filteredContatos.every(c => isContactSelected(c.id));
+                                if (allInFilterSelected) {
                                   setSelectedContacts(prev => prev.filter(p => !filteredContatos.some(f => f.id === p.id)));
                                 } else {
                                   const toAdd = filteredContatos.filter(c => !isContactSelected(c.id));
                                   setSelectedContacts(prev => [...prev, ...toAdd]);
                                 }
                               }}
-                              className="text-[10px] text-primary hover:underline mt-2 font-semibold"
                             >
-                              {filteredContatos.every(c => isContactSelected(c.id)) ? "Desmarcar todos" : "Selecionar todos do filtro"}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Lista de contatos */}
-                        <ScrollArea className="flex-1 p-2">
-                          <div className="space-y-4">
-                            {Object.entries(contatosPorRole).map(([role, list]) => (
-                              <div key={role} className="space-y-1">
-                                <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
-                                  {ROLE_LABEL[role as AppRole] || role}
-                                </h4>
-                                <div className="grid gap-0.5">
-                                  {list.map((p) => {
-                                    const checked = isContactSelected(p.id);
-                                    return (
-                                      <button
-                                        key={p.id}
-                                        onClick={() => toggleContact(p)}
-                                        className={cn(
-                                          "flex items-center gap-3 w-full text-left p-2 rounded-lg transition-all",
-                                          checked ? "bg-primary/10" : "hover:bg-accent"
-                                        )}
-                                      >
-                                        <Checkbox checked={checked} onCheckedChange={() => toggleContact(p)} onClick={(e) => e.stopPropagation()} />
-                                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                                          {p.nome.charAt(0)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-semibold truncate">{p.nome}</p>
-                                          <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
-                                        </div>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            ))}
-                            {filteredContatos.length === 0 && (
-                              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                                <User className="h-12 w-12 opacity-10 mb-2" />
-                                <p className="text-sm font-medium">Nenhum profissional cadastrado</p>
-                                <p className="text-xs opacity-60 text-center max-w-[220px] mt-1">
-                                  Selecione outro departamento ou aguarde novos cadastros.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </ScrollArea>
-
-                        {/* Composição: sempre visível */}
-                        <div className="p-3 border-t bg-card">
-                          {audioBlob ? (
-                            <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-lg mb-2">
-                              <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
-                              <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : isRecording ? (
-                            <div className="flex items-center justify-between bg-red-50 p-2 rounded-lg mb-2 border border-red-100 gap-2">
-                              <span className="text-[10px] font-bold text-red-600 animate-pulse flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-red-500" /> GRAVANDO ÁUDIO...
-                              </span>
-                              <Button size="sm" className="h-7 bg-red-500 hover:bg-red-600 text-[10px]" onClick={() => recorderControls.stopRecording()}>Parar</Button>
-                              <div className="hidden">
-                                <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
-                              </div>
-                            </div>
-                          ) : null}
-
-                          <div className="flex items-center gap-2">
-                            <div className="relative flex-1">
-                              <Input
-                                placeholder={selectedContacts.length === 0 ? "Selecione 1 ou mais destinatários acima..." : "Digite sua mensagem..."}
-                                className="pr-10 rounded-full h-11 bg-muted/20 border-none focus-visible:ring-primary"
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                disabled={isRecording}
-                                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendBroadcast(); } }}
-                              />
-                              <button
-                                className={cn("absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full transition-colors", isRecording ? "text-red-500" : "text-muted-foreground hover:text-primary")}
-                                onClick={() => { if (!isRecording) { recorderControls.startRecording(); setIsRecording(true); } else { recorderControls.stopRecording(); } }}
-                              >
-                                <Mic className="h-4 w-4" />
-                              </button>
-                            </div>
-                            <Button
-                              className="h-11 w-11 rounded-full shrink-0 shadow-lg"
-                              onClick={sendBroadcast}
-                              disabled={(!text.trim() && !audioBlob) || isRecording || selectedContacts.length === 0}
-                            >
-                              <Send className="h-4 w-4" />
+                              {filteredContatos.every(c => isContactSelected(c.id)) ? "Desmarcar Filtro" : "Selecionar Filtro"}
                             </Button>
                           </div>
-                          {selectedContacts.length > 1 && (
-                            <p className="text-[10px] text-muted-foreground mt-2 text-center">
-                              A mensagem será enviada individualmente para {selectedContacts.length} destinatários.
-                            </p>
+                        )}
+                      </div>
+
+                      {/* Lista de contatos (Scrollable) */}
+                      <ScrollArea className="flex-1">
+                        <div className="p-4 pt-2 space-y-6">
+                          {Object.entries(contatosPorRole).map(([role, list]) => (
+                            <div key={role} className="space-y-2">
+                              <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 flex items-center gap-2">
+                                <span className="h-[1px] flex-1 bg-muted" />
+                                {ROLE_LABEL[role as AppRole] || role}
+                                <span className="h-[1px] flex-1 bg-muted" />
+                              </h4>
+                              <div className="grid gap-1">
+                                {list.map((p) => {
+                                  const checked = isContactSelected(p.id);
+                                  return (
+                                    <button
+                                      key={p.id}
+                                      onClick={() => toggleContact(p)}
+                                      className={cn(
+                                        "flex items-center gap-3 w-full text-left p-3 rounded-xl transition-all border",
+                                        checked 
+                                          ? "bg-primary/5 border-primary/20 shadow-sm" 
+                                          : "hover:bg-muted/50 border-transparent"
+                                      )}
+                                    >
+                                      <Checkbox 
+                                        checked={checked} 
+                                        onCheckedChange={() => toggleContact(p)} 
+                                        onClick={(e) => e.stopPropagation()} 
+                                        className="h-5 w-5"
+                                      />
+                                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0">
+                                        {p.nome.charAt(0)}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold truncate">{p.nome}</p>
+                                        <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                          {filteredContatos.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                              <User className="h-16 w-16 opacity-5 mb-4" />
+                              <p className="text-sm font-bold">Nenhum profissional</p>
+                              <p className="text-[11px] opacity-60 text-center max-w-[200px] mt-2">
+                                Tente buscar com outros termos ou selecione um departamento ao lado.
+                              </p>
+                            </div>
                           )}
                         </div>
-                      </div>
+                      </ScrollArea>
                     </div>
-                 </div>
-               </DialogContent>
+                  </div>
+
+                  {/* Rodapé fixo com Composição (Input e Áudio) */}
+                  <div className="p-4 border-t bg-muted/10">
+                    {audioBlob ? (
+                      <div className="flex items-center gap-3 bg-card p-3 rounded-2xl mb-3 border border-primary/20 shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                          <Mic className="h-4 w-4" />
+                        </div>
+                        <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
+                        <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : isRecording ? (
+                      <div className="flex items-center justify-between bg-red-50 p-3 rounded-2xl mb-3 border border-red-100 shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                        <div className="flex items-center gap-3">
+                          <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                          <span className="text-xs font-black text-red-600 uppercase tracking-tighter">
+                            Gravando Áudio...
+                          </span>
+                        </div>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
+                          onClick={() => recorderControls.stopRecording()}
+                        >
+                          Parar Gravação
+                        </Button>
+                        <div className="hidden">
+                          <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-1">
+                        <Input
+                          placeholder={selectedContacts.length === 0 
+                            ? "Selecione destinatários para habilitar o envio..." 
+                            : `Mensagem para ${selectedContacts.length} profissional(is)...`}
+                          className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
+                          value={text}
+                          onChange={(e) => setText(e.target.value)}
+                          disabled={isRecording || selectedContacts.length === 0}
+                          onKeyDown={(e) => { 
+                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
+                              e.preventDefault(); 
+                              sendBroadcast(); 
+                            } 
+                          }}
+                        />
+                        <button
+                          className={cn(
+                            "absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all", 
+                            isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
+                            selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
+                          )}
+                          onClick={() => { 
+                            if (selectedContacts.length === 0) return;
+                            if (!isRecording) { 
+                              recorderControls.startRecording(); 
+                              setIsRecording(true); 
+                            } else { 
+                              recorderControls.stopRecording(); 
+                            } 
+                          }}
+                          disabled={selectedContacts.length === 0}
+                        >
+                          <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />
+                        </button>
+                      </div>
+                      <Button
+                        className="h-14 w-14 rounded-2xl shrink-0 shadow-xl bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+                        onClick={sendBroadcast}
+                        disabled={(!text.trim() && !audioBlob) || isRecording || selectedContacts.length === 0}
+                      >
+                        <Send className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                      {selectedContacts.length > 0 ? (
+                        <p className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border">
+                          Enviando individualmente para <span className="text-primary font-bold">{selectedContacts.length}</span> profissional(is).
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground italic">
+                          Selecione os destinatários na lista acima para começar a escrever.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </DialogContent>
             </Dialog>
           </div>
            <ScrollArea className="flex-1">

@@ -151,19 +151,29 @@ export default function OSDetalhe() {
     });
   }
 
-  async function addItem() {
-    if (!form.categoria_id || !form.atividade_id || !form.quantidade) return toast.error("Preencha todos os campos");
-    const q = Number(form.quantidade);
-    if (!(q > 0)) return toast.error("Quantidade inválida");
-    const geo = ativSel?.exige_localizacao ? await getGeo() : {};
+   async function addItem(activity?: any) {
+     const activityId = activity?.id || form.atividade_id;
+     const categoryId = activity?.categoria_id || form.categoria_id;
+     
+     if (!activityId || !form.quantidade) {
+       if (!form.quantidade) toast.error("Informe a quantidade");
+       else toast.error("Selecione a atividade");
+       return;
+     }
+
+     const targetAtv = activity || atvs.find(a => a.id === activityId);
+     const q = Number(form.quantidade);
+     if (!(q > 0)) return toast.error("Quantidade inválida");
+     const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
+
     const { error } = await supabase.from("os_atividades").insert({
       os_id: id,
-      atividade_id: form.atividade_id,
-      categoria_id: form.categoria_id,
+       atividade_id: activityId,
+       categoria_id: categoryId,
       quantidade: q,
-      umd_unitaria: ativSel.umd_unitaria,
-      umd_total: q * Number(ativSel.umd_unitaria),
-      unidade: ativSel.unidade,
+       umd_unitaria: targetAtv.umd_unitaria,
+       umd_total: q * Number(targetAtv.umd_unitaria),
+       unidade: targetAtv.unidade,
       observacao: form.observacao || null,
       latitude: geo.lat, longitude: geo.lng,
       created_by: user!.id,

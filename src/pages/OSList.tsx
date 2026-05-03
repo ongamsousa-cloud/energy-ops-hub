@@ -46,20 +46,22 @@ export default function OSList() {
       .then(({ data }) => setRows(data ?? []));
   }, [user, hasRole]);
 
-   const filteredRows = useMemo(() => {
-     return rows.filter(r => {
-       const matchStatus = filters.status === "all" || r.status === filters.status;
-       const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
-       const searchLower = filters.search.toLowerCase();
-       const matchSearch = !filters.search || 
-         r.numero?.toLowerCase().includes(searchLower) ||
-         r.obra?.nome?.toLowerCase().includes(searchLower) ||
-         r.cidade?.toLowerCase().includes(searchLower) ||
-         r.bairro?.toLowerCase().includes(searchLower);
-       
-       return matchStatus && matchPriority && matchSearch;
-     });
-   }, [rows, filters]);
+    const filteredRows = useMemo(() => {
+      return rows.filter(r => {
+        const matchOp = filters.operational_status === "all" || (r.operational_status || r.status) === filters.operational_status;
+        const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
+        const matchAudit = filters.audit_status === "all" || r.audit_status === filters.audit_status;
+        const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
+        const searchLower = filters.search.toLowerCase();
+        const matchSearch = !filters.search || 
+          r.numero?.toLowerCase().includes(searchLower) ||
+          r.obra?.nome?.toLowerCase().includes(searchLower) ||
+          r.cidade?.toLowerCase().includes(searchLower) ||
+          r.bairro?.toLowerCase().includes(searchLower);
+        
+        return matchOp && matchFin && matchAudit && matchPriority && matchSearch;
+      });
+    }, [rows, filters]);
 
   return (
      <div className="flex flex-col gap-6">

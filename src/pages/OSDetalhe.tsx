@@ -338,6 +338,38 @@ export default function OSDetalhe() {
     }
   }
 
+  async function removeMaterial(mId: string) {
+    if (!confirm("Remover este material da OS?")) return;
+    await supabase.from("os_materials").delete().eq("id", mId);
+    load();
+  }
+
+  const [addMat, setAddMat] = useState(false);
+  const [matForm, setMatForm] = useState({ material_id: "", quantity: "1" });
+  const [allMaterials, setAllMaterials] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (addMat) {
+      supabase.from("materials").select("*").eq("active", true).order("name").then(({ data }) => setAllMaterials(data ?? []));
+    }
+  }, [addMat]);
+
+  async function addMaterialToOS() {
+    if (!matForm.material_id || !matForm.quantity) return toast.error("Preencha os campos");
+    const mat = allMaterials.find(m => m.id === matForm.material_id);
+    const { error } = await supabase.from("os_materials").insert({
+      os_id: id,
+      material_id: matForm.material_id,
+      quantity_planned: parseFloat(matForm.quantity),
+      unit_cost: mat?.cost_price || 0
+    });
+    if (error) return toast.error(error.message);
+    setAddMat(false);
+    setMatForm({ material_id: "", quantity: "1" });
+    toast.success("Material adicionado");
+    load();
+  }
+
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
   return (

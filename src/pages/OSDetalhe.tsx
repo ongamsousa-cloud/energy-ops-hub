@@ -296,11 +296,12 @@ export default function OSDetalhe() {
 
       {/* Evidências */}
        <Tabs defaultValue="atividades" className="mt-8">
-         <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-           <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
-           <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-           <TabsTrigger value="auditoria">Auditoria</TabsTrigger>
-         </TabsList>
+          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+            <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
+            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
+            <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+            <TabsTrigger value="auditoria">Histórico</TabsTrigger>
+          </TabsList>
          
          <TabsContent value="atividades" className="mt-4">
            {/* Conteúdo de Atividades moved from lines 169-232 */}

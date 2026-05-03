@@ -246,6 +246,13 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
      return filtered;
    }, [materials, search]);
 
+  const summary = useMemo(() => {
+    const today = startOfDay(new Date());
+    const outToday = movements.filter(m => m.type === "saida" && new Date(m.created_at) >= today);
+    const inToday = movements.filter(m => m.type === "entrada" && new Date(m.created_at) >= today);
+    return { outToday, inToday };
+  }, [movements]);
+
   function openMovement(type: string) {
     setMovementType(type);
     setMovementOpen(true);
@@ -285,12 +292,13 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {!isEstoquePortal && (
           <TabsList className="flex w-full overflow-x-auto">
-            <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
-            <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
-            <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
-            <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
-            <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
-            <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+            <TabsTrigger value="overview" className="data-[state=active]:bg-background"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
+            <TabsTrigger value="materials" className="data-[state=active]:bg-background"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
+            <TabsTrigger value="entradas" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
+            <TabsTrigger value="liberacao" className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberação (OS)</TabsTrigger>
+            <TabsTrigger value="warehouses" className="data-[state=active]:bg-background"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
+            <TabsTrigger value="movements" className="data-[state=active]:bg-background"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
+            <TabsTrigger value="alerts" className="data-[state=active]:bg-background"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
           </TabsList>
         )}
 
@@ -464,6 +472,131 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
              </div>
            </div>
          </TabsContent>
+
+        <TabsContent value="entradas" className="mt-4 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recebido Hoje</div>
+              <div className="text-2xl font-black text-emerald-700">{summary.inToday.length}</div>
+              <div className="text-[10px] text-emerald-600/70">Volumes processados</div>
+            </Card>
+            <Card className="p-4 bg-blue-500/5 border-blue-500/10">
+              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Aguardando NF</div>
+              <div className="text-2xl font-black text-blue-700">{movements.filter(m => m.type === "entrada" && !m.invoice_number).length}</div>
+              <div className="text-[10px] text-blue-600/70">Entradas sem documento</div>
+            </Card>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <ArrowDownToLine className="h-5 w-5 text-emerald-500" />
+              <h3 className="text-lg font-bold">Entradas de Materiais</h3>
+            </div>
+            <Button onClick={() => openMovement("entrada")} className="bg-emerald-600 hover:bg-emerald-700">
+              <Plus className="h-4 w-4 mr-2" /> Registrar Novo Recebimento
+            </Button>
+          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data/Hora</TableHead>
+                  <TableHead>Material</TableHead>
+                  <TableHead className="text-right">Qtd</TableHead>
+                  <TableHead>Destino</TableHead>
+                  <TableHead>NF/Fornecedor</TableHead>
+                  <TableHead>Responsável</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {movements.filter(m => m.type === "entrada").map(m => (
+                  <TableRow key={m.id}>
+                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
+                    <TableCell>
+                      <div className="font-medium text-xs">{m.materials?.name}</div>
+                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-emerald-600 font-bold">+{Number(m.quantity)} {m.materials?.unit}</TableCell>
+                    <TableCell className="text-xs">{m.to_wh?.name || "—"}</TableCell>
+                    <TableCell className="text-xs">
+                      {m.invoice_number ? `NF: ${m.invoice_number}` : "—" }
+                      {m.supplier && <div className="text-[10px] text-muted-foreground">{m.supplier}</div>}
+                    </TableCell>
+                    <TableCell className="text-xs">{m.creator?.nome || "—"}</TableCell>
+                  </TableRow>
+                ))}
+                {movements.filter(m => m.type === "entrada").length === 0 && (
+                  <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Nenhuma entrada registrada recentemente.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="liberacao" className="mt-4 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <Card className="p-4 bg-amber-500/5 border-amber-500/10">
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Liberado Hoje</div>
+              <div className="text-2xl font-black text-amber-700">{summary.outToday.length}</div>
+              <div className="text-[10px] text-amber-600/70">Saídas para campo</div>
+            </Card>
+            <Card className="p-4 bg-primary/5 border-primary/10">
+              <div className="text-[10px] font-bold text-primary uppercase tracking-widest">OS Atendidas</div>
+              <div className="text-2xl font-black text-primary/80">{new Set(summary.outToday.map(m => m.os_id).filter(Boolean)).size}</div>
+              <div className="text-[10px] text-primary/60">Obras em execução</div>
+            </Card>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <ArrowUpFromLine className="h-5 w-5 text-amber-500" />
+              <h3 className="text-lg font-bold">Liberação p/ Serviços Externos</h3>
+            </div>
+            <Button onClick={() => openMovement("saida")} className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Plus className="h-4 w-4 mr-2" /> Nova Liberação (Saída)
+            </Button>
+          </div>
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Data/Hora</TableHead>
+                  <TableHead>OS Vinculada</TableHead>
+                  <TableHead>Material</TableHead>
+                  <TableHead className="text-right">Qtd</TableHead>
+                  <TableHead>Origem</TableHead>
+                  <TableHead>Retirado por</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {movements.filter(m => m.type === "saida").map(m => (
+                  <TableRow key={m.id}>
+                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
+                    <TableCell>
+                      {m.ordens_servico?.numero ? (
+                        <Badge variant="outline" className="font-mono text-[10px]">OS {m.ordens_servico.numero}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px]">Sem OS</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium text-xs">{m.materials?.name}</div>
+                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-amber-600 font-bold">-{Number(m.quantity)} {m.materials?.unit}</TableCell>
+                    <TableCell className="text-xs">{m.from_wh?.name || "—"}</TableCell>
+                    <TableCell className="text-xs">{m.profiles?.nome || "—"}</TableCell>
+                    <TableCell><Badge className="bg-blue-500/10 text-blue-600 border-none text-[10px]">LIBERADO</Badge></TableCell>
+                  </TableRow>
+                ))}
+                {movements.filter(m => m.type === "saida").length === 0 && (
+                  <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">Nenhuma liberação registrada recentemente.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="materials" className="space-y-3 mt-4">
           <div className="flex gap-2">

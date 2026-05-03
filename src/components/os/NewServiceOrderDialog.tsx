@@ -295,7 +295,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                        </Select>
                      </div>
                      <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
-                     <CommandList className="max-h-[300px]">
+                      <CommandList className="max-h-[450px]">
                        <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
                        {categorias
                          .filter(c => (selectedCategoriaId === "all" || c.id === selectedCategoriaId) && (!selectedServicoId || c.servico_id === selectedServicoId))

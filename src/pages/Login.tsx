@@ -112,9 +112,10 @@ export default function Login() {
           {mode === "login" ? "Use suas credenciais corporativas." : "Defina suas credenciais de acesso."}
         </p>
          <form onSubmit={submit} className="space-y-4">
-           <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
-             Dica: Para todas as contas de teste abaixo, a senha é <span className="font-bold">Energia123!</span>
-           </div>
+            <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 space-y-1">
+              <div>Dica: Para todas as contas (incluindo Almoxarifado), a senha é <span className="font-bold">Energia123!</span></div>
+              <div className="opacity-70 font-medium">Conta Estoque: estoque@energyops.demo</div>
+            </div>
            {mode === "signup" && (
              <>
                <div className="space-y-1.5">

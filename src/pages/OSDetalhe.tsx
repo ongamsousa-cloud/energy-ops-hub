@@ -390,41 +390,58 @@ export default function OSDetalhe() {
     }
   }, [addMat]);
 
-  async function useMaterial(osMaterial: any, qty: number, warehouseId: string) {
-    if (!user) return;
-    setBusy(true);
-    try {
-      // 1. Registrar movimentação de saída
-      const { error: moveError } = await supabase.from("stock_movements").insert({
-        material_id: osMaterial.material_id,
-        from_warehouse_id: warehouseId,
-        quantity: qty,
-        type: "saida",
-        os_id: id,
-        professional_id: os.profissional_id,
-        created_by: user.id,
-        notes: `Consumo OS #${os.numero}`
-      });
-      if (moveError) throw moveError;
+   async function useMaterial(osMaterial: any, qty: number, warehouseId: string, type: "saida" | "devolucao" = "saida", originalMovementId?: string) {
+     if (!user) return;
+     setBusy(true);
+     try {
+       const movementPayload: any = {
+         material_id: osMaterial.material_id,
+         quantity: qty,
+         type: type,
+         os_id: id,
+         professional_id: user.id,
+         created_by: user.id,
+         notes: type === "saida" ? `Retirada OS #${os.numero}` : `Devolução OS #${os.numero}`,
+       };
+ 
+       if (type === "saida") {
+         movementPayload.from_warehouse_id = warehouseId;
+       } else {
+         movementPayload.to_warehouse_id = warehouseId;
+         movementPayload.parent_movement_id = originalMovementId;
+       }
+ 
+       const { error: moveError } = await supabase.from("stock_movements").insert(movementPayload);
+       if (moveError) throw moveError;
+ 
+       const newUsedQty = type === "saida" 
+         ? (Number(osMaterial.quantity_used) || 0) + qty 
+         : (Number(osMaterial.quantity_used) || 0) - qty;
+ 
+       const { error: updateError } = await supabase.from("os_materials")
+         .update({ quantity_used: Math.max(0, newUsedQty) })
+         .eq("id", osMaterial.id);
+       if (updateError) throw updateError;
+ 
+       toast.success(type === "saida" ? "Material retirado com sucesso" : "Devolução registrada com sucesso");
+       load();
+     } catch (err: any) {
+       toast.error("Erro ao registrar: " + err.message);
+     } finally {
+       setBusy(false);
+     }
+   }
 
-      // 2. Atualizar quantidade usada no os_materials
-      const { error: updateError } = await supabase.from("os_materials")
-        .update({ quantity_used: (osMaterial.quantity_used || 0) + qty })
-        .eq("id", osMaterial.id);
-      if (updateError) throw updateError;
-
-      toast.success("Consumo registrado no estoque");
-      load();
-    } catch (err: any) {
-      toast.error("Erro ao registrar consumo: " + err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const [consumeDialog, setConsumeDialog] = useState<{ open: boolean; item: any; qty: string; warehouse_id: string }>({
-    open: false, item: null, qty: "1", warehouse_id: ""
-  });
+   const [consumeDialog, setConsumeDialog] = useState<{ 
+     open: boolean; 
+     item: any; 
+     qty: string; 
+     warehouse_id: string;
+     type: "saida" | "devolucao";
+     originalMovementId?: string;
+   }>({
+     open: false, item: null, qty: "1", warehouse_id: "", type: "saida"
+   });
 
   async function addMaterialToOS() {
     if (!matForm.material_id || !matForm.quantity) return toast.error("Preencha os campos");
@@ -732,24 +749,38 @@ export default function OSDetalhe() {
                              <span className="text-muted-foreground">-</span>
                            )}
                          </td>
-                       <td className="px-4 py-3 text-right flex justify-end gap-1">
-                         <Button size="sm" variant="outline" onClick={() => setConsumeDialog({ open: true, item: m, qty: (m.quantity_planned - m.quantity_used).toString(), warehouse_id: "" })}>
-                           Lançar Uso
-                         </Button>
-                         {canEdit && <Button size="icon" variant="ghost" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                       <td className="px-4 py-3 text-right flex justify-end gap-2">
+                         <div className="flex flex-col gap-1">
+                           <Button size="sm" variant="outline" onClick={() => setConsumeDialog({ open: true, item: m, qty: Math.max(0, m.quantity_planned - m.quantity_used).toString(), warehouse_id: "", type: "saida" })}>
+                             Retirar
+                           </Button>
+                           {m.quantity_used > 0 && (
+                             <Button size="sm" variant="ghost" className="h-7 text-[10px] text-blue-600 hover:text-blue-700 hover:bg-blue-50" onClick={() => setConsumeDialog({ open: true, item: m, qty: m.quantity_used.toString(), warehouse_id: "", type: "devolucao" })}>
+                               Devolver
+                             </Button>
+                           )}
+                         </div>
+                         {canEdit && <Button size="icon" variant="ghost" className="mt-1" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
                        </td>
          <Dialog open={consumeDialog.open} onOpenChange={open => setConsumeDialog(prev => ({ ...prev, open }))}>
            <DialogContent>
-             <DialogHeader><DialogTitle>Registrar Consumo de Material</DialogTitle></DialogHeader>
+             <DialogHeader>
+               <DialogTitle>{consumeDialog.type === "saida" ? "Retirar Material" : "Devolver Material"}</DialogTitle>
+               <DialogDescription>
+                 {consumeDialog.type === "saida" 
+                   ? "Registre a saída do material para uso nesta OS." 
+                   : "Registre a devolução de material não utilizado para o estoque."}
+               </DialogDescription>
+             </DialogHeader>
              <div className="space-y-4 py-4">
                <div className="p-3 bg-muted rounded-md space-y-1">
                  <p className="text-xs font-bold uppercase text-muted-foreground">Material</p>
                  <p className="text-sm font-medium">{consumeDialog.item?.materials?.name}</p>
                </div>
                <div className="space-y-2">
-                 <Label>Almoxarifado de Origem</Label>
-                 <Select value={consumeDialog.warehouse_id} onValueChange={v => setConsumeDialog({...consumeDialog, warehouse_id: v})}>
-                   <SelectTrigger><SelectValue placeholder="Selecione o local de retirada..." /></SelectTrigger>
+                 <Label>{consumeDialog.type === "saida" ? "Almoxarifado de Origem" : "Almoxarifado de Destino"}</Label>
+                 <Select value={consumeDialog.warehouse_id} onValueChange={v => setConsumeDialog({...consumeDialog, warehouse_id: v, type: consumeDialog.type})}>
+                   <SelectTrigger><SelectValue placeholder="Selecione o almoxarifado..." /></SelectTrigger>
                    <SelectContent>
                      {warehouses.map(w => (
                        <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
@@ -758,14 +789,16 @@ export default function OSDetalhe() {
                  </Select>
                </div>
                <div className="space-y-2">
-                 <Label>Quantidade Retirada</Label>
-                 <Input type="number" step="0.01" value={consumeDialog.qty} onChange={e => setConsumeDialog({...consumeDialog, qty: e.target.value})} />
+                 <Label>Quantidade {consumeDialog.type === "saida" ? "Retirada" : "Devolvida"}</Label>
+                 <Input type="number" step="0.01" value={consumeDialog.qty} onChange={e => setConsumeDialog({...consumeDialog, qty: e.target.value, type: consumeDialog.type})} />
                </div>
                <Button className="w-full" onClick={() => {
-                 if (!consumeDialog.warehouse_id) return toast.error("Selecione a origem");
-                 useMaterial(consumeDialog.item, parseFloat(consumeDialog.qty), consumeDialog.warehouse_id);
+                 if (!consumeDialog.warehouse_id) return toast.error("Selecione o almoxarifado");
+                 useMaterial(consumeDialog.item, parseFloat(consumeDialog.qty), consumeDialog.warehouse_id, consumeDialog.type);
                  setConsumeDialog(prev => ({ ...prev, open: false }));
-               }}>Baixar do Estoque</Button>
+               }}>
+                 {consumeDialog.type === "saida" ? "Confirmar Retirada" : "Confirmar Devolução"}
+               </Button>
              </div>
            </DialogContent>
          </Dialog>

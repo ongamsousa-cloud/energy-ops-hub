@@ -1,12 +1,13 @@
-import { useRef, useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus, Camera, Video, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import StatusBadge from "@/components/StatusBadge";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth";
-import { toast } from "sonner";
+ import { useRef, useState, useEffect } from "react";
+ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+ import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus, Camera, Video, AlertCircle, Map as MapIcon } from "lucide-react";
+ import { Button } from "@/components/ui/button";
+ import { Link } from "react-router-dom";
+ import StatusBadge from "@/components/StatusBadge";
+ import { mediaService, geoLocationService, notificationService } from "@/services";
+ import { supabase } from "@/integrations/supabase/client";
+ import { useAuth } from "@/lib/auth";
+ import { toast } from "sonner";
 
 interface CampoDashboardProps { stats: any; profile: any; }
 
@@ -19,45 +20,51 @@ export default function CampoDashboard({ stats }: CampoDashboardProps) {
   const videoRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  function getGeo(): Promise<{ lat?: number; lng?: number }> {
-    return new Promise((res) => {
-      if (!navigator.geolocation) return res({});
-      navigator.geolocation.getCurrentPosition(
-        (p) => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        () => res({}),
-        { timeout: 5000 }
-      );
-    });
-  }
-
-  async function handleQuickUpload(e: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    if (!osAtiva?.id) { toast.error("Inicie uma OS antes de enviar mídia"); return; }
-    if (f.size > 1073741824) { toast.error("Arquivo maior que 1 GB"); return; }
-    setUploading(true);
-    try {
-      const path = `${osAtiva.id}/${crypto.randomUUID()}-${f.name}`;
-      const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
-      if (error) throw error;
-      const geo = await getGeo();
-      const { error: insErr } = await supabase.from("os_evidences").insert({
-        os_id: osAtiva.id,
-        url: path,
-        user_id: user!.id,
-        tipo: isVideo ? "video" : "foto",
-        localizacao: geo,
-        metadata: { size: f.size, name: f.name, type: f.type },
-      });
-      if (insErr) throw insErr;
-      toast.success(isVideo ? "Vídeo enviado" : "Foto enviada");
-    } catch (err: any) {
-      toast.error(err.message || "Falha no upload");
-    } finally {
-      setUploading(false);
-      e.target.value = "";
-    }
-  }
+   async function handleQuickUpload(e: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) {
+     const file = e.target.files?.[0];
+     if (!file) return;
+     if (!osAtiva?.id) { toast.error("Inicie uma OS antes de enviar mídia"); return; }
+     if (file.size > 1073741824) { toast.error("Arquivo maior que 1 GB"); return; }
+ 
+     setUploading(true);
+     try {
+       const result = await mediaService.uploadMedia(
+         file,
+         osAtiva.id,
+         user!.id,
+         "execucao_rapida",
+         "Enviado via registro rápido do dashboard"
+       );
+ 
+       if (result.success) {
+         toast.success(isVideo ? "Vídeo enviado com sucesso" : "Foto enviada com sucesso");
+         await notificationService.criarNotificacao({
+           user_id: user!.id,
+           title: "Mídia enviada",
+           message: `Você enviou um(a) ${isVideo ? 'vídeo' : 'foto'} para a OS #${osAtiva.numero}.`,
+           service_order_id: osAtiva.id,
+           type: "success"
+         });
+       } else {
+         throw new Error("Falha no upload");
+       }
+     } catch (err: any) {
+       toast.error(err.message || "Falha no upload");
+     } finally {
+       setUploading(false);
+       e.target.value = "";
+     }
+   }
+ 
+   async function handleCheckIn() {
+     if (!osAtiva?.id) return;
+     const success = await geoLocationService.registrarLocalizacaoNaOrdem(osAtiva.id, "check-in dashboard");
+     if (success) {
+       toast.success("Localização registrada com sucesso");
+     } else {
+       toast.error("Falha ao registrar localização. Verifique o GPS.");
+     }
+   }
 
   return (
     <div className="space-y-6">
@@ -105,17 +112,22 @@ export default function CampoDashboard({ stats }: CampoDashboardProps) {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <Button size="lg" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => photoRef.current?.click()}>
-            <Camera className="h-5 w-5" /> Tirar Foto
-          </Button>
-          <Button size="lg" variant="secondary" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => videoRef.current?.click()}>
-            <Video className="h-5 w-5" /> Gravar Vídeo
-          </Button>
-          <Link to={osAtiva ? `/app/os/${osAtiva.id}` : "/app/os"} className="col-span-2 sm:col-span-1">
-            <Button size="lg" variant="outline" className="h-14 w-full gap-2">
-              <ArrowRight className="h-5 w-5" /> Abrir OS
-            </Button>
-          </Link>
+           <Button size="lg" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva || uploading} onClick={() => photoRef.current?.click()}>
+             <Camera className="h-5 w-5" /><span className="text-[10px]">Tirar Foto</span>
+           </Button>
+           <Button size="lg" variant="secondary" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva || uploading} onClick={() => videoRef.current?.click()}>
+             <Video className="h-5 w-5" /><span className="text-[10px]">Gravar Vídeo</span>
+           </Button>
+           <div className="col-span-2 sm:col-span-1 grid grid-cols-2 gap-2">
+             <Button size="lg" variant="outline" className="h-14 gap-2 flex flex-col items-center justify-center pt-2" disabled={!osAtiva} onClick={handleCheckIn}>
+               <MapIcon className="h-5 w-5" /><span className="text-[10px]">GPS</span>
+             </Button>
+             <Link to={osAtiva ? `/app/os/${osAtiva.id}` : "/app/os"}>
+               <Button size="lg" variant="outline" className="h-14 w-full gap-2 flex flex-col items-center justify-center pt-2">
+                 <ArrowRight className="h-5 w-5" /><span className="text-[10px]">Abrir</span>
+               </Button>
+             </Link>
+           </div>
         </div>
         <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, false)} />
         <input ref={videoRef} type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, true)} />

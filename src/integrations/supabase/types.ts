@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_logs: {
+        Row: {
+          analysis_type: string | null
+          created_at: string | null
+          id: string
+          input_snapshot: Json | null
+          output_result: string | null
+          provider: string | null
+          requested_by: string | null
+          service_order_id: string | null
+        }
+        Insert: {
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          input_snapshot?: Json | null
+          output_result?: string | null
+          provider?: string | null
+          requested_by?: string | null
+          service_order_id?: string | null
+        }
+        Update: {
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          input_snapshot?: Json | null
+          output_result?: string | null
+          provider?: string | null
+          requested_by?: string | null
+          service_order_id?: string | null
+        }
+        Relationships: []
+      }
+      api_integrations: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          created_by: string | null
+          environment: string | null
+          id: string
+          integration_type: string
+          last_error_at: string | null
+          last_error_message: string | null
+          last_success_at: string | null
+          name: string
+          provider: string
+          public_config: Json | null
+          secret_config_reference: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          environment?: string | null
+          id?: string
+          integration_type: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          name: string
+          provider: string
+          public_config?: Json | null
+          secret_config_reference?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          environment?: string | null
+          id?: string
+          integration_type?: string
+          last_error_at?: string | null
+          last_error_message?: string | null
+          last_success_at?: string | null
+          name?: string
+          provider?: string
+          public_config?: Json | null
+          secret_config_reference?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      api_request_logs: {
+        Row: {
+          created_at: string | null
+          endpoint: string | null
+          error_message: string | null
+          id: string
+          integration_type: string
+          method: string | null
+          provider: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          status_code: number | null
+          success: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint?: string | null
+          error_message?: string | null
+          id?: string
+          integration_type: string
+          method?: string | null
+          provider: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          status_code?: number | null
+          success?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string | null
+          error_message?: string | null
+          id?: string
+          integration_type?: string
+          method?: string | null
+          provider?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          status_code?: number | null
+          success?: boolean | null
+        }
+        Relationships: []
+      }
       atividades: {
         Row: {
           ativo: boolean
@@ -480,6 +606,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          provider: string | null
+          recipient: string
+          sent_at: string | null
+          status: string | null
+          subject: string | null
+          template: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          provider?: string | null
+          recipient: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          template?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          provider?: string | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string | null
+          template?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       equipe_membros: {
         Row: {
           created_at: string
@@ -928,6 +1093,39 @@ export type Database = {
           name?: string
           rule_config?: Json | null
           rule_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      geocoding_cache: {
+        Row: {
+          created_at: string | null
+          formatted_address: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          provider: string | null
+          query: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          formatted_address?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          provider?: string | null
+          query: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          formatted_address?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          provider?: string | null
+          query?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -1806,6 +2004,96 @@ export type Database = {
           },
         ]
       }
+      payment_webhook_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_type: string | null
+          external_id: string | null
+          id: string
+          payload: Json | null
+          processed: boolean | null
+          provider: string
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          id?: string
+          payload?: Json | null
+          processed?: boolean | null
+          provider: string
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          id?: string
+          payload?: Json | null
+          processed?: boolean | null
+          provider?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          expires_at: string | null
+          external_payment_id: string | null
+          id: string
+          paid_at: string | null
+          payment_link: string | null
+          payment_method: string | null
+          plan_id: string | null
+          provider: string | null
+          qr_code: string | null
+          qr_code_base64: string | null
+          service_order_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          external_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_link?: string | null
+          payment_method?: string | null
+          plan_id?: string | null
+          provider?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          external_payment_id?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_link?: string | null
+          payment_method?: string | null
+          plan_id?: string | null
+          provider?: string | null
+          qr_code?: string | null
+          qr_code_base64?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -1870,6 +2158,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      report_exports: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          file_url: string | null
+          filters: Json | null
+          id: string
+          report_type: string
+          requested_by: string | null
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          report_type: string
+          requested_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          file_url?: string | null
+          filters?: Json | null
+          id?: string
+          report_type?: string
+          requested_by?: string | null
+          status?: string | null
+        }
+        Relationships: []
       }
       service_execution_records: {
         Row: {
@@ -2252,6 +2573,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_push_tokens: {
+        Row: {
+          active: boolean | null
+          browser: string | null
+          created_at: string | null
+          device_info: Json | null
+          id: string
+          platform: string | null
+          token: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          browser?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          platform?: string | null
+          token: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          browser?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          id?: string
+          platform?: string | null
+          token?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2270,6 +2627,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_type: string | null
+          provider_response: Json | null
+          recipient_phone: string
+          sent_at: string | null
+          service_order_id: string | null
+          status: string | null
+          template_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_type?: string | null
+          provider_response?: Json | null
+          recipient_phone: string
+          sent_at?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          template_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_type?: string | null
+          provider_response?: Json | null
+          recipient_phone?: string
+          sent_at?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          template_name?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

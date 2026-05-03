@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import * as XLSX from "xlsx";
-import { toast } from "sonner";
+ import { toast } from "sonner";
+ import { reportService } from "@/services";
 
 export default function Relatorios() {
    const [rows, setRows] = useState<any[]>([]);
@@ -59,8 +60,9 @@ export default function Relatorios() {
    useEffect(() => {
      loadRelatorio();
    }, [filters]);
-  function exportXlsx() {
-    if (!rows.length) return toast.warning("Sem dados");
+   async function exportXlsx() {
+     if (!rows.length) return toast.warning("Sem dados para exportar");
+     await reportService.registrarExportacao("relatorio_medicao", filters);
     const flat = rows.map((r: any) => ({
       OS: r.os?.numero, Status_OS: r.os?.status, Obra: r.os?.obra?.nome, Numero_Obra: r.os?.obra?.numero,
       Profissional: r.os?.profissional?.nome, Categoria: r.categoria?.nome,

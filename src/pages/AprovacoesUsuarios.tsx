@@ -8,7 +8,7 @@ import { ROLE_LABEL, AppRole } from "@/lib/auth";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 
-const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor"];
+const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque"];
 
 export default function AprovacoesUsuarios() {
   const [rows, setRows] = useState<any[]>([]);

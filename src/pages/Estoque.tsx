@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
   TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
-  Boxes, AlertCircle, RotateCcw, MinusCircle
+  Boxes, AlertCircle, RotateCcw, MinusCircle, Download
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";
@@ -64,12 +64,47 @@ export default function Estoque() {
 
   useEffect(() => {
     const ch = supabase.channel("stock-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => loadMovements())
+      .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => {
+        loadMovements();
+        loadMaterials();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stock_alerts" }, (payload) => {
+        toast.error(`ALERTA DE ESTOQUE: ${payload.new.message}`, {
+          duration: 5000,
+          icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
+        });
+        loadAlerts();
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "stock_levels" }, () => loadMaterials())
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_alerts" }, () => loadAlerts())
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
+  function exportMovementsToCSV() {
+    if (filteredMovements.length === 0) return toast.info("Nenhuma movimentação para exportar");
+    
+    const headers = ["Data", "Tipo", "Material", "Qtd", "Unidade", "De", "Para", "Responsável", "OS", "Notas"];
+    const rows = filteredMovements.map(m => [
+      format(new Date(m.created_at), "dd/MM/yyyy HH:mm"),
+      TYPE_LABEL[m.type],
+      m.materials?.name,
+      m.quantity,
+      m.materials?.unit,
+      m.from_wh?.name || "-",
+      m.to_wh?.name || "-",
+      m.creator?.nome || "-",
+      m.ordens_servico?.numero || "-",
+      m.notes || "-"
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `movimentacoes_estoque_${format(new Date(), "yyyyMMdd")}.csv`;
+    link.click();
+    toast.success("Relatório exportado com sucesso");
+  }
+
 
    async function loadAll() {
      setLoading(true);
@@ -224,6 +259,7 @@ export default function Estoque() {
             <Button size="sm" variant="outline" onClick={() => openMovement("devolucao")}><RotateCcw className="h-4 w-4 mr-1.5"/>Devolução</Button>
             <Button size="sm" variant="outline" onClick={() => openMovement("transferencia")}><ArrowLeftRight className="h-4 w-4 mr-1.5"/>Transferir</Button>
             <Button size="sm" variant="outline" onClick={() => openMovement("ajuste")}><MinusCircle className="h-4 w-4 mr-1.5"/>Perda/Ajuste</Button>
+            <Button size="sm" variant="secondary" onClick={exportMovementsToCSV}><Download className="h-4 w-4 mr-1.5"/>Exportar CSV</Button>
             <Button size="sm" onClick={() => setNewMaterialOpen(true)}><Plus className="h-4 w-4 mr-1.5"/>Material</Button>
           </div>
         )}

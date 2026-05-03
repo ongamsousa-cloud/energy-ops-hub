@@ -296,7 +296,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
 
          <TabsContent value="overview" className="mt-4 space-y-6">
            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-             {/* Main Area: Analytics (3/4) */}
+             {/* Main Analytics Area (3/4) */}
              <div className="xl:col-span-3 space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <Card className="p-6 border-none shadow-sm bg-card/50">
@@ -370,7 +370,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                        <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
                        <div className="mt-2 flex items-center text-[10px] text-destructive">
                          <AlertCircle className="h-3 w-3 mr-1" />
-                         Ajustes manuais e extravios
+                         Refere-se a quebras, extravios e ajustes manuais
                        </div>
                      </div>
                      <div className="grid grid-cols-2 gap-4">
@@ -388,11 +388,11 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                </Card>
              </div>
 
-             {/* Sidebar: Activity & Status (The "Sides") */}
+             {/* Sidebar Area: Activity & Status (The "Sides") */}
              <div className="space-y-6">
                <Card className="p-5 border-none shadow-sm bg-card/80">
                  <div className="flex items-center justify-between mb-6">
-                   <h3 className="text-xs font-bold uppercase tracking-widest text-destructive">Alertas de Reposição</h3>
+                   <h3 className="text-xs font-bold uppercase tracking-widest text-destructive">Reposição Crítica</h3>
                    <Badge variant="destructive" className="animate-pulse">{alerts.length}</Badge>
                  </div>
                  <div className="space-y-3">
@@ -413,7 +413,12 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                        </div>
                      </div>
                    ))}
-                   {alerts.length === 0 && <p className="text-[10px] text-center py-6 text-muted-foreground italic uppercase tracking-widest">Estoque Regular</p>}
+                   {alerts.length === 0 && (
+                     <div className="text-center py-10">
+                       <Activity className="h-8 w-8 text-emerald-500/20 mx-auto mb-2" />
+                       <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Estoque OK</p>
+                     </div>
+                   )}
                  </div>
                </Card>
 
@@ -444,10 +449,10 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                        <div className="flex flex-col">
                          <div className="flex items-center justify-between">
                            <span className="text-[10px] font-bold uppercase">{TYPE_LABEL[m.type]}</span>
-                           <span className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</span>
+                           <span className="text-[9px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm")}</span>
                          </div>
                          <span className="text-xs font-medium text-foreground line-clamp-1">{m.materials?.name}</span>
-                         <span className="text-[9px] text-muted-foreground">{m.creator?.nome}</span>
+                         <span className="text-[9px] text-muted-foreground truncate">{m.creator?.nome}</span>
                        </div>
                      </div>
                    ))}
@@ -458,34 +463,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                </Card>
              </div>
            </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className={cn("text-[8px] h-4 px-1 leading-none uppercase tracking-wider", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge>
-                          <span className="text-[10px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm", { locale: ptBR })}</span>
-                        </div>
-                        <div className="font-medium text-[13px] text-foreground">
-                          {Number(m.quantity)} {m.materials?.unit} de <span className="font-bold underline decoration-primary/20 decoration-2 underline-offset-2">{m.materials?.name}</span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-2 gap-y-1">
-                          <span className="flex items-center gap-1 font-medium text-foreground/80">{m.creator?.nome || "—"}</span>
-                          {m.ordens_servico?.numero && <span className="text-primary font-bold">· OS {m.ordens_servico.numero}</span>}
-                          {m.from_wh?.name && <span className="bg-accent/50 px-1 rounded">de {m.from_wh.name}</span>}
-                          {m.to_wh?.name && <span className="bg-primary/10 text-primary px-1 rounded">→ {m.to_wh.name}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {filteredMovements.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <Activity className="h-10 w-10 text-muted-foreground/20 mb-2" />
-                      <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
+         </TabsContent>
 
         <TabsContent value="materials" className="space-y-3 mt-4">
           <div className="flex gap-2">

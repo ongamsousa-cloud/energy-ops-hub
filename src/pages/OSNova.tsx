@@ -28,18 +28,26 @@ export default function OSNova() {
       navigator.geolocation.getCurrentPosition((p) => res({ lat: p.coords.latitude, lng: p.coords.longitude }), () => res({}), { timeout: 5000 });
     });
   }
-  async function iniciar() {
-    if (!obraId) return toast.error("Selecione a obra");
-    setBusy(true);
-    const geo = await getGeo();
-    const { data, error } = await supabase.from("ordens_servico").insert({
-      obra_id: obraId, profissional_id: user!.id, status: "iniciada",
-      inicio_lat: geo.lat, inicio_lng: geo.lng, created_by: user!.id,
-    }).select("id").single();
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("OS iniciada"); nav(`/app/os/${data.id}`);
-  }
+   async function iniciar() {
+     if (!formData.obraId) return toast.error("Selecione a obra");
+     setBusy(true);
+     const geo = await getGeo();
+     const { data, error } = await supabase.from("ordens_servico").insert({
+       obra_id: formData.obraId, 
+       profissional_id: user!.id, 
+       status: "iniciada",
+       prioridade: formData.prioridade,
+       data_agendada: formData.data_agendada,
+       hora_agendada: formData.hora_agendada,
+       inicio_lat: geo.lat, 
+       inicio_lng: geo.lng, 
+       created_by: user!.id,
+     }).select("id").single();
+     setBusy(false);
+     if (error) return toast.error(error.message);
+     toast.success("OS iniciada"); 
+     nav(`/app/os/${data.id}`);
+   }
   return (
     <div className="mx-auto max-w-md">
       <PageHeader title="Iniciar Ordem de Serviço" description="Registre suas atividades." />

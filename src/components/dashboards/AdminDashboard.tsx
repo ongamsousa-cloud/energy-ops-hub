@@ -84,7 +84,7 @@ export default function AdminDashboard({
          </Button>
  
          <Button asChild variant="outline" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
-           <Link to="/app/materiais" className="flex items-center">
+           <Link to="/app/estoque" className="flex items-center">
              <Package className="mr-2 h-4 w-4 text-primary" />
              Gestão de Estoque
            </Link>

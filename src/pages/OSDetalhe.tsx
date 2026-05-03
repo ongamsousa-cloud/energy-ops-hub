@@ -115,7 +115,12 @@ export default function OSDetalhe() {
       created_by: user!.id,
     });
     if (error) return toast.error(error.message);
-    if (os.status === "iniciada") await supabase.from("ordens_servico").update({ status: "em_andamento" }).eq("id", id);
+    if ((os.operational_status || os.status) === "iniciada") {
+      await supabase.from("ordens_servico").update({ 
+        operational_status: "em_execucao",
+        status: "em_andamento" 
+      }).eq("id", id);
+    }
     setAdd(false);
     setForm({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "" });
     toast.success("Atividade lançada");

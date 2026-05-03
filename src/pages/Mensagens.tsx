@@ -337,62 +337,98 @@ export default function Mensagens() {
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Iniciar conversa com departamento</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Buscar por nome, email ou cargo..." 
-                      className="pl-9"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  
-                  <ScrollArea className="h-[350px] pr-4">
-                    <div className="space-y-6">
-                      {Object.entries(contatosPorRole).map(([role, list]) => (
-                        <div key={role} className="space-y-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 px-1">
-                            <Building2 className="h-3 w-3" />
-                            {ROLE_LABEL[role as AppRole] || role}
-                          </h4>
-                          <div className="grid gap-1">
-                            {list.map((p) => (
-                              <button
-                                key={p.id}
-                                onClick={() => startConversa(p)}
-                                className="flex items-center gap-3 w-full text-left p-2 rounded-md hover:bg-accent transition-colors group"
-                              >
-                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                                  {p.nome.charAt(0)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{p.nome}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate">{p.email}</p>
-                                </div>
-                                <Badge variant="outline" className="text-[9px] h-4 px-1">{ROLE_LABEL[p.role as AppRole]?.split(' ')[0] || p.role}</Badge>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      {filteredContatos.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                          <User className="h-10 w-10 opacity-20 mb-2" />
-                          <p className="text-sm">Nenhum contato encontrado.</p>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpenNew(false)}>Fechar</Button>
-                </DialogFooter>
-              </DialogContent>
+               <DialogContent className="sm:max-w-2xl overflow-hidden p-0 gap-0">
+                 <DialogHeader className="p-4 border-b">
+                   <DialogTitle className="flex items-center gap-2">
+                     <MessageSquare className="h-5 w-5 text-primary" />
+                     Nova Mensagem
+                   </DialogTitle>
+                 </DialogHeader>
+                 <div className="flex flex-col md:flex-row h-[500px]">
+                   {/* Departamentos */}
+                   <div className="w-full md:w-1/3 border-r bg-muted/20 p-2 overflow-y-auto">
+                     <p className="text-[10px] font-bold uppercase text-muted-foreground px-2 mb-2">Filtrar por Departamento</p>
+                     <div className="space-y-1">
+                       <Button 
+                         variant={!searchTerm ? "secondary" : "ghost"} 
+                         size="sm" 
+                         className="w-full justify-start text-xs font-medium"
+                         onClick={() => setSearchTerm("")}
+                       >
+                         <UsersIcon className="h-3.5 w-3.5 mr-2" />
+                         Todos
+                       </Button>
+                       {Object.keys(ROLE_LABEL).map((role) => (
+                         <Button 
+                           key={role}
+                           variant={searchTerm === ROLE_LABEL[role as AppRole] ? "secondary" : "ghost"} 
+                           size="sm" 
+                           className="w-full justify-start text-xs"
+                           onClick={() => setSearchTerm(ROLE_LABEL[role as AppRole])}
+                         >
+                           <Building2 className="h-3.5 w-3.5 mr-2" />
+                           {ROLE_LABEL[role as AppRole]}
+                         </Button>
+                       ))}
+                     </div>
+                   </div>
+
+                   {/* Contatos */}
+                   <div className="flex-1 flex flex-col overflow-hidden bg-card">
+                     <div className="p-3 border-b">
+                       <div className="relative">
+                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                         <Input 
+                           placeholder="Pesquisar profissional..." 
+                           className="pl-9 h-9"
+                           value={searchTerm}
+                           onChange={(e) => setSearchTerm(e.target.value)}
+                         />
+                       </div>
+                     </div>
+                     
+                     <ScrollArea className="flex-1 p-2">
+                       <div className="space-y-4">
+                         {Object.entries(contatosPorRole).map(([role, list]) => (
+                           <div key={role} className="space-y-1">
+                             <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                               {ROLE_LABEL[role as AppRole] || role}
+                             </h4>
+                             <div className="grid gap-0.5">
+                               {list.map((p) => (
+                                 <button
+                                   key={p.id}
+                                   onClick={() => startConversa(p)}
+                                   className="flex items-center gap-3 w-full text-left p-2 rounded-lg hover:bg-accent transition-all group"
+                                 >
+                                   <div className="relative">
+                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                                       {p.nome.charAt(0)}
+                                     </div>
+                                     <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></div>
+                                   </div>
+                                   <div className="flex-1 min-w-0">
+                                     <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{p.nome}</p>
+                                     <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
+                                   </div>
+                                   <Send className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-2" />
+                                 </button>
+                               ))}
+                             </div>
+                           </div>
+                         ))}
+                         {filteredContatos.length === 0 && (
+                           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                             <User className="h-12 w-12 opacity-10 mb-2" />
+                             <p className="text-sm font-medium">Nenhum profissional encontrado</p>
+                             <p className="text-xs opacity-60">Tente buscar por outro nome ou cargo</p>
+                           </div>
+                         )}
+                       </div>
+                     </ScrollArea>
+                   </div>
+                 </div>
+               </DialogContent>
             </Dialog>
           </div>
           <div className="flex-1 overflow-auto">

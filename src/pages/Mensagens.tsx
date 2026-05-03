@@ -13,8 +13,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-type Profile = { id: string; nome: string; email: string; role?: AppRole };
-type Conv = { id: string; titulo: string | null; created_at: string; outros: Profile[]; ultima?: string };
+ type Profile = { id: string; nome: string; email: string; role?: AppRole; foto_url?: string };
+ type Conv = { 
+   id: string; 
+   titulo: string | null; 
+   created_at: string; 
+   outros: Profile[]; 
+   ultima_msg?: string;
+   unread_count?: number;
+ };
 
 export default function Mensagens() {
   const { user, roles } = useAuth();
@@ -116,40 +123,80 @@ export default function Mensagens() {
   }, [user, roles]);
 
   // Carrega conversas
-  async function loadConvs() {
-    if (!user) return;
-    const { data: parts } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id")
-      .eq("user_id", user.id);
-    const ids = (parts ?? []).map((p: any) => p.conversation_id);
-    if (!ids.length) { setConvs([]); return; }
-    const { data: cs } = await supabase
-      .from("conversations")
-      .select("id, titulo, created_at")
-      .in("id", ids)
-      .order("created_at", { ascending: false });
-    const { data: allParts } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id, user_id, profiles:profiles!conversation_participants_user_id_fkey(id,nome,email)")
-      .in("conversation_id", ids);
-    // fallback: profiles join may not work without FK; fetch separately
-    const otherIds = Array.from(new Set((allParts ?? []).map((p: any) => p.user_id).filter((u: string) => u !== user.id)));
-    const { data: profs } = otherIds.length
-      ? await supabase.from("profiles").select("id, nome, email").in("id", otherIds)
-      : { data: [] as any[] };
-    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
-    const result: Conv[] = (cs ?? []).map((c: any) => {
-      const others = (allParts ?? [])
-        .filter((p: any) => p.conversation_id === c.id && p.user_id !== user.id)
-        .map((p: any) => profMap.get(p.user_id))
-        .filter(Boolean) as Profile[];
-      return { ...c, outros: others };
-    });
-    setConvs(result);
-  }
+   async function loadConvs() {
+     if (!user) return;
+     
+     const { data: convData, error } = await supabase
+       .from('conversations')
+       .select(`
+         id, 
+         titulo, 
+         created_at,
+         conversation_participants!inner(user_id)
+       `)
+       .eq('conversation_participants.user_id', user.id)
+       .order('created_at', { ascending: false });
 
-  useEffect(() => { loadConvs(); }, [user]);
+     if (error) {
+       console.error("Erro ao carregar conversas:", error);
+       return;
+     }
+
+     const convIds = convData.map(c => c.id);
+     if (!convIds.length) {
+       setConvs([]);
+       return;
+     }
+
+     // Buscar participantes de todas essas conversas
+     const { data: allParticipants } = await supabase
+       .from('conversation_participants')
+       .select(`
+         conversation_id,
+         user_id,
+         profiles:profiles(id, nome, email, role, foto_url)
+       `)
+       .in('conversation_id', convIds);
+
+     // Buscar última mensagem de cada conversa
+     const { data: lastMessages } = await supabase
+       .from('messages')
+       .select('conversation_id, conteudo, created_at')
+       .in('conversation_id', convIds)
+       .order('created_at', { ascending: false });
+
+     const result: Conv[] = convData.map(c => {
+       const participants = allParticipants?.filter(p => p.conversation_id === c.id) || [];
+       const others = participants
+         .filter(p => p.user_id !== user.id)
+         .map(p => (p.profiles as unknown as Profile))
+         .filter(Boolean);
+       
+       const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
+
+       return {
+         id: c.id,
+         titulo: c.titulo,
+         created_at: c.created_at,
+         outros: others,
+         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
+       };
+     });
+
+     setConvs(result);
+   }
+
+   useEffect(() => { 
+     loadConvs(); 
+     // Realtime para a lista de conversas (atualizar última mensagem/ordenar)
+     const ch = supabase
+       .channel('convs-list')
+       .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+         loadConvs();
+       })
+       .subscribe();
+     return () => { supabase.removeChannel(ch); };
+   }, [user]);
 
   // Carrega mensagens da conversa ativa + realtime
   useEffect(() => {
@@ -176,24 +223,55 @@ export default function Mensagens() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length]);
 
-  async function startConversa(other: Profile) {
-    // procura conversa direta existente
-    const existing = convs.find((c) => c.outros.length === 1 && c.outros[0].id === other.id);
-    if (existing) { setActive(existing.id); setOpenNew(false); return; }
-    const { data: c, error } = await supabase
-      .from("conversations")
-      .insert({ tipo: "direct", titulo: other.nome, created_by: user!.id })
-      .select("id").single();
-    if (error || !c) { toast.error(error?.message ?? "Erro"); return; }
-    const { error: e2 } = await supabase.from("conversation_participants").insert([
-      { conversation_id: c.id, user_id: user!.id },
-      { conversation_id: c.id, user_id: other.id },
-    ]);
-    if (e2) { toast.error(e2.message); return; }
-    await loadConvs();
-    setActive(c.id);
-    setOpenNew(false);
-  }
+   async function startConversa(other: Profile) {
+     try {
+       // Procura conversa direta existente localmente
+       const existing = convs.find((c) => c.outros.length === 1 && c.outros[0].id === other.id);
+       if (existing) { 
+         setActive(existing.id); 
+         setOpenNew(false); 
+         return; 
+       }
+
+       // Tenta buscar no banco se já existe uma conversa entre esses dois
+       const { data: existingParts, error: searchError } = await (supabase as any)
+         .rpc('get_conversation_between_users', { user1: user!.id, user2: other.id });
+       
+       if (!searchError && Array.isArray(existingParts) && existingParts.length > 0) {
+         setActive(existingParts[0].conversation_id);
+         setOpenNew(false);
+         return;
+       }
+
+       // Criar nova
+       const { data: c, error } = await supabase
+         .from("conversations")
+         .insert({ tipo: "direct", titulo: null, created_by: user!.id })
+         .select("id").single();
+         
+       if (error || !c) { 
+         toast.error("Erro ao criar conversa: " + (error?.message || "Erro desconhecido")); 
+         return; 
+       }
+
+       const { error: e2 } = await supabase.from("conversation_participants").insert([
+         { conversation_id: c.id, user_id: user!.id },
+         { conversation_id: c.id, user_id: other.id },
+       ]);
+
+       if (e2) { 
+         toast.error("Erro ao adicionar participantes: " + e2.message); 
+         return; 
+       }
+
+       await loadConvs();
+       setActive(c.id);
+       setOpenNew(false);
+     } catch (err) {
+       console.error(err);
+       toast.error("Erro inesperado ao iniciar conversa.");
+     }
+   }
 
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;
@@ -259,83 +337,136 @@ export default function Mensagens() {
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Iniciar conversa com departamento</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      placeholder="Buscar por nome, email ou cargo..." 
-                      className="pl-9"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  
-                  <ScrollArea className="h-[350px] pr-4">
-                    <div className="space-y-6">
-                      {Object.entries(contatosPorRole).map(([role, list]) => (
-                        <div key={role} className="space-y-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 px-1">
-                            <Building2 className="h-3 w-3" />
-                            {ROLE_LABEL[role as AppRole] || role}
-                          </h4>
-                          <div className="grid gap-1">
-                            {list.map((p) => (
-                              <button
-                                key={p.id}
-                                onClick={() => startConversa(p)}
-                                className="flex items-center gap-3 w-full text-left p-2 rounded-md hover:bg-accent transition-colors group"
-                              >
-                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                                  {p.nome.charAt(0)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{p.nome}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate">{p.email}</p>
-                                </div>
-                                <Badge variant="outline" className="text-[9px] h-4 px-1">{ROLE_LABEL[p.role as AppRole]?.split(' ')[0] || p.role}</Badge>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                      {filteredContatos.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                          <User className="h-10 w-10 opacity-20 mb-2" />
-                          <p className="text-sm">Nenhum contato encontrado.</p>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setOpenNew(false)}>Fechar</Button>
-                </DialogFooter>
-              </DialogContent>
+               <DialogContent className="sm:max-w-2xl overflow-hidden p-0 gap-0">
+                 <DialogHeader className="p-4 border-b">
+                   <DialogTitle className="flex items-center gap-2">
+                     <MessageSquare className="h-5 w-5 text-primary" />
+                     Nova Mensagem
+                   </DialogTitle>
+                 </DialogHeader>
+                 <div className="flex flex-col md:flex-row h-[500px]">
+                   {/* Departamentos */}
+                   <div className="w-full md:w-1/3 border-r bg-muted/20 p-2 overflow-y-auto">
+                     <p className="text-[10px] font-bold uppercase text-muted-foreground px-2 mb-2">Filtrar por Departamento</p>
+                     <div className="space-y-1">
+                       <Button 
+                         variant={!searchTerm ? "secondary" : "ghost"} 
+                         size="sm" 
+                         className="w-full justify-start text-xs font-medium"
+                         onClick={() => setSearchTerm("")}
+                       >
+                         <UsersIcon className="h-3.5 w-3.5 mr-2" />
+                         Todos
+                       </Button>
+                       {Object.keys(ROLE_LABEL).map((role) => (
+                         <Button 
+                           key={role}
+                           variant={searchTerm === ROLE_LABEL[role as AppRole] ? "secondary" : "ghost"} 
+                           size="sm" 
+                           className="w-full justify-start text-xs"
+                           onClick={() => setSearchTerm(ROLE_LABEL[role as AppRole])}
+                         >
+                           <Building2 className="h-3.5 w-3.5 mr-2" />
+                           {ROLE_LABEL[role as AppRole]}
+                         </Button>
+                       ))}
+                     </div>
+                   </div>
+
+                   {/* Contatos */}
+                   <div className="flex-1 flex flex-col overflow-hidden bg-card">
+                     <div className="p-3 border-b">
+                       <div className="relative">
+                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                         <Input 
+                           placeholder="Pesquisar profissional..." 
+                           className="pl-9 h-9"
+                           value={searchTerm}
+                           onChange={(e) => setSearchTerm(e.target.value)}
+                         />
+                       </div>
+                     </div>
+                     
+                     <ScrollArea className="flex-1 p-2">
+                       <div className="space-y-4">
+                         {Object.entries(contatosPorRole).map(([role, list]) => (
+                           <div key={role} className="space-y-1">
+                             <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                               {ROLE_LABEL[role as AppRole] || role}
+                             </h4>
+                             <div className="grid gap-0.5">
+                               {list.map((p) => (
+                                 <button
+                                   key={p.id}
+                                   onClick={() => startConversa(p)}
+                                   className="flex items-center gap-3 w-full text-left p-2 rounded-lg hover:bg-accent transition-all group"
+                                 >
+                                   <div className="relative">
+                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                                       {p.nome.charAt(0)}
+                                     </div>
+                                     <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></div>
+                                   </div>
+                                   <div className="flex-1 min-w-0">
+                                     <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{p.nome}</p>
+                                     <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
+                                   </div>
+                                   <Send className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-2" />
+                                 </button>
+                               ))}
+                             </div>
+                           </div>
+                         ))}
+                         {filteredContatos.length === 0 && (
+                           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                             <User className="h-12 w-12 opacity-10 mb-2" />
+                             <p className="text-sm font-medium">Nenhum profissional encontrado</p>
+                             <p className="text-xs opacity-60">Tente buscar por outro nome ou cargo</p>
+                           </div>
+                         )}
+                       </div>
+                     </ScrollArea>
+                   </div>
+                 </div>
+               </DialogContent>
             </Dialog>
           </div>
-          <div className="flex-1 overflow-auto">
-            {convs.length === 0 ? (
-              <div className="p-6 text-center text-xs text-muted-foreground">
-                <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
-                Nenhuma conversa.
-              </div>
-            ) : convs.map((c) => (
-              <button key={c.id} onClick={() => setActive(c.id)}
-                className={cn("w-full border-b border-border text-left px-3 py-2 hover:bg-accent transition-colors",
-                  active === c.id && "bg-accent")}>
-                <div className="text-sm font-medium truncate">
-                  {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {new Date(c.created_at).toLocaleDateString("pt-BR")}
-                </div>
-              </button>
-            ))}
-          </div>
+           <ScrollArea className="flex-1">
+             <div className="p-1">
+               {convs.length === 0 ? (
+                 <div className="p-6 text-center text-xs text-muted-foreground">
+                   <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
+                   Nenhuma conversa ativa. Clique em "Nova" para começar.
+                 </div>
+               ) : convs.map((c) => (
+                 <button 
+                   key={c.id} 
+                   onClick={() => setActive(c.id)}
+                   className={cn(
+                     "w-full flex items-center gap-3 px-3 py-3 rounded-md transition-all mb-1 text-left group relative",
+                     active === c.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent border-l-4 border-transparent"
+                   )}
+                 >
+                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                     {c.outros[0]?.nome?.charAt(0) || "C"}
+                   </div>
+                   <div className="flex-1 min-w-0">
+                     <div className="flex items-center justify-between mb-0.5">
+                       <div className={cn("text-sm font-bold truncate", active === c.id ? "text-primary" : "text-foreground")}>
+                         {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
+                       </div>
+                       <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
+                         {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                       </span>
+                     </div>
+                     <div className="text-[11px] text-muted-foreground truncate leading-relaxed">
+                       {c.ultima_msg}
+                     </div>
+                   </div>
+                 </button>
+               ))}
+             </div>
+           </ScrollArea>
         </div>
 
         {/* Thread */}
@@ -402,8 +533,8 @@ export default function Mensagens() {
                 })}
                 <div ref={endRef} />
               </div>
-              <div className="border-t border-border p-2 bg-muted/30">
-                {audioBlob ? (
+               <div className="border-t border-border p-3 bg-muted/20">
+                 {audioBlob ? (
                   <div className="flex items-center gap-3 bg-card p-2 rounded-lg border border-primary/20 animate-in fade-in zoom-in duration-200">
                     <div className="p-2 bg-primary/10 rounded-full text-primary">
                       <Mic className="h-4 w-4" />
@@ -439,50 +570,53 @@ export default function Mensagens() {
                       />
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
-                    <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
-                    <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar" className="text-muted-foreground hover:text-primary">
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera" className="text-muted-foreground hover:text-primary">
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                    <div className="relative flex-1">
-                      <Input 
-                        value={text} 
-                        onChange={(e) => setText(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
-                        placeholder="Escreva sua mensagem..." 
-                        className="pr-10 bg-card border-border/50 focus:border-primary/50 transition-all"
-                      />
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className={cn(
-                          "absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
-                          isRecording && "text-red-500"
-                        )}
-                        onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
-                        title="Gravar Áudio"
-                      >
-                        <Mic className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Button 
-                      size="icon" 
-                      onClick={() => enviar()} 
-                      disabled={!text.trim()}
-                      className={cn(
-                        "shadow-sm transition-all",
-                        text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                 ) : (
+                   <div className="flex items-center gap-2">
+                     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
+                     <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
+                     
+                     <div className="flex items-center">
+                       <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar" className="h-9 w-9 text-muted-foreground hover:text-primary rounded-full transition-colors">
+                         <Paperclip className="h-4 w-4" />
+                       </Button>
+                       <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera" className="h-9 w-9 text-muted-foreground hover:text-primary rounded-full transition-colors hidden sm:flex">
+                         <Camera className="h-4 w-4" />
+                       </Button>
+                     </div>
+
+                     <div className="relative flex-1">
+                       <Input 
+                         value={text} 
+                         onChange={(e) => setText(e.target.value)}
+                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
+                         placeholder="Escreva sua mensagem..." 
+                         className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
+                       />
+                       <button 
+                         className={cn(
+                           "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                           isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
+                         )}
+                         onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
+                         title="Gravar Áudio"
+                       >
+                         <Mic className="h-4 w-4" />
+                       </button>
+                     </div>
+
+                     <Button 
+                       size="icon" 
+                       onClick={() => enviar()} 
+                       disabled={!text.trim()}
+                       className={cn(
+                         "h-10 w-10 shrink-0 rounded-full shadow-md transition-all active:scale-95",
+                         text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                       )}
+                     >
+                       <Send className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 )}
               </div>
             </>
           )}

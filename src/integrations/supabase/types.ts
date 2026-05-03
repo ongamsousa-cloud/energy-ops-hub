@@ -3352,6 +3352,12 @@ export type Database = {
         Args: { _receiver: string; _sender: string }
         Returns: boolean
       }
+      get_conversation_between_users: {
+        Args: { user1: string; user2: string }
+        Returns: {
+          conversation_id: string
+        }[]
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]

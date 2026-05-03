@@ -35,6 +35,8 @@ export default function Mensagens() {
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
+   const [recordingDuration, setRecordingDuration] = useState(0);
+   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
@@ -55,6 +57,26 @@ export default function Mensagens() {
    );
  
    const isRecording = recorderControls.isRecording;
+ 
+   useEffect(() => {
+     if (isRecording) {
+       setRecordingDuration(0);
+       recordingTimerRef.current = setInterval(() => {
+         setRecordingDuration(prev => prev + 1);
+       }, 1000);
+     } else {
+       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+     }
+     return () => {
+       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+     };
+   }, [isRecording]);
+ 
+   const formatDuration = (seconds: number) => {
+     const mins = Math.floor(seconds / 60);
+     const secs = seconds % 60;
+     return `${mins}:${secs.toString().padStart(2, '0')}`;
+   };
 
    const addAudioElement = (blob: Blob) => {
      console.log("Gravação concluída:", blob.size, "bytes");
@@ -640,12 +662,17 @@ export default function Mensagens() {
                       </div>
                     ) : isRecording ? (
                       <div className="flex items-center justify-between bg-red-50 p-3 rounded-2xl mb-3 border border-red-100 shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                          <span className="text-xs font-black text-red-600 uppercase tracking-tighter">
-                            Gravando Áudio...
-                          </span>
-                        </div>
+                         <div className="flex items-center gap-3">
+                           <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                           <div className="flex flex-col">
+                             <span className="text-xs font-black text-red-600 uppercase tracking-tighter">
+                               Gravando Áudio...
+                             </span>
+                             <span className="text-[10px] font-mono text-red-400">
+                               {formatDuration(recordingDuration)}
+                             </span>
+                           </div>
+                         </div>
                          <Button 
                            size="sm" 
                            variant="destructive"

@@ -5,7 +5,7 @@ export default function PageHeader({ title, description, actions }: { title: str
     <div className="mb-6 border-b border-border pb-4">
       {/* Print-only Logo */}
       <div className="hidden print:flex items-center gap-3 mb-6">
-        <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
+        <img src="https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png" alt="Logo" className="h-10 w-auto" />
         <div>
           <div className="text-sm font-bold uppercase tracking-wider">Energia · Operações</div>
           <div className="text-[10px] text-muted-foreground">Gestão de Serviços Elétricos</div>

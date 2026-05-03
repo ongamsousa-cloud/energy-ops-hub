@@ -27,6 +27,7 @@ export default function OSDetalhe() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
    const [newMessage, setNewMessage] = useState("");
+   const [busy, setBusy] = useState(false);
    const [cats, setCats] = useState<any[]>([]);
    const [atvs, setAtvs] = useState<any[]>([]);
    const [equipes, setEquipes] = useState<any[]>([]);

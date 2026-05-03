@@ -457,6 +457,7 @@ export default function OSDetalhe() {
            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
              const geo = await getGeo();
              await supabase.from("ordens_servico").update({ 
+               operational_status: "chegou_ao_local",
                status: "em_andamento",
                inicio_atendimento: new Date().toISOString()
              }).eq("id", id);

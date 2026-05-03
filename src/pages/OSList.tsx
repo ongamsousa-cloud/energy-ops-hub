@@ -15,7 +15,9 @@ export default function OSList() {
   const { user, hasRole } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
    const [filters, setFilters] = useState({
-     status: "all",
+     operational_status: "all",
+     financial_status: "all",
+     audit_status: "all",
      priority: "all",
      search: ""
    });

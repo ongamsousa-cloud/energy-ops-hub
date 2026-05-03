@@ -277,7 +277,8 @@ export default function Mensagens() {
      }
    }
 
-   async function sendBroadcast() {
+    async function sendBroadcast() {
+      if (isUploading) return;
      if (selectedContacts.length === 0) {
        toast.error("Selecione ao menos um destinatário.");
        return;
@@ -291,24 +292,27 @@ export default function Mensagens() {
      let audioUrl: string | null = null;
      // Se já temos uma URL pendente (upload já feito), usamos ela.
      // Senão, se temos um blob, fazemos o upload agora.
-     audioUrl = pendingAudioUrl;
-     if (audioBlob && !audioUrl) {
-       try {
-         const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-         const path = `chat/broadcast/${file.name}`;
-         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
-         if (upErr) { 
-           console.error("Erro no upload do broadcast:", upErr);
-           toast.error("Erro no upload do áudio: " + upErr.message); 
-           return; 
-         }
-         audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
-       } catch (e: any) {
-         console.error("Exceção no upload:", e);
-         toast.error("Falha ao processar áudio.");
-         return;
-       }
-     }
+      setIsUploading(true);
+      try {
+        audioUrl = pendingAudioUrl;
+        if (audioBlob && !audioUrl) {
+          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+          const path = `chat/broadcast/${file.name}`;
+          const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+          if (upErr) { 
+            console.error("Erro no upload do broadcast:", upErr);
+            toast.error("Erro no upload do áudio: " + upErr.message); 
+            setIsUploading(false);
+            return; 
+          }
+          audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+        }
+      } catch (e: any) {
+        console.error("Exceção no upload:", e);
+        toast.error("Falha ao processar áudio.");
+        setIsUploading(false);
+        return;
+      }
 
      const conteudo = text.trim() || null;
      let lastConvId: string | null = null;
@@ -341,7 +345,8 @@ export default function Mensagens() {
        setOpenNew(false);
        await loadConvs(); // Carrega tudo uma vez no final
        if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
-       toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
+      setIsUploading(false);
+      toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
    }
 
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);

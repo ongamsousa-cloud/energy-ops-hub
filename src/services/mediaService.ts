@@ -32,18 +32,16 @@
        } = supabase.storage.from("media").getPublicUrl(filePath);
  
        // Register in database
-       const { error: dbError } = await supabase.from("service_order_media").insert({
-         service_order_id: serviceOrderId,
-         technician_id: technicianId,
-         media_type: file.type.startsWith("image") ? "image" : "video",
-         file_url: publicUrl,
-         file_name: file.name,
-         file_size: file.size,
-         description,
-         stage,
-         gps_lat: location?.latitude,
-         gps_lng: location?.longitude,
-       });
+        const { error: dbError } = await supabase.from("service_order_media").insert({
+          service_order_id: serviceOrderId,
+          user_id: technicianId,
+          file_type: file.type.startsWith("image") ? "image" : "video",
+          file_path: publicUrl,
+          description,
+          category: stage,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
+        });
  
        if (dbError) throw dbError;
  

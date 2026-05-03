@@ -10,6 +10,8 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDashboardProps) {
+  const variacao = stats.umdAnterior > 0 ? ((stats.umdAtual - stats.umdAnterior) / stats.umdAnterior) * 100 : null;
+  const variacaoLabel = variacao === null ? "Sem comparativo do período anterior" : `${variacao >= 0 ? '+' : ''}${variacao.toFixed(1)}% vs 30 dias anteriores`;
   const chartConfig = {
     umd: {
       label: "UMD Aprovada",
@@ -45,7 +47,7 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
               <Briefcase className="h-4 w-4 text-blue-500" />
             </div>
             <div className="text-2xl font-bold">{stats.obras}</div>
-            <p className="text-xs text-muted-foreground mt-1">Crescimento de +2% este mês</p>
+            <p className="text-xs text-muted-foreground mt-1">{stats.obrasExec} em execução</p>
           </CardContent>
         </Card>
 
@@ -56,7 +58,7 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
               <TrendingUp className="h-4 w-4 text-emerald-500" />
             </div>
             <div className="text-2xl font-bold">{stats.umd.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">Produtividade em alta</p>
+            <p className={`text-xs mt-1 ${variacao !== null && variacao < 0 ? 'text-red-600' : 'text-muted-foreground'}`}>{variacaoLabel}</p>
           </CardContent>
         </Card>
 

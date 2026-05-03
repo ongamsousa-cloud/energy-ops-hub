@@ -1,90 +1,71 @@
-# Comunicação interna hierárquica + evidências do técnico
 
-## Objetivo
-Adicionar um módulo de **Mensagens** dentro do sistema, respeitando a hierarquia:
-- **Administrador / Gestor** → conversam com todos
-- **Supervisor** → conversa com Gestor (acima) e Técnicos da sua equipe (abaixo)
-- **Técnico (campo)** → conversa **apenas** com seu Supervisor
-- **Financeiro / Auditor** → conversam com Admin e Gestor
+# Auditoria honesta dos dashboards e plano de correção
 
-E reforçar a captura de **foto e vídeo** pelo técnico, anexada à OS, salva no banco de evidências (já existe `os_evidences` + bucket `os-evidences`).
+Antes de prometer "tudo refeito", aqui está o que está REALMENTE quebrado hoje no código (verificado linha a linha) e o que será corrigido.
 
----
+## Diagnóstico (problemas confirmados)
 
-## 1. Banco de dados (migração)
+### Críticos (quebram o sistema)
+1. `src/components/dashboards/AuditorDashboard.tsx` — JSX escrito FORA do `return`, antes da declaração de `dataPie`. O arquivo não compila quando o auditor entra. Por isso o dashboard do auditor "não existe" na prática.
+2. `src/App.tsx` — `FinanceiroOrdens` e `FinanceiroMateriais` são importados mas **nenhuma rota** está registrada. Qualquer link para `/app/financeiro/ordens` ou `/app/financeiro/materiais` cai em 404.
 
-Criar duas tabelas:
+### Dashboard do Técnico (CampoDashboard)
+3. Não há botão de foto/vídeo no próprio dashboard. O técnico precisa entrar numa OS, achar a aba "Evidências" e só lá vê os botões. Vou adicionar uma ação rápida de **captura de foto/vídeo direto do dashboard**, ligada à OS ativa do técnico.
+4. Cards mostram `osAbertas` que vem hardcoded como `0` em `Dashboard.tsx` (linha 98). Vou calcular de verdade (status `iniciada` + `em_andamento` do técnico logado).
+5. Listagem "Minhas Atividades Recentes" só mostra OS criadas — não filtra por status que o técnico aceitou. Vou separar **"OS aceitas/em execução"** de **"aguardando aceite"**.
 
-**`conversations`**
-- `id uuid pk`
-- `tipo text` ('direct' | 'grupo_obra')
-- `obra_id uuid null` (para chats vinculados a uma obra)
-- `criada_em timestamptz default now()`
+### Dashboard do Gestor/Supervisor (GestorDashboard)
+6. Card "Status das Equipes" usa o mesmo número (`osPend`) em duas linhas diferentes ("Em execução" e "Aguardando validação"). Dado duplicado/falso.
+7. "Em deslocamento" mostra `osAbertas` que é sempre 0.
+8. "Alertas Operacionais" tem dois alertas **escritos no código** ("OS #10293", "OS #10442"). Vou trocar por dados reais de `operational_alerts` (tabela já existe).
 
-**`conversation_participants`**
-- `conversation_id uuid`
-- `user_id uuid`
-- `ultima_leitura timestamptz`
-- PK composta
+### Dashboard do Admin (AdminDashboard)
+9. "Crescimento de +2% este mês" e "Produtividade em alta" são strings fixas — vou calcular variação real comparando 30 dias atuais vs 30 dias anteriores.
 
-**`messages`**
-- `id uuid pk`
-- `conversation_id uuid`
-- `sender_id uuid`
-- `conteudo text`
-- `anexo_url text null` (foto/vídeo opcional)
-- `anexo_tipo text null` ('image' | 'video')
-- `created_at timestamptz default now()`
+### Dashboard Financeiro (FinanceiroDashboard)
+10. "Previsão R$" usa `umd * 12.5` chumbado. Vou ler de `financial_rules` (tabela existe) o valor unitário do UMD; se não houver, mostrar "—" em vez de mentir.
+11. "Divergências: 0" hardcoded. Vou contar `financial_order_records` com `financial_status = 'divergente'`.
+12. Cards usam `stats.umd` global em vez de somar `financial_order_records.approved_value`.
 
-**Função SQL `can_message(sender uuid, receiver uuid) returns boolean`** que valida a hierarquia consultando `user_roles` e (para supervisor↔técnico) a tabela `equipe_membros` + `equipes.supervisor_id`. Usada nas policies de INSERT.
+### Dashboard do Auditor
+13. Reescrever o arquivo do zero (está sintaticamente quebrado). Conectar a `audit_cases`, `audit_findings` e `os_audit_logs` reais (números de casos abertos, achados por severidade, fila de revisão).
 
-**RLS**:
-- SELECT em `messages` / `conversations`: somente participantes (`exists` em `conversation_participants`).
-- INSERT em `messages`: participante **e** `can_message(sender, qualquer outro participante)` = true.
-- INSERT em `conversation_participants` validado pela mesma regra.
+### Mídia / Evidências (técnico)
+14. Bucket `os-evidences` está sem `file_size_limit` — usuário pediu até 1 GB. Vou definir `1073741824`.
+15. Não há policy impedindo delete em `os_evidences` (a regra do usuário: nunca apagar). Vou adicionar política RLS bloqueando DELETE para todos os roles e usar coluna `deleted_at` apenas como soft-flag para auditor (sem remover storage).
+16. Fluxo de upload em `OSDetalhe` já existe mas não captura GPS de forma síncrona com a foto, e não mostra progresso para vídeos grandes. Vou adicionar: indicador de progresso, exigência de GPS antes do envio quando `atividade.exige_localizacao`.
 
-**Realtime**: `ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;`
+## O que vai ser feito (ordem de execução)
 
-## 2. Storage para anexos de mensagens
-Reusar bucket `os-evidences` (público) com prefixo `chat/{conversation_id}/...` para foto/vídeo enviados no chat. Limite por arquivo (vídeo) tratado no front: até 100 MB no chat (vídeos longos continuam na evidência da OS, com até 1 GB).
+1. **Corrigir build:** reescrever `AuditorDashboard.tsx` com estrutura JSX válida e dados reais.
+2. **Registrar rotas faltantes** (`financeiro/ordens`, `financeiro/materiais`) com proteção por role.
+3. **Reescrever `Dashboard.tsx`** para calcular `osAbertas`, variação mensal de UMD, divergências, alertas reais — uma única query consolidada por role.
+4. **CampoDashboard:** adicionar bloco "Ação rápida de campo" com botões nativos `<input capture="environment">` para foto e vídeo, ligados à OS em execução do técnico (se houver). Separar listas "Em execução" vs "Aguardando aceite".
+5. **GestorDashboard:** trocar "Status das Equipes" e "Alertas Operacionais" por dados reais (`operational_alerts` + contagens corretas por status).
+6. **AdminDashboard:** calcular % real de crescimento (mês atual vs anterior) e remover textos fixos.
+7. **FinanceiroDashboard:** ler `financial_rules` para valor do UMD; contar divergências de `financial_order_records`; somar `approved_value` em vez de `total_umd`.
+8. **AuditorDashboard:** cards de casos abertos / achados por severidade / OS aguardando auditoria; lista das últimas auditorias reais.
+9. **Migration:**
+   - `update storage.buckets set file_size_limit = 1073741824 where id = 'os-evidences';`
+   - Policy `revoke delete` em `os_evidences` para todos.
+10. **OSDetalhe (upload):** validar GPS quando exigido, mostrar barra de progresso para arquivos > 10 MB, bloquear botão durante upload.
 
-## 3. Frontend — nova página `/app/mensagens`
+## Estrutura técnica resumida
 
-- Item no `AppShell` (visível para todos os papéis), com badge de não lidas.
-- Layout duas colunas:
-  - **Esquerda**: lista de conversas + botão "Nova conversa" → abre lista filtrada pelo papel:
-    - Admin/Gestor: todos os usuários ativos
-    - Supervisor: Gestores + técnicos da(s) equipe(s) que ele supervisiona
-    - Técnico: apenas o(s) supervisor(es) da sua equipe
-    - Financeiro/Auditor: Admin + Gestor
-  - **Direita**: mensagens + input com botões 📎 foto / 🎥 vídeo / enviar.
-- Subscrição realtime para inserir novas mensagens ao vivo e marcar como lida.
+```text
+Dashboard.tsx
+ └─ buildStatsForRole(role, userId)
+     ├─ campo:    OSs do user, mídia recente, OS ativa
+     ├─ supervisor: OSs da equipe + alertas
+     ├─ gestor:   tudo + variação mensal
+     ├─ financeiro: financial_order_records + financial_rules
+     └─ auditor:  audit_cases + findings + logs
+```
 
-## 4. Captura de foto/vídeo pelo técnico (reforço na OS)
+Não vou alterar visual (cores/animações já agradam) — só substituir dados falsos por reais e consertar o que está quebrado.
 
-Em `src/pages/OSDetalhe.tsx`, na aba de evidências:
-- Botão **"Tirar foto"** → `<input type="file" accept="image/*" capture="environment">`.
-- Botão **"Gravar vídeo"** → `<input type="file" accept="video/*" capture="environment">`.
-- Captura GPS via `navigator.geolocation` no upload (já existe util `getGeo`).
-- Upload para bucket `os-evidences` em `os/{os_id}/...`, registro em `os_evidences` (campos `tipo`, `url`, `localizacao`, `metadata` com size/mime).
-- Política existente já bloqueia DELETE/UPDATE → evidências imutáveis (atende "não pode ser apagado").
-- Botão **Baixar** por evidência (link direto do bucket público).
+## Fora do escopo desta rodada
+- Reescrever totalmente o sistema de mensageria entre roles (já funciona via `os_messages` e `conversations`).
+- Implementar exportação CSV/PDF de relatórios (já tem página `Relatorios.tsx` que precisa de auditoria separada).
 
-## 5. Notificações
-Quando uma mensagem é inserida, trigger insere em `notificacoes` para cada participante ≠ remetente (título "Nova mensagem de X").
-
-## 6. Auth/permissões já existentes
-Usaremos `has_role` / `has_any_role` já presentes. Nenhuma mudança em auth.
-
----
-
-## Arquivos a criar/alterar
-- **Migração SQL** (tabelas, função, RLS, realtime, trigger de notificação).
-- **`src/pages/Mensagens.tsx`** (nova).
-- **`src/components/chat/`** (`ConversationList.tsx`, `MessageThread.tsx`, `NewConversationDialog.tsx`).
-- **`src/components/AppShell.tsx`**: adicionar item "Mensagens".
-- **`src/App.tsx`**: rota `/app/mensagens`.
-- **`src/pages/OSDetalhe.tsx`**: botões de captura foto/vídeo + lista com download (refinar UI da aba evidências).
-
-## Resultado
-Hierarquia de conversas garantida no banco (RLS) e na UI; técnico só fala com supervisor; admin/gestor enxergam todos; técnico continua podendo anexar fotos e vídeos diretamente na OS, com GPS e sem possibilidade de exclusão.
+Posso prosseguir?

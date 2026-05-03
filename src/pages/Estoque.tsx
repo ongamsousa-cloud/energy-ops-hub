@@ -285,12 +285,13 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {!isEstoquePortal && (
           <TabsList className="flex w-full overflow-x-auto">
-            <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
-            <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
-            <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
-            <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
-            <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
-            <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+            <TabsTrigger value="overview" className="data-[state=active]:bg-background"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
+            <TabsTrigger value="materials" className="data-[state=active]:bg-background"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
+            <TabsTrigger value="entradas" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
+            <TabsTrigger value="liberacao" className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberação (OS)</TabsTrigger>
+            <TabsTrigger value="warehouses" className="data-[state=active]:bg-background"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
+            <TabsTrigger value="movements" className="data-[state=active]:bg-background"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
+            <TabsTrigger value="alerts" className="data-[state=active]:bg-background"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
           </TabsList>
         )}
 

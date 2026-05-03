@@ -1,12 +1,38 @@
  import { Card } from "@/components/ui/card";
- import { ShieldCheck, AlertCircle, XCircle, Clock, CheckCircle2 } from "lucide-react";
+ import { ShieldCheck, AlertCircle, XCircle, Clock, CheckCircle2, History } from "lucide-react";
+ import { Link } from "react-router-dom";
  import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
  
  interface AuditorDashboardProps {
    stats: any;
  }
  
- export default function AuditorDashboard({ stats }: AuditorDashboardProps) {
+ export default function AuditorDashboard({ stats, auditHistory = [] }: AuditorDashboardProps & { auditHistory?: any[] }) {
+         {auditHistory.length > 0 && (
+           <Card className="p-4 shadow-none">
+             <div className="flex items-center gap-2 mb-4">
+               <History className="h-4 w-4 text-muted-foreground" />
+               <h4 className="text-sm font-semibold">Últimas Atividades de Auditoria</h4>
+             </div>
+             <div className="space-y-4">
+               {auditHistory.map((log) => (
+                 <div key={log.id} className="flex items-start gap-3 text-xs border-b border-border pb-3 last:border-0">
+                   <div className="mt-0.5">
+                     {log.status_novo === 'aprovada' ? <CheckCircle2 className="h-3.5 w-3.5 text-success" /> : <XCircle className="h-3.5 w-3.5 text-destructive" />}
+                   </div>
+                   <div className="flex-1">
+                     <div className="font-medium">
+                       {log.profile?.nome} alterou <Link to={`/app/os/${log.os_id}`} className="text-primary hover:underline">OS {log.ordens_servico?.numero}</Link> para {log.status_novo}
+                     </div>
+                     <div className="text-muted-foreground mt-0.5">{new Date(log.created_at).toLocaleString()}</div>
+                     {log.comentario && <div className="mt-1 p-2 bg-muted/50 rounded italic">"{log.comentario}"</div>}
+                   </div>
+                 </div>
+               ))}
+             </div>
+           </Card>
+         )}
+ 
    const totalAprov = stats.osAprov || 0;
    const totalReprov = stats.osRejeitadas || 0;
    const total = totalAprov + totalReprov || 1;

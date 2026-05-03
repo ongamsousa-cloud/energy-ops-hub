@@ -433,6 +433,7 @@ export type Database = {
           inicio_em: string
           inicio_lat: number | null
           inicio_lng: number | null
+          localizacao_gps: Json | null
           motivo_reprovacao: string | null
           numero: string
           obra_id: string
@@ -458,6 +459,7 @@ export type Database = {
           inicio_em?: string
           inicio_lat?: number | null
           inicio_lng?: number | null
+          localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
           obra_id: string
@@ -483,6 +485,7 @@ export type Database = {
           inicio_em?: string
           inicio_lat?: number | null
           inicio_lng?: number | null
+          localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
           obra_id?: string
@@ -602,6 +605,85 @@ export type Database = {
           },
           {
             foreignKeyName: "os_atividades_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_audit_logs: {
+        Row: {
+          comentario: string | null
+          created_at: string | null
+          id: string
+          os_id: string | null
+          status_anterior: string | null
+          status_novo: string
+          user_id: string | null
+        }
+        Insert: {
+          comentario?: string | null
+          created_at?: string | null
+          id?: string
+          os_id?: string | null
+          status_anterior?: string | null
+          status_novo: string
+          user_id?: string | null
+        }
+        Update: {
+          comentario?: string | null
+          created_at?: string | null
+          id?: string
+          os_id?: string | null
+          status_anterior?: string | null
+          status_novo?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_audit_logs_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_evidences: {
+        Row: {
+          created_at: string | null
+          id: string
+          localizacao: Json | null
+          metadata: Json | null
+          os_id: string | null
+          tipo: string | null
+          url: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          localizacao?: Json | null
+          metadata?: Json | null
+          os_id?: string | null
+          tipo?: string | null
+          url: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          localizacao?: Json | null
+          metadata?: Json | null
+          os_id?: string | null
+          tipo?: string | null
+          url?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_evidences_os_id_fkey"
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"

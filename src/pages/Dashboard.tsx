@@ -15,8 +15,9 @@
      obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0, osRejeitadas: 0,
    });
    const [byStatus, setByStatus] = useState<{ status: string; n: number }[]>([]);
-   const [umdHistory, setUmdHistory] = useState<{ date: string; umd: number }[]>([]);
-   const [loading, setLoading] = useState(true);
+    const [umdHistory, setUmdHistory] = useState<{ date: string; umd: number }[]>([]);
+    const [auditHistory, setAuditHistory] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
  
    useEffect(() => {
      if (!user) return;
@@ -32,7 +33,7 @@
          statusQuery.eq("profissional_id", user.id);
        }
  
-       const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes] = await Promise.all([
+        const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes] = await Promise.all([
          supabase.from("obras").select("id"),
          supabase.from("obras").select("id").eq("status", "execucao"),
          (isCampo ? supabase.from("ordens_servico").select("id").eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id")).eq("status", "reprovada"),
@@ -42,8 +43,10 @@
          supabase.from("profiles").select("id").eq("ativo", true),
          supabase.from("equipes").select("id").eq("ativo", true),
          statusQuery,
-         supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada").order("fim_em"),
-       ]);
+          supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada").order("fim_em"),
+          supabase.from("os_audit_logs").select("*, profile:profiles(nome), ordens_servico(numero)").order("created_at", { ascending: false }).limit(5),
+        ]);
+        setAuditHistory(auditRes.data ?? []);
  
        const totalUmd = (umdRes.data ?? []).reduce((a: number, r: any) => a + Number(r.total_umd_aprovada || 0), 0);
        const counts: Record<string, number> = {};
@@ -79,7 +82,7 @@
      if (hasRole("admin")) return <AdminDashboard stats={stats} byStatus={byStatus} umdHistory={umdHistory} />;
      if (hasRole("gestor") || hasRole("supervisor")) return <GestorDashboard stats={stats} byStatus={byStatus} />;
      if (hasRole("financeiro")) return <FinanceiroDashboard stats={stats} umdHistory={umdHistory} />;
-     if (hasRole("auditor")) return <AuditorDashboard stats={stats} />;
+      if (hasRole("auditor")) return <AuditorDashboard stats={stats} auditHistory={auditHistory} />;
      if (hasRole("campo")) return <CampoDashboard stats={stats} profile={profile} />;
      
      return <AdminDashboard stats={stats} byStatus={byStatus} umdHistory={umdHistory} />;

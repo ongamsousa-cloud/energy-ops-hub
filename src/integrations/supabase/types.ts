@@ -1322,6 +1322,89 @@ export type Database = {
           },
         ]
       }
+      material_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      materials: {
+        Row: {
+          active: boolean | null
+          category_id: string | null
+          code: string
+          cost_price: number
+          created_at: string
+          critical_stock: number
+          description: string | null
+          id: string
+          is_serial_tracked: boolean | null
+          minimum_stock: number
+          name: string
+          photo_url: string | null
+          sale_price: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          category_id?: string | null
+          code: string
+          cost_price?: number
+          created_at?: string
+          critical_stock?: number
+          description?: string | null
+          id?: string
+          is_serial_tracked?: boolean | null
+          minimum_stock?: number
+          name: string
+          photo_url?: string | null
+          sale_price?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          category_id?: string | null
+          code?: string
+          cost_price?: number
+          created_at?: string
+          critical_stock?: number
+          description?: string | null
+          id?: string
+          is_serial_tracked?: boolean | null
+          minimum_stock?: number
+          name?: string
+          photo_url?: string | null
+          sale_price?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "material_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           anexo_tipo: string | null
@@ -2020,6 +2103,51 @@ export type Database = {
           },
         ]
       }
+      os_materials: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          os_id: string | null
+          quantity_planned: number
+          quantity_used: number
+          unit_cost: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          os_id?: string | null
+          quantity_planned?: number
+          quantity_used?: number
+          unit_cost?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          os_id?: string | null
+          quantity_planned?: number
+          quantity_used?: number
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_materials_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       os_messages: {
         Row: {
           content: string
@@ -2686,6 +2814,126 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_levels: {
+        Row: {
+          id: string
+          last_updated_at: string
+          material_id: string | null
+          quantity: number
+          reserved_quantity: number
+          warehouse_id: string | null
+        }
+        Insert: {
+          id?: string
+          last_updated_at?: string
+          material_id?: string | null
+          quantity?: number
+          reserved_quantity?: number
+          warehouse_id?: string | null
+        }
+        Update: {
+          id?: string
+          last_updated_at?: string
+          material_id?: string | null
+          quantity?: number
+          reserved_quantity?: number
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_levels_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_levels_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string
+          from_warehouse_id: string | null
+          id: string
+          material_id: string
+          notes: string | null
+          os_id: string | null
+          professional_id: string | null
+          quantity: number
+          to_warehouse_id: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          from_warehouse_id?: string | null
+          id?: string
+          material_id: string
+          notes?: string | null
+          os_id?: string | null
+          professional_id?: string | null
+          quantity: number
+          to_warehouse_id?: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          from_warehouse_id?: string | null
+          id?: string
+          material_id?: string
+          notes?: string | null
+          os_id?: string | null
+          professional_id?: string | null
+          quantity?: number
+          to_warehouse_id?: string | null
+          type?: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supervisors: {
         Row: {
           active: boolean | null
@@ -2880,6 +3128,36 @@ export type Database = {
         }
         Relationships: []
       }
+      warehouses: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          id: string
+          is_mobile: boolean | null
+          location: string | null
+          name: string
+          responsible_id: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          is_mobile?: boolean | null
+          location?: string | null
+          name: string
+          responsible_id?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          id?: string
+          is_mobile?: boolean | null
+          location?: string | null
+          name?: string
+          responsible_id?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_logs: {
         Row: {
           created_at: string | null
@@ -3070,6 +3348,13 @@ export type Database = {
         | "reprovada"
         | "faturada"
         | "cancelada"
+      stock_movement_type:
+        | "entrada"
+        | "saida"
+        | "transferencia"
+        | "ajuste"
+        | "devolucao"
+        | "reserva"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3327,6 +3612,14 @@ export const Constants = {
         "reprovada",
         "faturada",
         "cancelada",
+      ],
+      stock_movement_type: [
+        "entrada",
+        "saida",
+        "transferencia",
+        "ajuste",
+        "devolucao",
+        "reserva",
       ],
     },
   },

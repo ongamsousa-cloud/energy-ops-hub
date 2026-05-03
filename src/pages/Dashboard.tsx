@@ -22,6 +22,7 @@
     const [weeklyNewOS, setWeeklyNewOS] = useState<{ date: string; count: number }[]>([]);
     const [weeklySummary, setWeeklySummary] = useState<{ day: string; prod: number; meta: number }[]>([]);
     const [materialUsage, setMaterialUsage] = useState<{ category: string; value: number }[]>([]);
+    const [stockStats, setStockStats] = useState({ totalItems: 0, lowStock: 0 });
     const [auditHistory, setAuditHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
  
@@ -84,11 +85,11 @@
            })(),
            // Produtividade por Equipe
            supabase.from("ordens_servico").select("total_umd_aprovada, equipe:equipes(nome)").eq("status", "aprovada"),
-           // Materiais (uso)
-           supabase.from("financial_material_records").select("material_category, quantity")
+           // Materiais (uso real via os_materials)
+           supabase.from("os_materials").select("quantity_used, materials(material_categories(name))")
         ]);
-       // Dados auxiliares: alertas, regras financeiras, casos críticos, OS ativa do técnico, UMD em andamento
-       const [alertasRes, ruleRes, divRes, criticosRes, osAtivaRes, umdMesRes] = await Promise.all([
+        // Dados auxiliares: alertas, regras financeiras, casos críticos, OS ativa do técnico, UMD em andamento, Estoque
+        const [alertasRes, ruleRes, divRes, criticosRes, osAtivaRes, umdMesRes, stockRes] = await Promise.all([
          supabase.from("operational_alerts").select("id, title, description, severity, created_at").eq("status", "open").order("created_at", { ascending: false }).limit(5),
          supabase.from("financial_rules").select("rule_config").eq("rule_key", "umd_unit_value").eq("active", true).maybeSingle(),
          supabase.from("financial_order_records").select("id", { count: "exact", head: true }).eq("financial_status", "divergente"),
@@ -99,8 +100,9 @@
          (() => {
            const start = new Date(); start.setDate(start.getDate() - 30);
            const prev = new Date(); prev.setDate(prev.getDate() - 60);
-           return supabase.from("ordens_servico").select("total_umd_aprovada, fim_em").eq("status","aprovada").gte("fim_em", prev.toISOString());
-         })(),
+            return supabase.from("ordens_servico").select("total_umd_aprovada, fim_em").eq("status","aprovada").gte("fim_em", prev.toISOString());
+          })(),
+          supabase.from("materials").select("id, minimum_stock, stock_levels(quantity)")
        ]);
        const valorUmd = Number((ruleRes as any)?.data?.rule_config?.value ?? 0);
        const now = Date.now();
@@ -136,13 +138,23 @@
         });
         setTeamProductivity(Object.entries(teamsMap).map(([team, umd]) => ({ team, umd })).sort((a,b) => b.umd - a.umd).slice(0, 5));
 
-        // Processar Materiais
-        const mats: Record<string, number> = {};
-        (materialsRes.data ?? []).forEach((r: any) => {
-          const cat = r.material_category || "Outros";
-          mats[cat] = (mats[cat] ?? 0) + Number(r.quantity || 0);
-        });
-        setMaterialUsage(Object.entries(mats).map(([category, value]) => ({ category, value })));
+         // Processar Materiais (Uso Real)
+         const matsUsageMap: Record<string, number> = {};
+         (materialsRes.data ?? []).forEach((r: any) => {
+           const catName = r.materials?.material_categories?.name || "Geral";
+           matsUsageMap[catName] = (matsUsageMap[catName] ?? 0) + Number(r.quantity_used || 0);
+         });
+         setMaterialUsage(Object.entries(matsUsageMap).map(([category, value]) => ({ category, value })));
+
+         // Processar Estoque
+         if (stockRes.data) {
+           const totalItems = stockRes.data.length;
+           const lowStock = stockRes.data.filter(m => {
+             const qty = (m.stock_levels as any[] || []).reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+             return qty <= (m.minimum_stock || 0);
+           }).length;
+           setStockStats({ totalItems, lowStock });
+         }
 
         // Resumo Semanal (últimos 7 dias)
         const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -212,8 +224,9 @@
           teamProductivity={teamProductivity}
           weeklySummary={weeklySummary}
           materialUsage={materialUsage}
-          weeklyNewOS={weeklyNewOS}
-        />
+           weeklyNewOS={weeklyNewOS}
+           stockStats={stockStats}
+         />
       );
      if (hasRole("gestor") || hasRole("supervisor")) return <GestorDashboard stats={stats} byStatus={byStatus} />;
      if (hasRole("financeiro")) return <FinanceiroDashboard stats={stats} umdHistory={umdHistory} />;

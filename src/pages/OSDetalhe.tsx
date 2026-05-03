@@ -12,11 +12,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
- import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package } from "lucide-react";
+import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
 import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 export default function OSDetalhe() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function OSDetalhe() {
   const [os, setOS] = useState<any>(null);
    const [fin, setFin] = useState<any>(null);
    const [items, setItems] = useState<any[]>([]);
+  const [osMaterials, setOsMaterials] = useState<any[]>([]);
   const [evid, setEvid] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -82,6 +84,8 @@ export default function OSDetalhe() {
       setAuditLogs(logs ?? []);
       const { data: msg } = await supabase.from("os_messages").select("*, sender:profiles(nome)").eq("os_id", id).order("created_at", { ascending: true });
       setMessages(msg ?? []);
+      const { data: osm } = await supabase.from("os_materials").select("*, materials(name, code, unit)").eq("os_id", id);
+      setOsMaterials(osm ?? []);
    }, [id]);
 
    useEffect(() => {
@@ -335,6 +339,76 @@ export default function OSDetalhe() {
     }
   }
 
+  async function removeMaterial(mId: string) {
+    if (!confirm("Remover este material da OS?")) return;
+    await supabase.from("os_materials").delete().eq("id", mId);
+    load();
+  }
+
+  const [addMat, setAddMat] = useState(false);
+  const [matForm, setMatForm] = useState({ material_id: "", quantity: "1", warehouse_id: "" });
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [allMaterials, setAllMaterials] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (addMat) {
+      supabase.from("materials").select("*").eq("active", true).order("name").then(({ data }) => setAllMaterials(data ?? []));
+      supabase.from("warehouses").select("*").eq("active", true).order("name").then(({ data }) => setWarehouses(data ?? []));
+    }
+  }, [addMat]);
+
+  async function useMaterial(osMaterial: any, qty: number, warehouseId: string) {
+    if (!user) return;
+    setBusy(true);
+    try {
+      // 1. Registrar movimentação de saída
+      const { error: moveError } = await supabase.from("stock_movements").insert({
+        material_id: osMaterial.material_id,
+        from_warehouse_id: warehouseId,
+        quantity: qty,
+        type: "saida",
+        os_id: id,
+        professional_id: os.profissional_id,
+        created_by: user.id,
+        notes: `Consumo OS #${os.numero}`
+      });
+      if (moveError) throw moveError;
+
+      // 2. Atualizar quantidade usada no os_materials
+      const { error: updateError } = await supabase.from("os_materials")
+        .update({ quantity_used: (osMaterial.quantity_used || 0) + qty })
+        .eq("id", osMaterial.id);
+      if (updateError) throw updateError;
+
+      toast.success("Consumo registrado no estoque");
+      load();
+    } catch (err: any) {
+      toast.error("Erro ao registrar consumo: " + err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const [consumeDialog, setConsumeDialog] = useState<{ open: boolean; item: any; qty: string; warehouse_id: string }>({
+    open: false, item: null, qty: "1", warehouse_id: ""
+  });
+
+  async function addMaterialToOS() {
+    if (!matForm.material_id || !matForm.quantity) return toast.error("Preencha os campos");
+    const mat = allMaterials.find(m => m.id === matForm.material_id);
+    const { error } = await supabase.from("os_materials").insert({
+      os_id: id,
+      material_id: matForm.material_id,
+      quantity_planned: parseFloat(matForm.quantity),
+      unit_cost: mat?.cost_price || 0
+    });
+    if (error) return toast.error(error.message);
+    setAddMat(false);
+    setMatForm({ material_id: "", quantity: "1", warehouse_id: "" });
+    toast.success("Material adicionado");
+    load();
+  }
+
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
   return (
@@ -504,12 +578,12 @@ export default function OSDetalhe() {
       )}
 
        <Tabs defaultValue="atividades" className="mt-8">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
-             <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-             <TabsTrigger value="materiais">Materiais</TabsTrigger>
-             <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="atividades">Atividades</TabsTrigger>
+            <TabsTrigger value="materiais">Materiais</TabsTrigger>
+            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
             <TabsTrigger value="auditoria">Histórico</TabsTrigger>
+            <TabsTrigger value="comunicacao">Chat</TabsTrigger>
           </TabsList>
 
           <TabsContent value="atividades" className="mt-4">
@@ -579,20 +653,107 @@ export default function OSDetalhe() {
             )}
           </TabsContent>
 
-           <TabsContent value="materiais" className="mt-4">
-             <div className="flex items-end justify-between mb-3">
-               <h2 className="text-sm font-medium">Materiais utilizados</h2>
+           <TabsContent value="materiais" className="mt-4 space-y-4">
+             <div className="flex justify-between items-center">
+               <h3 className="text-sm font-semibold">Materiais Utilizados / Previstos</h3>
                {canEdit && (
-                 <Button size="sm" variant="outline"><Plus className="mr-1 h-3.5 w-3.5"/>Vincular Material</Button>
+                 <Dialog open={addMat} onOpenChange={setAddMat}>
+                   <DialogTrigger asChild><Button size="sm"><Package className="mr-2 h-4 w-4" /> Adicionar Material</Button></DialogTrigger>
+                   <DialogContent>
+                     <DialogHeader><DialogTitle>Adicionar Material à OS</DialogTitle></DialogHeader>
+                     <div className="space-y-4 py-4">
+                       <div className="space-y-2">
+                         <Label>Material</Label>
+                         <Select value={matForm.material_id} onValueChange={v => setMatForm({...matForm, material_id: v})}>
+                           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                           <SelectContent>
+                             {allMaterials.map(m => (
+                               <SelectItem key={m.id} value={m.id}>{m.code} - {m.name} ({m.unit})</SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="space-y-2">
+                         <Label>Quantidade Planejada</Label>
+                         <Input type="number" step="0.01" value={matForm.quantity} onChange={e => setMatForm({...matForm, quantity: e.target.value})} />
+                       </div>
+                       <Button className="w-full" onClick={addMaterialToOS}>Adicionar</Button>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
                )}
              </div>
-             <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground bg-muted/10">
-               <div className="flex flex-col items-center gap-2">
-                 <Package className="h-8 w-8 opacity-20" />
-                 <p>Nenhum material vinculado a esta OS.</p>
-                 {canEdit && <p className="text-[11px]">Clique em "Vincular Material" para registrar o consumo.</p>}
+ 
+             <Card className="overflow-hidden border-border shadow-none">
+               <table className="w-full text-sm">
+                 <thead>
+                   <tr className="border-b bg-muted/50 text-muted-foreground">
+                     <th className="px-4 py-3 text-left">Cód.</th>
+                     <th className="px-4 py-3 text-left">Material</th>
+                     <th className="px-4 py-3 text-right">Qtd. Prevista</th>
+                     <th className="px-4 py-3 text-right">Qtd. Usada</th>
+                     <th className="px-4 py-3 text-right">Ações</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {osMaterials.length === 0 ? (
+                     <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Nenhum material vinculado.</td></tr>
+                   ) : (
+                     osMaterials.map(m => (
+                       <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30">
+                         <td className="px-4 py-3 font-mono text-xs">{m.materials?.code}</td>
+                         <td className="px-4 py-3">{m.materials?.name}</td>
+                         <td className="px-4 py-3 text-right font-medium">{m.quantity_planned} {m.materials?.unit}</td>
+                         <td className="px-4 py-3 text-right">
+                           {m.quantity_used > 0 ? (
+                             <Badge variant="secondary">{m.quantity_used} {m.materials?.unit}</Badge>
+                           ) : (
+                             <span className="text-muted-foreground">-</span>
+                           )}
+                         </td>
+                       <td className="px-4 py-3 text-right flex justify-end gap-1">
+                         <Button size="sm" variant="outline" onClick={() => setConsumeDialog({ open: true, item: m, qty: (m.quantity_planned - m.quantity_used).toString(), warehouse_id: "" })}>
+                           Lançar Uso
+                         </Button>
+                         {canEdit && <Button size="icon" variant="ghost" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                       </td>
+         <Dialog open={consumeDialog.open} onOpenChange={open => setConsumeDialog(prev => ({ ...prev, open }))}>
+           <DialogContent>
+             <DialogHeader><DialogTitle>Registrar Consumo de Material</DialogTitle></DialogHeader>
+             <div className="space-y-4 py-4">
+               <div className="p-3 bg-muted rounded-md space-y-1">
+                 <p className="text-xs font-bold uppercase text-muted-foreground">Material</p>
+                 <p className="text-sm font-medium">{consumeDialog.item?.materials?.name}</p>
                </div>
+               <div className="space-y-2">
+                 <Label>Almoxarifado de Origem</Label>
+                 <Select value={consumeDialog.warehouse_id} onValueChange={v => setConsumeDialog({...consumeDialog, warehouse_id: v})}>
+                   <SelectTrigger><SelectValue placeholder="Selecione o local de retirada..." /></SelectTrigger>
+                   <SelectContent>
+                     {warehouses.map(w => (
+                       <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>
+                     ))}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-2">
+                 <Label>Quantidade Retirada</Label>
+                 <Input type="number" step="0.01" value={consumeDialog.qty} onChange={e => setConsumeDialog({...consumeDialog, qty: e.target.value})} />
+               </div>
+               <Button className="w-full" onClick={() => {
+                 if (!consumeDialog.warehouse_id) return toast.error("Selecione a origem");
+                 useMaterial(consumeDialog.item, parseFloat(consumeDialog.qty), consumeDialog.warehouse_id);
+                 setConsumeDialog(prev => ({ ...prev, open: false }));
+               }}>Baixar do Estoque</Button>
              </div>
+           </DialogContent>
+         </Dialog>
+                       </tr>
+                     ))
+                   )}
+                 </tbody>
+               </table>
+             </Card>
            </TabsContent>
 
            <TabsContent value="comunicacao" className="mt-4">
@@ -710,6 +871,7 @@ export default function OSDetalhe() {
                </div>
              ) : (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+            <TabsTrigger value="atividades">Atividades</TabsTrigger>
                   {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
                 </div>
              )}

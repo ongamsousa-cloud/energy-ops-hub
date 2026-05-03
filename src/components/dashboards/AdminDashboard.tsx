@@ -21,7 +21,8 @@ interface AdminDashboardProps {
   teamProductivity?: any[];
   weeklySummary?: any[];
   materialUsage?: any[];
-  weeklyNewOS?: any[];
+   weeklyNewOS?: any[];
+   stockStats?: { totalItems: number; lowStock: number };
 }
 
 export default function AdminDashboard({ 
@@ -31,8 +32,9 @@ export default function AdminDashboard({
   teamProductivity = [], 
   weeklySummary = [], 
   materialUsage = [], 
-  weeklyNewOS = [] 
-}: AdminDashboardProps) {
+   weeklyNewOS = [],
+   stockStats = { totalItems: 0, lowStock: 0 }
+ }: AdminDashboardProps) {
   const [osDialogOpen, setOsDialogOpen] = useState(false);
   const navigate = useNavigate();
   const variacao = stats.umdAnterior > 0 ? ((stats.umdAtual - stats.umdAnterior) / stats.umdAnterior) * 100 : null;
@@ -136,16 +138,16 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-        <Card className="border-none bg-gradient-to-br from-amber-50 to-white shadow-sm dark:from-amber-950/20 dark:to-background">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between space-y-0 pb-2">
-              <p className="text-sm font-medium text-muted-foreground">OS Pendentes</p>
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-            </div>
-            <div className="text-2xl font-bold">{stats.osPend}</div>
-            <p className="text-xs text-muted-foreground mt-1">Necessitam atenção</p>
-          </CardContent>
-        </Card>
+         <Card className="border-none bg-gradient-to-br from-orange-50 to-white shadow-sm dark:from-orange-950/20 dark:to-background">
+           <CardContent className="p-6">
+             <div className="flex items-center justify-between space-y-0 pb-2">
+               <p className="text-sm font-medium text-muted-foreground">Estoque</p>
+               <Package className="h-4 w-4 text-orange-500" />
+             </div>
+             <div className="text-2xl font-bold">{stockStats.totalItems}</div>
+             <p className="text-xs text-muted-foreground mt-1 text-red-600 font-semibold">{stockStats.lowStock} itens com estoque baixo</p>
+           </CardContent>
+         </Card>
       </div>
 
       {/* Dashboard BI Refined */}

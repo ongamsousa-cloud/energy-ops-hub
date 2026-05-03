@@ -1,6 +1,6 @@
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
- import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell, AreaChart, Area } from "recharts";
-import { Users, Briefcase, Activity, AlertCircle, CheckCircle2, MapPin, Clock, Search, Filter, TrendingUp, Heart, ShieldAlert, BarChart3, Upload } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell, AreaChart, Area, LinearGradient } from "recharts";
+import { Users, Briefcase, Activity, AlertCircle, CheckCircle2, MapPin, Clock, Search, Filter, TrendingUp, Heart, ShieldAlert, BarChart3, Upload, History } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
  import { Link } from "react-router-dom";
  import { Button } from "@/components/ui/button";
@@ -10,14 +10,19 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 interface GestorDashboardProps {
   stats: any;
   byStatus: any[];
+  umdHistory?: any[];
 }
 
-export default function GestorDashboard({ stats, byStatus }: GestorDashboardProps) {
+export default function GestorDashboard({ stats, byStatus, umdHistory = [] }: GestorDashboardProps) {
    const { hasRole } = useAuth();
    const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
    const isGestor = hasRole(["gestor", "admin"]);
 
   const chartConfig = {
+    umd: {
+      label: "UMD Aprovada",
+      color: "hsl(var(--primary))",
+    },
     n: {
       label: "Quantidade",
       color: "hsl(var(--primary))",
@@ -176,40 +181,90 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
          </div>
        )}
 
-       <Card className="border-none shadow-sm">
-         <CardHeader>
-           <CardTitle className="text-base font-semibold flex items-center gap-2">
-             <CheckCircle2 className="h-4 w-4 text-primary" />
-             Status Operacional das Ordens
-           </CardTitle>
-         </CardHeader>
-         <CardContent>
-           <div className="h-[300px] w-full">
-             <ChartContainer config={chartConfig}>
-                <BarChart data={formattedStatusData} layout="vertical" margin={{ left: -30, right: 10 }}>
-                 <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                 <XAxis type="number" hide />
-                 <YAxis 
-                   dataKey="status" 
-                   type="category" 
-                   fontSize={11} 
-                   axisLine={false} 
-                   tickLine={false}
-                   width={120}
-                   tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                 />
-                 <ChartTooltip content={<ChartTooltipContent />} />
-                 <Bar 
-                   dataKey="n" 
-                   radius={[0, 4, 4, 0]} 
-                   barSize={20}
-                   animationDuration={1500}
-                 />
-               </BarChart>
-             </ChartContainer>
-           </div>
-         </CardContent>
-       </Card>
+
+      <div className="grid gap-6 lg:grid-cols-7">
+        <Card className="lg:col-span-4 border-none shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Evolução de Produtividade
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[350px] w-full">
+              <ChartContainer config={chartConfig}>
+                <AreaChart data={umdHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorUmdGestor" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="date" 
+                    fontSize={12} 
+                    axisLine={false} 
+                    tickLine={false}
+                    tickMargin={10}
+                  />
+                  <YAxis 
+                    fontSize={12} 
+                    axisLine={false} 
+                    tickLine={false}
+                    tickMargin={10}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="umd" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    fillOpacity={1} 
+                    fill="url(#colorUmdGestor)" 
+                    animationDuration={1500}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3 border-none shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              Status das Operações
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[350px] w-full">
+              <ChartContainer config={chartConfig}>
+                <BarChart data={formattedStatusData} layout="vertical" margin={{ left: 0, right: 20 }}>
+                  <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis type="number" hide />
+                   <YAxis 
+                     dataKey="status" 
+                     type="category" 
+                     fontSize={11} 
+                     axisLine={false} 
+                     tickLine={false}
+                     width={100}
+                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                   />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar 
+                    dataKey="n" 
+                    radius={[0, 4, 4, 0]} 
+                    barSize={24}
+                    animationDuration={1500}
+                  />
+                </BarChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

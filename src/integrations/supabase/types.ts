@@ -76,6 +76,204 @@ export type Database = {
           },
         ]
       }
+      audit_cases: {
+        Row: {
+          audit_type: string | null
+          auditor_id: string
+          completed_at: string | null
+          created_at: string | null
+          final_decision: string | null
+          findings_count: number | null
+          id: string
+          recommendation: string | null
+          risk_level: string | null
+          service_order_id: string
+          started_at: string | null
+          status: string | null
+          summary: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          audit_type?: string | null
+          auditor_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          final_decision?: string | null
+          findings_count?: number | null
+          id?: string
+          recommendation?: string | null
+          risk_level?: string | null
+          service_order_id: string
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          audit_type?: string | null
+          auditor_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          final_decision?: string | null
+          findings_count?: number | null
+          id?: string
+          recommendation?: string | null
+          risk_level?: string | null
+          service_order_id?: string
+          started_at?: string | null
+          status?: string | null
+          summary?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_cases_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_checklist_items: {
+        Row: {
+          audit_case_id: string
+          created_at: string | null
+          id: string
+          item_key: string
+          item_label: string
+          notes: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          audit_case_id: string
+          created_at?: string | null
+          id?: string
+          item_key: string
+          item_label: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          audit_case_id?: string
+          created_at?: string | null
+          id?: string
+          item_key?: string
+          item_label?: string
+          notes?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_checklist_items_audit_case_id_fkey"
+            columns: ["audit_case_id"]
+            isOneToOne: false
+            referencedRelation: "audit_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_evidence_reviews: {
+        Row: {
+          audit_case_id: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string
+          service_order_media_id: string
+          status: string | null
+        }
+        Insert: {
+          audit_case_id: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by: string
+          service_order_media_id: string
+          status?: string | null
+        }
+        Update: {
+          audit_case_id?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string
+          service_order_media_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_evidence_reviews_audit_case_id_fkey"
+            columns: ["audit_case_id"]
+            isOneToOne: false
+            referencedRelation: "audit_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_findings: {
+        Row: {
+          audit_case_id: string
+          created_at: string | null
+          description: string | null
+          finding_type: string
+          id: string
+          related_user_id: string | null
+          service_order_id: string
+          severity: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          audit_case_id: string
+          created_at?: string | null
+          description?: string | null
+          finding_type: string
+          id?: string
+          related_user_id?: string | null
+          service_order_id: string
+          severity?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          audit_case_id?: string
+          created_at?: string | null
+          description?: string | null
+          finding_type?: string
+          id?: string
+          related_user_id?: string | null
+          service_order_id?: string
+          severity?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_findings_audit_case_id_fkey"
+            columns: ["audit_case_id"]
+            isOneToOne: false
+            referencedRelation: "audit_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_findings_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           acao: string
@@ -105,6 +303,66 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      audit_requests: {
+        Row: {
+          audit_case_id: string | null
+          created_at: string | null
+          due_at: string | null
+          id: string
+          message: string
+          requested_by: string
+          requested_to: string
+          responded_at: string | null
+          response: string | null
+          service_order_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          audit_case_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          message: string
+          requested_by: string
+          requested_to: string
+          responded_at?: string | null
+          response?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          audit_case_id?: string | null
+          created_at?: string | null
+          due_at?: string | null
+          id?: string
+          message?: string
+          requested_by?: string
+          requested_to?: string
+          responded_at?: string | null
+          response?: string | null
+          service_order_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_requests_audit_case_id_fkey"
+            columns: ["audit_case_id"]
+            isOneToOne: false
+            referencedRelation: "audit_cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_requests_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categorias: {
         Row: {

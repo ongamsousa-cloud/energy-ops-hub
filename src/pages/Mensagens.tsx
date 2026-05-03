@@ -35,7 +35,8 @@ export default function Mensagens() {
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+   const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
@@ -47,10 +48,11 @@ export default function Mensagens() {
 
   const recorderControls = useAudioRecorder();
 
-  const addAudioElement = async (blob: Blob) => {
-    setAudioBlob(blob);
-    setIsRecording(false);
-  };
+   const addAudioElement = async (blob: Blob) => {
+     console.log("Gravação concluída:", blob.size, "bytes");
+     setAudioBlob(blob);
+     setIsRecording(false);
+   };
 
   async function enviarAudio() {
     if (!audioBlob || !active) return;
@@ -279,12 +281,25 @@ export default function Mensagens() {
 
      // Upload do áudio uma única vez (se houver)
      let audioUrl: string | null = null;
-     if (audioBlob) {
-       const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-       const path = `chat/broadcast/${file.name}`;
-       const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
-       if (upErr) { toast.error(upErr.message); return; }
-       audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+     // Se já temos uma URL pendente (upload já feito), usamos ela.
+     // Senão, se temos um blob, fazemos o upload agora.
+     audioUrl = pendingAudioUrl;
+     if (audioBlob && !audioUrl) {
+       try {
+         const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+         const path = `chat/broadcast/${file.name}`;
+         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+         if (upErr) { 
+           console.error("Erro no upload do broadcast:", upErr);
+           toast.error("Erro no upload do áudio: " + upErr.message); 
+           return; 
+         }
+         audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+       } catch (e: any) {
+         console.error("Exceção no upload:", e);
+         toast.error("Falha ao processar áudio.");
+         return;
+       }
      }
 
      const conteudo = text.trim() || null;
@@ -311,8 +326,9 @@ export default function Mensagens() {
         okCount++;
       }
 
-     setText("");
-     setAudioBlob(null);
+      setText("");
+      setAudioBlob(null);
+      setPendingAudioUrl(null);
      setSelectedContacts([]);
      setOpenNew(false);
      if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
@@ -350,20 +366,43 @@ export default function Mensagens() {
      setAudioBlob(null);
    }
 
+    const [isUploading, setIsUploading] = useState(false);
+
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;
     const finalContent = messageText !== undefined ? messageText : text.trim();
-    if (!finalContent && !anexo) return;
+     
+     // Se temos um áudio pendente e nenhum anexo foi passado explicitamente
+     let finalAnexo = anexo;
+     if (!finalAnexo && audioBlob) {
+       setIsUploading(true);
+       try {
+         const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+         const path = `chat/${active}/${file.name}`;
+         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+         if (upErr) throw upErr;
+         const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+         finalAnexo = { url: data.publicUrl, tipo: "audio" };
+       } catch (err: any) {
+         toast.error("Erro ao enviar áudio: " + err.message);
+         setIsUploading(false);
+         return;
+       }
+       setIsUploading(false);
+     }
+
+     if (!finalContent && !finalAnexo) return;
 
     const { error } = await supabase.from("messages").insert({
       conversation_id: active,
       sender_id: user!.id,
       conteudo: finalContent || null,
-      anexo_url: anexo?.url ?? null,
-      anexo_tipo: anexo?.tipo ?? null,
+       anexo_url: finalAnexo?.url ?? null,
+       anexo_tipo: finalAnexo?.tipo ?? null,
     });
     if (error) return toast.error(error.message);
     if (messageText === undefined) setText("");
+     setAudioBlob(null);
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -587,15 +626,15 @@ export default function Mensagens() {
                           size="sm" 
                           variant="destructive"
                           className="h-8 rounded-full px-4 text-[10px] font-bold uppercase" 
-                          onClick={() => recorderControls.stopRecording()}
+                          onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }}
                         >
                           Parar Gravação
                         </Button>
-                        <div className="hidden">
-                          <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
-                        </div>
                       </div>
                     ) : null}
+                    <div className="hidden">
+                      <AudioRecorder onRecordingComplete={addAudioElement} recorderControls={recorderControls} />
+                    </div>
 
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
@@ -627,6 +666,7 @@ export default function Mensagens() {
                               setIsRecording(true); 
                             } else { 
                               recorderControls.stopRecording(); 
+                              setIsRecording(false);
                             } 
                           }}
                           disabled={selectedContacts.length === 0}
@@ -635,11 +675,11 @@ export default function Mensagens() {
                         </button>
                       </div>
                       <Button
-                        className="h-14 w-14 rounded-2xl shrink-0 shadow-xl bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+                        className="h-14 w-14 rounded-2xl shrink-0 shadow-xl bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
                         onClick={sendBroadcast}
-                        disabled={(!text.trim() && !audioBlob) || isRecording || selectedContacts.length === 0}
+                        disabled={(!text.trim() && !audioBlob) || isRecording || selectedContacts.length === 0 || isUploading}
                       >
-                        <Send className="h-5 w-5" />
+                        {isUploading ? <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-5 w-5" />}
                       </Button>
                     </div>
                     
@@ -787,14 +827,8 @@ export default function Mensagens() {
                         Cancelar
                       </Button>
                       <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
-                        Parar e Enviar
+                        Parar Gravação
                       </Button>
-                    </div>
-                    <div className="hidden">
-                      <AudioRecorder 
-                        onRecordingComplete={addAudioElement}
-                        recorderControls={recorderControls}
-                      />
                     </div>
                   </div>
                  ) : (
@@ -834,13 +868,14 @@ export default function Mensagens() {
                       <Button 
                         size="icon" 
                         onClick={() => enviar()} 
-                        disabled={!text.trim() && !audioBlob}
+                        disabled={(!text.trim() && !audioBlob) || isUploading}
                         className={cn(
                           "h-10 w-10 shrink-0 rounded-full shadow-md transition-all active:scale-95",
-                          (text.trim() || audioBlob) ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                          (text.trim() || audioBlob) ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground",
+                          isUploading && "cursor-wait"
                         )}
                       >
-                        <Send className="h-4 w-4" />
+                        {isUploading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
                       </Button>
                    </div>
                  )}

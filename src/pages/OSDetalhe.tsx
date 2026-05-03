@@ -26,16 +26,34 @@ export default function OSDetalhe() {
   const [cats, setCats] = useState<any[]>([]);
   const [atvs, setAtvs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
-  const [form, setForm] = useState<any>({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "" });
+   const [codes, setCodes] = useState<any[]>([]);
+   const [form, setForm] = useState<any>({ 
+     categoria_id: "", 
+     atividade_id: "", 
+     execution_code_id: "",
+     quantidade: "", 
+     observacao: "" 
+   });
+   const [checklist, setChecklist] = useState<Record<string, any>>({});
 
   const isOwner = os && user && os.profissional_id === user.id;
   const canApprove = hasRole(["admin","gestor","supervisor"]);
   const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
 
    const load = useCallback(async () => {
-     const { data: o } = await supabase.from("ordens_servico")
-       .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
-       .eq("id", id).maybeSingle();
+      const { data: o, error: osError } = await supabase.from("ordens_servico")
+        .select(`
+          *, 
+          obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
+          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+        `)
+        .eq("id", id).maybeSingle();
+
+      if (!o && !osError) {
+        toast.error("Você não possui permissão para acessar esta ordem de serviço.");
+        nav("/app/os");
+        return;
+      }
      setOS(o);
      const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
      setItems(it ?? []);
@@ -48,12 +66,20 @@ export default function OSDetalhe() {
   useEffect(() => {
     load();
     supabase.from("categorias").select("*").eq("ativo", true).order("ordem").then(({ data }) => setCats(data ?? []));
+     supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
   }, [load]);
 
   useEffect(() => {
     if (!form.categoria_id) { setAtvs([]); return; }
     supabase.from("atividades").select("*").eq("categoria_id", form.categoria_id).eq("ativo", true).order("codigo_item").then(({ data }) => setAtvs(data ?? []));
   }, [form.categoria_id]);
+
+   useEffect(() => {
+     const code = codes.find(c => c.id === form.execution_code_id);
+     if (code?.checklist_template) {
+       setChecklist({}); // Reset checklist on code change
+     }
+   }, [form.execution_code_id, codes]);
 
   const ativSel = atvs.find((a) => a.id === form.atividade_id);
   const umdTotal = ativSel && form.quantidade ? Number(form.quantidade) * Number(ativSel.umd_unitaria) : 0;
@@ -180,17 +206,13 @@ export default function OSDetalhe() {
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">UMD total</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums">{Number(os.total_umd ?? 0).toFixed(2)}</div>
         </Card>
-        <Card className="rounded-md border-border p-4 shadow-none">
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Localização</div>
-          <div className="mt-1 flex items-center gap-1 text-sm">
-            <MapPin className="h-3.5 w-3.5" strokeWidth={1.5}/>
-            {os.inicio_lat ? (
-              <a className="hover:underline" target="_blank" href={`https://maps.google.com/?q=${os.inicio_lat},${os.inicio_lng}`}>
-                {Number(os.inicio_lat).toFixed(4)}, {Number(os.inicio_lng).toFixed(4)}
-              </a>
-            ) : "—"}
-          </div>
-        </Card>
+         <Card className="rounded-md border-border p-4 shadow-none">
+           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Local</div>
+           <div className="mt-1 text-sm flex items-center gap-1.5 truncate">
+             <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+             <span className="truncate">{os.cidade || os.obra?.cidade || 'Local não informado'}</span>
+           </div>
+         </Card>
       </div>
 
       {/* Itens */}
@@ -209,13 +231,25 @@ export default function OSDetalhe() {
                     <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Atividade</Label>
-                  <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                    <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                    <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                  </Select>
-                </div>
+                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                   <div>
+                     <Label>Atividade</Label>
+                     <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
+                       <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                       <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
+                     </Select>
+                   </div>
+                   <div>
+                     <Label>Código Técnico (Base Técnica)</Label>
+                     <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
+                       <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="none">Nenhum</SelectItem>
+                         {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
@@ -402,10 +436,27 @@ export default function OSDetalhe() {
        </Tabs>
 
       {/* Ações de fluxo */}
-      <div className="mt-8 flex flex-wrap gap-2">
-        {canEdit && os.status !== "aguardando_revisao" && (
-          <Button onClick={finalizar}>Finalizar e enviar para revisão</Button>
-        )}
+       <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
+         {canEdit && os.status !== "aguardando_revisao" && (
+           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar}>
+             <CheckCircle className="mr-2 h-5 w-5" />
+             Finalizar e enviar para revisão
+           </Button>
+         )}
+         
+         {os.status === "iniciada" && isOwner && (
+           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+             const geo = await getGeo();
+             await supabase.from("ordens_servico").update({ 
+               status: "em_andamento",
+               inicio_atendimento: new Date().toISOString()
+             }).eq("id", id);
+             toast.success("Atendimento iniciado");
+             load();
+           }}>
+             Registrar Chegada ao Local
+           </Button>
+         )}
         {canApprove && ["aguardando_revisao","corrigida","em_revisao"].includes(os.status) && (
           <>
             <Button onClick={aprovar} className="bg-success text-success-foreground hover:bg-success/90">Aprovar</Button>

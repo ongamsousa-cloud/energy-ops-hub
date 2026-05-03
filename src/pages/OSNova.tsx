@@ -14,7 +14,12 @@ export default function OSNova() {
   const { user, profile } = useAuth();
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
-  const [obraId, setObraId] = useState("");
+   const [formData, setFormData] = useState({
+     obraId: "",
+     prioridade: "media",
+     data_agendada: new Date().toISOString().split('T')[0],
+     hora_agendada: "08:00"
+   });
   const [busy, setBusy] = useState(false);
   useEffect(() => { supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero").then(({ data }) => setObras(data ?? [])); }, []);
   function getGeo(): Promise<{ lat?: number; lng?: number }> {
@@ -23,18 +28,26 @@ export default function OSNova() {
       navigator.geolocation.getCurrentPosition((p) => res({ lat: p.coords.latitude, lng: p.coords.longitude }), () => res({}), { timeout: 5000 });
     });
   }
-  async function iniciar() {
-    if (!obraId) return toast.error("Selecione a obra");
-    setBusy(true);
-    const geo = await getGeo();
-    const { data, error } = await supabase.from("ordens_servico").insert({
-      obra_id: obraId, profissional_id: user!.id, status: "iniciada",
-      inicio_lat: geo.lat, inicio_lng: geo.lng, created_by: user!.id,
-    }).select("id").single();
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("OS iniciada"); nav(`/app/os/${data.id}`);
-  }
+   async function iniciar() {
+     if (!formData.obraId) return toast.error("Selecione a obra");
+     setBusy(true);
+     const geo = await getGeo();
+     const { data, error } = await supabase.from("ordens_servico").insert({
+       obra_id: formData.obraId, 
+       profissional_id: user!.id, 
+       status: "iniciada",
+       prioridade: formData.prioridade,
+       data_agendada: formData.data_agendada,
+       hora_agendada: formData.hora_agendada,
+       inicio_lat: geo.lat, 
+       inicio_lng: geo.lng, 
+       created_by: user!.id,
+     }).select("id").single();
+     setBusy(false);
+     if (error) return toast.error(error.message);
+     toast.success("OS iniciada"); 
+     nav(`/app/os/${data.id}`);
+   }
   return (
     <div className="mx-auto max-w-md">
       <PageHeader title="Iniciar Ordem de Serviço" description="Registre suas atividades." />
@@ -42,12 +55,39 @@ export default function OSNova() {
         <div className="mb-3 inline-block rounded border border-border bg-muted/30 px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">Controle de Serviços Elétricos</div>
         <div className="space-y-4">
           <div><Label>Profissional</Label><Input value={profile?.nome ?? ""} disabled className="bg-muted/30" /></div>
-          <div><Label>Obra *</Label>
-            <Select value={obraId} onValueChange={setObraId}>
-              <SelectTrigger><SelectValue placeholder="Selecione a obra"/></SelectTrigger>
-              <SelectContent>{obras.map((o)=>(<SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>))}</SelectContent>
-            </Select>
-          </div>
+           <div className="space-y-4">
+             <div>
+               <Label>Obra *</Label>
+               <Select value={formData.obraId} onValueChange={(v) => setFormData({...formData, obraId: v})}>
+                 <SelectTrigger><SelectValue placeholder="Selecione a obra"/></SelectTrigger>
+                 <SelectContent>{obras.map((o)=>(<SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>))}</SelectContent>
+               </Select>
+             </div>
+             
+             <div className="grid grid-cols-2 gap-3">
+               <div>
+                 <Label>Data Programada</Label>
+                 <Input type="date" value={formData.data_agendada} onChange={(e) => setFormData({...formData, data_agendada: e.target.value})} />
+               </div>
+               <div>
+                 <Label>Hora Programada</Label>
+                 <Input type="time" value={formData.hora_agendada} onChange={(e) => setFormData({...formData, hora_agendada: e.target.value})} />
+               </div>
+             </div>
+
+             <div>
+               <Label>Prioridade</Label>
+               <Select value={formData.prioridade} onValueChange={(v) => setFormData({...formData, prioridade: v})}>
+                 <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="baixa">Baixa</SelectItem>
+                   <SelectItem value="media">Média</SelectItem>
+                   <SelectItem value="alta">Alta</SelectItem>
+                   <SelectItem value="urgente">Urgente</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+           </div>
           <Button className="w-full" onClick={iniciar} disabled={busy}>{busy ? "Iniciando…" : "Iniciar Ordem de Serviço"}</Button>
         </div>
       </Card>

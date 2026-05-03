@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell } from "recharts";
+ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell, AreaChart, Area } from "recharts";
 import { Users, Briefcase, Activity, AlertCircle, CheckCircle2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
@@ -16,14 +16,19 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
     },
   };
 
-  const statusColors: Record<string, string> = {
-    "aprovada": "#10b981",
-    "reprovada": "#ef4444",
-    "aguardando revisao": "#f59e0b",
-    "em revisao": "#3b82f6",
-    "corrigida": "#8b5cf6",
-    "aberta": "#6b7280",
-  };
+   const statusColors: Record<string, string> = {
+     "aprovada": "#10b981",
+     "reprovada": "#ef4444",
+     "aguardando revisao": "#f59e0b",
+     "em revisao": "#3b82f6",
+     "corrigida": "#8b5cf6",
+     "aberta": "#6b7280",
+   };
+
+   const formattedStatusData = byStatus.map(item => ({
+     ...item,
+     fill: statusColors[item.status.toLowerCase()] || "hsl(var(--primary))"
+   }));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -73,50 +78,40 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-primary" />
-            Status Operacional das Ordens
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[350px] w-full">
-            <ChartContainer config={chartConfig}>
-              <BarChart data={byStatus} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis 
-                  dataKey="status" 
-                  fontSize={12} 
-                  axisLine={false} 
-                  tickLine={false}
-                  tickMargin={10}
-                />
-                <YAxis 
-                  fontSize={12} 
-                  axisLine={false} 
-                  tickLine={false}
-                  tickMargin={10}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="n" 
-                  radius={[4, 4, 0, 0]} 
-                  barSize={40}
-                  animationDuration={1500}
-                >
-                  {byStatus.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={statusColors[entry.status.toLowerCase()] || "hsl(var(--primary))"} 
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </div>
-        </CardContent>
-      </Card>
+       <Card className="border-none shadow-sm">
+         <CardHeader>
+           <CardTitle className="text-base font-semibold flex items-center gap-2">
+             <CheckCircle2 className="h-4 w-4 text-primary" />
+             Status Operacional das Ordens
+           </CardTitle>
+         </CardHeader>
+         <CardContent>
+           <div className="h-[300px] w-full">
+             <ChartContainer config={chartConfig}>
+               <BarChart data={formattedStatusData} layout="vertical" margin={{ left: -20, right: 20 }}>
+                 <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                 <XAxis type="number" hide />
+                 <YAxis 
+                   dataKey="status" 
+                   type="category" 
+                   fontSize={11} 
+                   axisLine={false} 
+                   tickLine={false}
+                   width={120}
+                   tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                 />
+                 <ChartTooltip content={<ChartTooltipContent />} />
+                 <Bar 
+                   dataKey="n" 
+                   radius={[0, 4, 4, 0]} 
+                   barSize={20}
+                   animationDuration={1500}
+                 />
+               </BarChart>
+             </ChartContainer>
+           </div>
+         </CardContent>
+       </Card>
     </div>
   );
 }

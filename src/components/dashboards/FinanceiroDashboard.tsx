@@ -1,5 +1,5 @@
  import { Card } from "@/components/ui/card";
- import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
  import { Calculator, TrendingUp, DollarSign, FileCheck } from "lucide-react";
  
  interface FinanceiroDashboardProps {
@@ -58,18 +58,42 @@
            <TrendingUp className="h-4 w-4 text-primary" />
            Histórico de Medição (UMD)
          </h4>
-         <div className="h-80">
+         <div className="h-[300px] w-full mt-4">
            <ResponsiveContainer width="100%" height="100%">
-             <BarChart data={umdHistory}>
+             <AreaChart data={umdHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+               <defs>
+                 <linearGradient id="colorFinanceiro" x1="0" y1="0" x2="0" y2="1">
+                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                   <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                 </linearGradient>
+               </defs>
                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-               <XAxis dataKey="date" fontSize={11} axisLine={false} tickLine={false} />
-               <YAxis fontSize={11} axisLine={false} tickLine={false} />
-               <Tooltip 
-                 cursor={{ fill: "hsl(var(--accent)/0.5)" }}
-                 contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "8px", border: "1px solid hsl(var(--border))" }}
+               <XAxis 
+                 dataKey="date" 
+                 fontSize={11} 
+                 axisLine={false} 
+                 tickLine={false} 
+                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                />
-               <Bar dataKey="umd" fill="#10b981" radius={[4, 4, 0, 0]} />
-             </BarChart>
+               <YAxis 
+                 fontSize={11} 
+                 axisLine={false} 
+                 tickLine={false} 
+                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
+               />
+               <Tooltip 
+                 contentStyle={{ backgroundColor: "hsl(var(--card))", borderRadius: "8px", border: "1px solid hsl(var(--border))", fontSize: '12px' }}
+               />
+               <Area 
+                 type="monotone" 
+                 dataKey="umd" 
+                 stroke="#10b981" 
+                 strokeWidth={2.5}
+                 fillOpacity={1} 
+                 fill="url(#colorFinanceiro)" 
+                 animationDuration={1500}
+               />
+             </AreaChart>
            </ResponsiveContainer>
          </div>
        </Card>

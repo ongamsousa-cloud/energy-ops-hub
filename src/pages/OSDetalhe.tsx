@@ -182,18 +182,28 @@ export default function OSDetalhe() {
      await registrarAuditoria("aprovada", obs);
      toast.success("OS aprovada"); load();
    }
-   async function reprovar() {
-     const motivo = prompt("Motivo da reprovação:"); if (!motivo) return;
-     await supabase.from("ordens_servico").update({ status: "reprovada", motivo_reprovacao: motivo, aprovado_por: user!.id, aprovado_em: new Date().toISOString() }).eq("id", id);
-     await registrarAuditoria("reprovada", motivo);
-     toast.success("OS reprovada"); load();
-   }
-   async function correcao() {
-     const obs = prompt("Observação para correção:"); if (!obs) return;
-     await supabase.from("ordens_servico").update({ status: "correcao_solicitada", observacao_supervisor: obs }).eq("id", id);
-     await registrarAuditoria("correcao_solicitada", obs);
-     toast.success("Correção solicitada"); load();
-   }
+  const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
+    open: false, type: null, comment: "" 
+  });
+
+  async function handleReview() {
+    if (!revModal.comment && revModal.type === "reprovar") return toast.error("Motivo é obrigatório");
+    const status = revModal.type === "reprovar" ? "reprovada" : "correcao_solicitada";
+    const update: any = { status };
+    if (revModal.type === "reprovar") {
+      update.motivo_reprovacao = revModal.comment;
+      update.aprovado_por = user!.id;
+      update.aprovado_em = new Date().toISOString();
+    } else {
+      update.observacao_supervisor = revModal.comment;
+    }
+    const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
+    if (error) return toast.error(error.message);
+    await registrarAuditoria(status, revModal.comment);
+    toast.success(revModal.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+    setRevModal({ open: false, type: null, comment: "" });
+    load();
+  }
 
   if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 

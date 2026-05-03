@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
  import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ import { cn } from "@/lib/utils";
 
 export default function OSDetalhe() {
   const { id } = useParams();

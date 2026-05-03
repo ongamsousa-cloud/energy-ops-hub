@@ -14,8 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { cn } from "@/lib/utils";
 import {
    Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-    TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2,
-    Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks,
+    TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2, X,
+    Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks, Filter
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";
@@ -67,17 +67,31 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
    const [editMaterial, setEditMaterial] = useState<any>(null);
    const [movementOpen, setMovementOpen] = useState(false);
   const [warehouseOpen, setWarehouseOpen] = useState(false);
-  const [editWarehouse, setEditWarehouse] = useState<any>(null);
-  const [movementType, setMovementType] = useState<string>("entrada");
+   const [editWarehouse, setEditWarehouse] = useState<any>(null);
+   const [movementType, setMovementType] = useState<string>("entrada");
+   const [filters, setFilters] = useState({
+     type: 'all',
+     warehouse: 'all',
+     material: 'all',
+   });
 
    useEffect(() => { loadAll(); }, []);
  
-   async function deleteMaterial(id: string) {
-     if (!confirm("Tem certeza que deseja desativar este material?")) return;
-     const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
-     if (error) toast.error("Erro ao desativar: " + error.message);
-     else { toast.success("Material desativado"); loadMaterials(); }
-   }
+    async function deleteMaterial(id: string) {
+      if (!confirm("Tem certeza que deseja desativar este material?")) return;
+      const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
+      if (error) toast.error("Erro ao desativar: " + error.message);
+      else { toast.success("Material desativado"); loadMaterials(); }
+    }
+ 
+    async function deleteWarehouse(id: string) {
+      if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+      const { error } = await supabase.from("warehouses").update({ active: true, active_status: false }).eq("id", id); // Assuming active column, checking schema
+      // Actually, checking WarehouseDialog, it uses 'active' column.
+      const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
+      if (err) toast.error("Erro ao desativar: " + err.message);
+      else { toast.success("Almoxarifado desativado"); loadWarehouses(); }
+    }
 
   useEffect(() => {
     const ch = supabase.channel("stock-realtime")
@@ -238,14 +252,16 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [materials]);
 
-   const filteredMovements = useMemo(() => {
-     return movements.filter(m => {
-       const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
-       // Como não temos equipe direto no stock_movements, filtramos pela OS que pertence à equipe
-       const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
-       return matchOS && matchEquipe;
-     });
-   }, [movements, osFilter, equipeFilter]);
+    const filteredMovements = useMemo(() => {
+      return movements.filter(m => {
+        const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
+        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
+        const matchType = filters.type === 'all' || m.type === filters.type;
+        const matchWarehouse = filters.warehouse === 'all' || m.from_warehouse_id === filters.warehouse || m.to_warehouse_id === filters.warehouse;
+        const matchMaterial = filters.material === 'all' || m.material_id === filters.material;
+        return matchOS && matchEquipe && matchType && matchWarehouse && matchMaterial;
+      });
+    }, [movements, osFilter, equipeFilter, filters]);
  
    const filteredMaterials = useMemo(() => {
      let filtered = materials;

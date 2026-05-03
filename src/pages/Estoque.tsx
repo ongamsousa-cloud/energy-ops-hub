@@ -183,19 +183,21 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     if (data) setAlerts(data);
   }
 
-  const kpis = useMemo(() => {
-    const total = materials.length;
-    const lowStock = materials.filter(m => m.total_quantity > 0 && m.total_quantity <= Number(m.minimum_stock || 0)).length;
-    const critical = materials.filter(m => m.total_quantity <= Number(m.critical_stock || 0)).length;
-    const outOfStock = materials.filter(m => m.total_quantity <= 0).length;
-    const totalValue = materials.reduce((s, m) => s + m.total_value, 0);
-    const today = startOfDay(new Date());
-    const movToday = movements.filter(m => new Date(m.created_at) >= today).length;
-    const reservedActive = reservations.filter(r => r.status === "reservado").length;
-    const lossMonth = movements.filter(m => m.type === "ajuste" && new Date(m.created_at).getMonth() === new Date().getMonth())
-      .reduce((s,m) => s + Number(m.total_cost || 0), 0);
-    return { total, lowStock, critical, outOfStock, totalValue, movToday, reservedActive, lossMonth };
-  }, [materials, movements, reservations]);
+   const kpis = useMemo(() => {
+     const total = materials.length;
+     const lowStock = materials.filter(m => m.total_quantity > 0 && m.total_quantity <= Number(m.minimum_stock || 0)).length;
+     const critical = materials.filter(m => m.total_quantity <= Number(m.critical_stock || 0)).length;
+     const outOfStock = materials.filter(m => m.total_quantity <= 0).length;
+     const totalValue = materials.reduce((s, m) => s + m.total_value, 0);
+     const today = startOfDay(new Date());
+     const movToday = movements.filter(m => new Date(m.created_at) >= today);
+     const entriesToday = movToday.filter(m => m.type === 'entrada').length;
+     const exitsToday = movToday.filter(m => m.type === 'saida').length;
+     const reservedActive = reservations.filter(r => r.status === "reservado").length;
+     const lossMonth = movements.filter(m => m.type === "ajuste" && new Date(m.created_at).getMonth() === new Date().getMonth())
+       .reduce((s,m) => s + Number(m.total_cost || 0), 0);
+     return { total, lowStock, critical, outOfStock, totalValue, movToday: movToday.length, entriesToday, exitsToday, reservedActive, lossMonth };
+   }, [materials, movements, reservations]);
 
   const chartFlow = useMemo(() => {
     const days: any[] = [];
@@ -289,13 +291,13 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
         )}
       />
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-         <Kpi icon={Package} label="Patrimônio Ativo" value={kpis.total} hint={`${kpis.outOfStock} itens sem saldo`}/>
-         <Kpi icon={TrendingUp} label="Valorização Total" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo médio total"/>
-         <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
-         <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
-      </div>
+       {/* KPIs */}
+       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Kpi icon={ArrowDownToLine} label="Entradas (Hoje)" value={kpis.entriesToday} hint="Novos recebimentos" tone="success"/>
+          <Kpi icon={ArrowUpFromLine} label="Saídas (Hoje)" value={kpis.exitsToday} hint="Liberações para OS" tone="info"/>
+          <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
+          <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
+       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {!isEstoquePortal && (
@@ -767,18 +769,27 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   );
 }
 
-function Kpi({ icon: Icon, label, value, hint, tone }: any) {
-  return (
-    <Card className={cn(
-      "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
-      tone === 'warn' ? "bg-amber-500/5" : "bg-primary/[0.03]"
-    )}>
+ function Kpi({ icon: Icon, label, value, hint, tone }: any) {
+   const toneClass = 
+     tone === 'warn' ? "bg-amber-500/5" : 
+     tone === 'success' ? "bg-emerald-500/5" : 
+     tone === 'info' ? "bg-blue-500/5" : 
+     "bg-primary/[0.03]";
+     
+   const iconClass = 
+     tone === 'warn' ? "bg-amber-100 text-amber-600" : 
+     tone === 'success' ? "bg-emerald-100 text-emerald-600" : 
+     tone === 'info' ? "bg-blue-100 text-blue-600" : 
+     "bg-primary/10 text-primary";
+ 
+   return (
+     <Card className={cn(
+       "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
+       toneClass
+     )}>
       <div className="flex items-center justify-between relative z-10">
         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</div>
-        <div className={cn(
-          "p-1.5 rounded-lg",
-          tone === 'warn' ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"
-        )}>
+         <div className={cn("p-1.5 rounded-lg", iconClass)}>
           <Icon className="h-4 w-4" />
         </div>
       </div>

@@ -109,7 +109,7 @@ export default function OSDetalhe() {
 
     useEffect(() => {
       // Load catalog for all authorized profiles
-      if (os?.servico_id || hasRole(['admin', 'gestor', 'supervisor', 'tecnico'])) {
+      if (os?.servico_id || hasRole(['admin', 'gestor', 'supervisor', 'campo'])) {
         supabase.from("atividades")
           .select("*, categoria:categorias(nome, servico_id)")
           .eq("ativo", true)

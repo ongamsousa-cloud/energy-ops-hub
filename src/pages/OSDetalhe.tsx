@@ -557,9 +557,9 @@ export default function OSDetalhe() {
                                      <SelectValue placeholder="Filtrar por Categoria" />
                                    </SelectTrigger>
                                    <SelectContent>
-                                     <SelectItem value="all">Todas as Atividades do Serviço</SelectItem>
-                                     <SelectItem value="all_global">Exibir Catálogo Completo (Sem Filtros)</SelectItem>
-                                     {cats.filter(c => !os.servico_id || c.servico_id === os.servico_id).map((c) => (
+                                     <SelectItem value="all" className="font-semibold text-primary">Todas as Atividades do Serviço</SelectItem>
+                                     <SelectItem value="all_global" className="font-semibold text-amber-600 italic">Catálogo Completo (Geral)</SelectItem>
+                                     {cats.filter(c => !os.servico_id || selectedCategoriaId === "all_global" || c.servico_id === os.servico_id).map((c) => (
                                        <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                                      ))}
                                    </SelectContent>
@@ -574,6 +574,7 @@ export default function OSDetalhe() {
                                      if (selectedCategoriaId === "all") return !os.servico_id || cat.servico_id === os.servico_id;
                                      return cat.id === selectedCategoriaId;
                                    })
+                                   .sort((a, b) => a.nome.localeCompare(b.nome))
                                    .map(cat => {
                                      const catAtividades = allAtvs.filter(a => a.categoria_id === cat.id);
                                      if (catAtividades.length === 0) return null;

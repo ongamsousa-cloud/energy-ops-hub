@@ -50,7 +50,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     gestorId: "",
     equipeId: "",
     observacoes: "",
-    itens: [] as any[]
+    itens: [] as any[],
+    allAtvSelected: false
   });
 
   useEffect(() => {
@@ -249,10 +250,10 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                    setSelectedCategoriaId("all");
                    const servCats = categorias.filter(c => c.servico_id === v);
                    const hasAtvs = atividades.some(a => servCats.some(c => c.id === a.categoria_id));
-                   setServicoHasNoActivities(!hasAtvs);
-                   if (!hasAtvs) {
-                     toast.warning("Atenção: Este serviço não possui atividades cadastradas nas suas categorias.");
-                   }
+                    setServicoHasNoActivities(!hasAtvs);
+                    if (!hasAtvs && v) {
+                      toast.warning("Atenção: Este serviço não possui atividades cadastradas nas suas categorias.");
+                    }
                  }}
                >
                  <SelectTrigger>
@@ -298,7 +299,12 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             <div className="flex items-center justify-between">
               <Label className="text-base font-semibold">Atividades / Serviços <span className="text-destructive">*</span></Label>
               
-               <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                <Popover open={activityPopoverOpen} onOpenChange={(val) => {
+                  setActivityPopoverOpen(val);
+                  if (val && !atividades.length) {
+                    fetchInitialData();
+                  }
+                }}>
                  <PopoverTrigger asChild>
                    <Button variant="outline" size="sm" className="h-8 gap-1">
                      <Plus className="h-3.5 w-3.5" /> Adicionar Item do Catálogo
@@ -311,19 +317,19 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                          <SelectTrigger className="h-8 text-xs">
                            <SelectValue placeholder="Filtrar por Categoria" />
                          </SelectTrigger>
-                         <SelectContent>
-                            <SelectItem value="all">Todas as Categorias do Serviço</SelectItem>
-                            <SelectItem value="all_global">Catálogo Completo (Sem Filtros)</SelectItem>
-                           {categorias
-                             .filter(c => !selectedServicoId || c.servico_id === selectedServicoId)
-                             .map((c) => (
-                               <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                             ))}
-                         </SelectContent>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectItem value="all" className="font-semibold text-primary">Todas as Atividades do Serviço</SelectItem>
+                            <SelectItem value="all_global" className="font-semibold text-amber-600 italic">Catálogo Completo (Geral)</SelectItem>
+                            {categorias
+                              .filter(c => !selectedServicoId || selectedCategoriaId === "all_global" || c.servico_id === selectedServicoId)
+                              .map((c) => (
+                                <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                              ))}
+                          </SelectContent>
                        </Select>
                      </div>
                      <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
-                      <CommandList className="max-h-[450px]">
+                       <CommandList className="max-h-[350px]">
                        <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
                         {categorias
                           .filter(cat => {
@@ -331,30 +337,31 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                             if (selectedCategoriaId === "all") return !selectedServicoId || cat.servico_id === selectedServicoId;
                             return cat.id === selectedCategoriaId;
                           })
+                          .sort((a, b) => a.nome.localeCompare(b.nome))
                           .map(cat => {
                             const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
-                           if (catAtividades.length === 0) return null;
-                           return (
-                             <CommandGroup key={cat.id} heading={cat.nome}>
-                               {catAtividades.map((a) => (
-                                 <CommandItem
-                                   key={a.id}
-                                   value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
-                                   onSelect={() => addActivity(a)}
-                                   className="cursor-pointer"
-                                 >
-                                   <div className="flex flex-col w-full">
-                                     <div className="flex justify-between items-start">
-                                       <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
-                                       <span className="text-[10px] text-muted-foreground uppercase">{a.unidade}</span>
-                                     </div>
-                                     <span className="text-sm line-clamp-2">{a.descricao}</span>
-                                   </div>
-                                 </CommandItem>
-                               ))}
-                             </CommandGroup>
-                           );
-                         })}
+                            if (catAtividades.length === 0) return null;
+                            return (
+                              <CommandGroup key={cat.id} heading={cat.nome}>
+                                {catAtividades.map((a) => (
+                                  <CommandItem
+                                    key={a.id}
+                                    value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
+                                    onSelect={() => addActivity(a)}
+                                    className="cursor-pointer"
+                                  >
+                                    <div className="flex flex-col w-full">
+                                      <div className="flex justify-between items-start">
+                                        <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
+                                        <span className="text-[10px] text-muted-foreground uppercase">{a.unidade}</span>
+                                      </div>
+                                      <span className="text-sm line-clamp-2">{a.descricao}</span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            );
+                          })}
                      </CommandList>
                    </Command>
                  </PopoverContent>

@@ -667,45 +667,124 @@ export default function OSDetalhe() {
           </TabsList>
 
           <TabsContent value="atividades" className="mt-4">
-            <div className="flex items-end justify-between mb-3">
-              <h2 className="text-sm font-medium">Lançamentos realizados</h2>
-              {canEdit && (
-                <Dialog open={add} onOpenChange={setAdd}>
-                  <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
-                    <div className="grid gap-3">
-                      <div>
-                        <Label>Categoria</Label>
-                        <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
-                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                          <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Atividade</Label>
-                        <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                          <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                          <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
-                        </div>
-                        <div>
-                          <Label>UMD calculada</Label>
-                          <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
-                        </div>
-                      </div>
-                      <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
-                      <Button onClick={addItem}>Salvar lançamento</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
+             <div className="flex items-end justify-between mb-3">
+               <h2 className="text-sm font-medium uppercase text-muted-foreground tracking-wider">Histórico de Lançamentos</h2>
+               {canEdit && (
+                 <Dialog open={add} onOpenChange={setAdd}>
+                   <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4"/>Lançar Atividade</Button></DialogTrigger>
+                   <DialogContent className="max-w-xl">
+                     <DialogHeader>
+                       <DialogTitle>Novo Lançamento Técnico</DialogTitle>
+                       <DialogDescription>Selecione a atividade do catálogo e informe a produtividade realizada.</DialogDescription>
+                     </DialogHeader>
+                     <div className="grid gap-4 py-4">
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">Catálogo de Atividades</Label>
+                         <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                           <PopoverTrigger asChild>
+                             <Button variant="outline" className="w-full justify-start text-left font-normal h-12">
+                               {form.atividade_id ? (
+                                 <div className="flex flex-col">
+                                   <span className="font-bold text-primary text-xs">{allAtvs.find(a => a.id === form.atividade_id)?.codigo_item}</span>
+                                   <span className="truncate text-sm">{allAtvs.find(a => a.id === form.atividade_id)?.descricao}</span>
+                                 </div>
+                               ) : (
+                                 <span className="text-muted-foreground flex items-center gap-2"><Search className="h-4 w-4" /> Pesquisar no catálogo completo...</span>
+                               )}
+                             </Button>
+                           </PopoverTrigger>
+                           <PopoverContent className="w-[500px] p-0" align="start">
+                             <Command>
+                               <div className="p-2 border-b flex gap-2 bg-muted/30">
+                                 <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
+                                   <SelectTrigger className="h-9 text-xs flex-1">
+                                     <SelectValue placeholder="Filtrar por Categoria" />
+                                   </SelectTrigger>
+                                   <SelectContent>
+                                     <SelectItem value="all">Todas as Categorias</SelectItem>
+                                     {cats.filter(c => !os.servico_id || c.servico_id === os.servico_id).map((c) => (
+                                       <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                                     ))}
+                                   </SelectContent>
+                                 </Select>
+                               </div>
+                               <CommandInput placeholder="Digite o código ou descrição..." className="h-10" />
+                               <CommandList className="max-h-[300px]">
+                                 <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
+                                 {cats
+                                   .filter(cat => (selectedCategoriaId === "all" || cat.id === selectedCategoriaId) && (!os.servico_id || cat.servico_id === os.servico_id))
+                                   .map(cat => {
+                                     const catAtividades = allAtvs.filter(a => a.categoria_id === cat.id);
+                                     if (catAtividades.length === 0) return null;
+                                     return (
+                                       <CommandGroup key={cat.id} heading={cat.nome}>
+                                         {catAtividades.map((a) => (
+                                           <CommandItem
+                                             key={a.id}
+                                             value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
+                                             onSelect={() => {
+                                               setForm({...form, atividade_id: a.id, categoria_id: a.categoria_id});
+                                               setActivityPopoverOpen(false);
+                                             }}
+                                             className="cursor-pointer"
+                                           >
+                                             <div className="flex flex-col w-full py-1">
+                                               <div className="flex justify-between items-center mb-0.5">
+                                                 <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
+                                                 <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full uppercase font-medium">{a.unidade}</span>
+                                               </div>
+                                               <span className="text-sm line-clamp-2 leading-tight">{a.descricao}</span>
+                                             </div>
+                                           </CommandItem>
+                                         ))}
+                                       </CommandGroup>
+                                     );
+                                   })}
+                               </CommandList>
+                             </Command>
+                           </PopoverContent>
+                         </Popover>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                           <Label>Código Técnico</Label>
+                           <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
+                             <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="none">Nenhum</SelectItem>
+                               {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div className="space-y-2">
+                           <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
+                           <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantity: e.target.value})}/>
+                         </div>
+                       </div>
+
+                       <div className="p-3 bg-muted/20 rounded-md border border-dashed flex justify-between items-center">
+                         <span className="text-xs text-muted-foreground uppercase font-bold">Produtividade Estimada</span>
+                         <span className="text-lg font-mono font-bold text-primary">{umdTotal.toFixed(4)} <span className="text-xs font-normal">UMD</span></span>
+                       </div>
+
+                       <div className="space-y-2">
+                         <Label>Observações</Label>
+                         <Textarea 
+                           placeholder="Detalhes adicionais..."
+                           value={form.observacao} 
+                           onChange={(e)=>setForm({...form, observacao: e.target.value})}
+                         />
+                       </div>
+                       
+                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade}>
+                         Confirmar Lançamento
+                       </Button>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
+               )}
+             </div>
             {items.length === 0 ? (
               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
             ) : (

@@ -17,10 +17,10 @@ export default function Login() {
    const [loading, setLoading] = useState(false);
  
    const testAccounts = [
-     { role: "Admin", email: "admin@teste.com", desc: "Acesso total" },
+     { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
      { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
      { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
-     { role: "Campo", email: "campo@teste.com", desc: "Lançamentos" },
+     { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
    ];

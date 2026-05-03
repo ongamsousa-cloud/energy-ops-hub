@@ -294,48 +294,62 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </TabsList>
         )}
 
-        <TabsContent value="overview" className="space-y-4 mt-4">
-          <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Entradas vs Saídas (14 dias)</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={chartFlow}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
-                  <XAxis dataKey="dia" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}}/>
-                  <Tooltip contentStyle={{background:"hsl(var(--card))", border:"1px solid hsl(var(--border))"}}/>
-                  <Legend/>
-                  <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={2}/>
-                  <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={2}/>
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Top materiais consumidos</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={chartTopConsumed} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
-                  <XAxis type="number" tick={{fontSize:11}}/>
-                  <YAxis dataKey="nome" type="category" width={140} tick={{fontSize:10}}/>
-                  <Tooltip contentStyle={{background:"hsl(var(--card))", border:"1px solid hsl(var(--border))"}}/>
-                  <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0,4,4,0]}/>
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Valor por categoria</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label={(d:any)=>d.name}>
-                    {chartByCategory.map((_,i)=> <Cell key={i} fill={COLORS[i % COLORS.length]}/>)}
-                  </Pie>
-                  <Tooltip formatter={(v:any)=> Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}/>
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-             <Card className="p-4 flex flex-col h-full">
-               <div className="flex items-center justify-between mb-3">
-                 <div className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Atividade ao vivo</div>
-                 <div className="flex gap-2">
+        <TabsContent value="overview" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content Area - Left 2/3 */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="p-5 border-t-4 border-t-primary shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-foreground">Fluxo de Materiais</h3>
+                    <Badge variant="secondary" className="text-[10px]">Últimos 14 dias</Badge>
+                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                <Card className="p-5 border-t-4 border-t-amber-500 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-foreground">Top Consumidos</h3>
+                    <Boxes className="h-4 w-4 text-amber-500" />
+                  </div>
+              </div>
+
+              <Card className="p-5 shadow-sm border-none bg-accent/5">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Status do Inventário</h3>
+                    <p className="text-xs text-muted-foreground">Distribuição de valor por categoria e alertas</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                  </div>
+                  <div className="space-y-3">
+                    {chartByCategory.slice(0, 5).map((cat, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                          <span className="text-muted-foreground truncate max-w-[140px]">{cat.name}</span>
+                        </div>
+                        <span className="font-semibold">{cat.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Sidebar Activity - Right 1/3 */}
+            <div className="space-y-6">
+              <Card className="p-5 h-full flex flex-col shadow-sm border-l-4 border-l-primary/50">
+                <div className="flex flex-col gap-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary animate-pulse"/>
+                      Feed de Operações
+                    </h3>
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Tempo Real</Badge>
+                  </div>
+                  <div className="flex gap-1">
                    <Select value={osFilter} onValueChange={setOsFilter}>
                      <SelectTrigger className="h-7 text-[10px] w-[120px]"><SelectValue placeholder="Obra"/></SelectTrigger>
                      <SelectContent>

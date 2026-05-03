@@ -59,7 +59,12 @@ export default function Login() {
      } finally { setForgotLoading(false); }
    };
 
-  useEffect(() => { if (user) nav("/app", { replace: true }); }, [user, nav]);
+   useEffect(() => { 
+     if (user) {
+       const isEstoque = user.email === "estoque@energyops.demo";
+       nav(isEstoque ? "/estoque-app" : "/app", { replace: true });
+     }
+   }, [user, nav]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

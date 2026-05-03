@@ -13,9 +13,9 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { cn } from "@/lib/utils";
 import {
-  Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-  TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
-  Boxes, AlertCircle, RotateCcw, MinusCircle, Download
+   Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
+   TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
+   Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";
@@ -276,10 +276,10 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi icon={Package} label="Itens ativos" value={kpis.total} hint={`${kpis.outOfStock} sem saldo`}/>
-        <Kpi icon={TrendingUp} label="Valor em estoque" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo total"/>
-        <Kpi icon={AlertTriangle} label="Estoque crítico" value={kpis.critical} hint={`${kpis.lowStock} abaixo do mínimo`} tone="warn"/>
-        <Kpi icon={Activity} label="Movimentações hoje" value={kpis.movToday} hint={`${kpis.reservedActive} reservas ativas`}/>
+         <Kpi icon={Package} label="Patrimônio Ativo" value={kpis.total} hint={`${kpis.outOfStock} itens sem saldo`}/>
+         <Kpi icon={TrendingUp} label="Valorização Total" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo médio total"/>
+         <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
+         <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -294,138 +294,176 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </TabsList>
         )}
 
-        <TabsContent value="overview" className="mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content Area - Left 2/3 */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="p-5 border-t-4 border-t-primary shadow-sm hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-foreground">Fluxo de Materiais</h3>
-                    <Badge variant="secondary" className="text-[10px]">Últimos 14 dias</Badge>
-                  </div>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <LineChart data={chartFlow}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis dataKey="dia" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }} />
-                      <Legend verticalAlign="top" height={36} iconType="circle" />
-                      <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                      <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </Card>
+         <TabsContent value="overview" className="mt-4 space-y-6">
+           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+             {/* Main Analytics Area (3/4) */}
+             <div className="xl:col-span-3 space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <Card className="p-6 border-none shadow-sm bg-card/50">
+                   <div className="flex items-center justify-between mb-6">
+                     <div>
+                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Fluxo Logístico</h3>
+                       <p className="text-[10px] text-muted-foreground">Entradas vs Saídas (14 dias)</p>
+                     </div>
+                     <Badge variant="secondary" className="text-[10px]">OPERACIONAL</Badge>
+                   </div>
+                   <div className="h-[250px]">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <LineChart data={chartFlow}>
+                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                         <XAxis dataKey="dia" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                         <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                         <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px" }} />
+                         <Legend verticalAlign="top" align="right" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
+                         <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
+                         <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={3} dot={{ r: 4, fill: 'hsl(var(--destructive))' }} />
+                       </LineChart>
+                     </ResponsiveContainer>
+                   </div>
+                 </Card>
 
-                <Card className="p-5 border-t-4 border-t-amber-500 shadow-sm hover:shadow-md transition-all">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-foreground">Top Consumidos</h3>
-                    <Boxes className="h-4 w-4 text-amber-500" />
-                  </div>
-                  <ResponsiveContainer width="100%" height={240}>
-                    <BarChart data={chartTopConsumed} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="nome" type="category" width={120} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
-                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: "8px" }} />
-                      <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Card>
-              </div>
+                 <Card className="p-6 border-none shadow-sm bg-card/50">
+                   <div className="flex items-center justify-between mb-6">
+                     <div>
+                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Consumo de Materiais</h3>
+                       <p className="text-[10px] text-muted-foreground">Itens com maior giro</p>
+                     </div>
+                     <Boxes className="h-4 w-4 text-amber-500" />
+                   </div>
+                   <div className="h-[250px]">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <BarChart data={chartTopConsumed} layout="vertical">
+                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                         <XAxis type="number" hide />
+                         <YAxis dataKey="nome" type="category" width={100} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                         <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: "12px" }} />
+                         <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />
+                       </BarChart>
+                     </ResponsiveContainer>
+                   </div>
+                 </Card>
+               </div>
 
-              <Card className="p-5 shadow-sm border-none bg-accent/5">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-base font-bold text-foreground">Status do Inventário</h3>
-                    <p className="text-xs text-muted-foreground">Distribuição de valor por categoria e alertas</p>
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={5}>
-                          {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                        </Pie>
-                        <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="space-y-3">
-                    {chartByCategory.slice(0, 5).map((cat, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                          <span className="text-muted-foreground truncate max-w-[140px] font-medium">{cat.name}</span>
-                        </div>
-                        <span className="font-bold">{cat.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-            </div>
+               <Card className="p-6 border-none shadow-sm bg-card/50">
+                 <div className="flex items-center justify-between mb-6">
+                   <div>
+                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Valorização por Categoria</h3>
+                     <p className="text-[10px] text-muted-foreground">Concentração de capital</p>
+                   </div>
+                   <TrendingUp className="h-4 w-4 text-primary" />
+                 </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                   <div className="h-[300px]">
+                     <ResponsiveContainer width="100%" height="100%">
+                       <PieChart>
+                         <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
+                           {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                         </Pie>
+                         <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                         <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
+                       </PieChart>
+                     </ResponsiveContainer>
+                   </div>
+                   <div className="space-y-4">
+                     <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                       <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
+                       <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                       <div className="mt-2 flex items-center text-[10px] text-destructive">
+                         <AlertCircle className="h-3 w-3 mr-1" />
+                         Refere-se a quebras, extravios e ajustes manuais
+                       </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
+                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
+                         <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
+                       </div>
+                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Armazéns</h4>
+                         <p className="text-lg font-bold text-primary">{warehouses.length}</p>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </Card>
+             </div>
 
-            {/* Sidebar Activity - Right 1/3 */}
-            <div className="space-y-6">
-              <Card className="p-5 h-full flex flex-col shadow-sm border-l-4 border-l-primary/50">
-                <div className="flex flex-col gap-4 mb-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold flex items-center gap-2">
-                      <Activity className="h-4 w-4 text-primary animate-pulse" />
-                      Feed de Operações
-                    </h3>
-                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">Tempo Real</Badge>
-                  </div>
-                  <div className="flex gap-1.5 flex-wrap">
+             {/* Sidebar Area: Activity & Status (The "Sides") */}
+             <div className="space-y-6">
+               <Card className="p-5 border-none shadow-sm bg-card/80">
+                 <div className="flex items-center justify-between mb-6">
+                   <h3 className="text-xs font-bold uppercase tracking-widest text-destructive">Reposição Crítica</h3>
+                   <Badge variant="destructive" className="animate-pulse">{alerts.length}</Badge>
+                 </div>
+                 <div className="space-y-3">
+                   {alerts.slice(0, 4).map((a) => (
+                     <div key={a.id} className="group p-3 rounded-xl bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-colors">
+                       <div className="flex items-start justify-between">
+                         <div className="flex flex-col">
+                           <div className="flex items-center gap-1.5 mb-1">
+                             <AlertTriangle className="h-3 w-3 text-destructive" />
+                             <span className="text-[9px] font-black uppercase tracking-tighter text-destructive">{a.type === 'ruptura' ? 'RUPTURA' : 'CRÍTICO'}</span>
+                           </div>
+                           <span className="text-xs font-bold leading-tight line-clamp-1">{a.materials?.name}</span>
+                           <span className="text-[9px] text-muted-foreground mt-0.5">{a.warehouses?.name}</span>
+                         </div>
+                         <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => resolveAlert(a.id)}>
+                           <ListChecks className="h-4 w-4 text-destructive"/>
+                         </Button>
+                       </div>
+                     </div>
+                   ))}
+                   {alerts.length === 0 && (
+                     <div className="text-center py-10">
+                       <Activity className="h-8 w-8 text-emerald-500/20 mx-auto mb-2" />
+                       <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Estoque OK</p>
+                     </div>
+                   )}
+                 </div>
+               </Card>
+
+               <Card className="p-5 border-none shadow-sm bg-card/80 flex flex-col min-h-[400px]">
+                 <div className="flex items-center justify-between mb-6">
+                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Feed de Operações</h3>
+                   <History className="h-4 w-4 text-muted-foreground opacity-50" />
+                 </div>
+                 <div className="flex gap-1.5 mb-4">
                     <Select value={osFilter} onValueChange={setOsFilter}>
-                      <SelectTrigger className="h-8 text-[10px] flex-1 min-w-[100px]"><SelectValue placeholder="Obra" /></SelectTrigger>
+                      <SelectTrigger className="h-7 text-[9px] flex-1"><SelectValue placeholder="Obra" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todas Obras</SelectItem>
+                        <SelectItem value="all">Obras</SelectItem>
                         {allObras.map(o => <SelectItem key={o.id} value={o.id}>{o.numero}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <Select value={equipeFilter} onValueChange={setEquipeFilter}>
-                      <SelectTrigger className="h-8 text-[10px] flex-1 min-w-[100px]"><SelectValue placeholder="Equipe" /></SelectTrigger>
+                      <SelectTrigger className="h-7 text-[9px] flex-1"><SelectValue placeholder="Equipe" /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todas Equipes</SelectItem>
+                        <SelectItem value="all">Equipes</SelectItem>
                         {allEquipes.map(e => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
                       </SelectContent>
                     </Select>
-                  </div>
-                </div>
-                <div className="space-y-3 flex-1 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin">
-                  {filteredMovements.slice(0, 20).map(m => (
-                    <div key={m.id} className="flex items-start gap-3 text-xs border-l-2 pl-4 py-2 hover:bg-accent/30 transition-colors group" style={{ borderColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className={cn("text-[8px] h-4 px-1 leading-none uppercase tracking-wider", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge>
-                          <span className="text-[10px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm", { locale: ptBR })}</span>
-                        </div>
-                        <div className="font-medium text-[13px] text-foreground">
-                          {Number(m.quantity)} {m.materials?.unit} de <span className="font-bold underline decoration-primary/20 decoration-2 underline-offset-2">{m.materials?.name}</span>
-                        </div>
-                        <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-2 gap-y-1">
-                          <span className="flex items-center gap-1 font-medium text-foreground/80">{m.creator?.nome || "—"}</span>
-                          {m.ordens_servico?.numero && <span className="text-primary font-bold">· OS {m.ordens_servico.numero}</span>}
-                          {m.from_wh?.name && <span className="bg-accent/50 px-1 rounded">de {m.from_wh.name}</span>}
-                          {m.to_wh?.name && <span className="bg-primary/10 text-primary px-1 rounded">→ {m.to_wh.name}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {filteredMovements.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <Activity className="h-10 w-10 text-muted-foreground/20 mb-2" />
-                      <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
+                 </div>
+                 <div className="space-y-4 flex-1 overflow-y-auto max-h-[400px] pr-1">
+                   {filteredMovements.slice(0, 10).map((m) => (
+                     <div key={m.id} className="relative pl-4 border-l-2 pb-1 hover:bg-muted/30 transition-colors" style={{ borderLeftColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}>
+                       <div className="flex flex-col">
+                         <div className="flex items-center justify-between">
+                           <span className="text-[10px] font-bold uppercase">{TYPE_LABEL[m.type]}</span>
+                           <span className="text-[9px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm")}</span>
+                         </div>
+                         <span className="text-xs font-medium text-foreground line-clamp-1">{m.materials?.name}</span>
+                         <span className="text-[9px] text-muted-foreground truncate">{m.creator?.nome}</span>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+                 <Button variant="ghost" size="sm" className="w-full mt-4 text-[10px] font-bold uppercase" onClick={() => setActiveTab("movements")}>
+                   Ver Histórico
+                 </Button>
+               </Card>
+             </div>
+           </div>
+         </TabsContent>
 
         <TabsContent value="materials" className="space-y-3 mt-4">
           <div className="flex gap-2">

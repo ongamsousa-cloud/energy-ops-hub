@@ -80,6 +80,12 @@ export default function Mensagens() {
 
    const addAudioElement = (blob: Blob) => {
      console.log("Gravação concluída:", blob.size, "bytes");
+     if (blob.size < 100) {
+       console.warn("Áudio muito pequeno, possível erro de captura");
+       toast.error("Falha ao capturar áudio. Tente novamente.");
+       setRecordingMode(null);
+       return;
+     }
      setAudioBlob(blob);
      setRecordingMode(null);
    };

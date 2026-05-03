@@ -115,7 +115,8 @@ export default function Mensagens() {
     
     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo: "audio" });
-    setAudioBlob(null);
+      setAudioBlob(null);
+      setAudioPreviewUrl(null);
   }
 
   const myRole = roles[0];
@@ -453,8 +454,9 @@ export default function Mensagens() {
        anexo_tipo: finalAnexo?.tipo ?? null,
     });
     if (error) return toast.error(error.message);
-    if (messageText === undefined) setText("");
-     setAudioBlob(null);
+     if (messageText === undefined) setText("");
+      setAudioBlob(null);
+      setAudioPreviewUrl(null);
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {

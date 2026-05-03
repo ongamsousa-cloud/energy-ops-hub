@@ -688,26 +688,77 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                   </div>
                   {!w.active && <Badge variant="secondary">Inativo</Badge>}
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t">
-                  <div><div className="text-[10px] text-muted-foreground uppercase">Itens</div><div className="font-bold">{w.items_count}</div></div>
-                  <div><div className="text-[10px] text-muted-foreground uppercase">Valor</div><div className="font-bold text-xs">{w.total_value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div></div>
-                </div>
-              </Card>
+               <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t relative">
+                 <div><div className="text-[10px] text-muted-foreground uppercase">Itens</div><div className="font-bold">{w.items_count}</div></div>
+                 <div><div className="text-[10px] text-muted-foreground uppercase">Valor</div><div className="font-bold text-xs">{w.total_value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div></div>
+                 {canWrite && (
+                   <Button
+                     variant="ghost"
+                     size="icon"
+                     className="h-6 w-6 text-destructive absolute right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                     onClick={(e) => { e.stopPropagation(); deleteWarehouse(w.id); }}
+                   >
+                     <Trash2 className="h-3 w-3" />
+                   </Button>
+                 )}
+               </div>
+             </Card>
             ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="movements" className="mt-4">
-          <Card>
-            <Table>
+         <TabsContent value="movements" className="mt-4 space-y-4">
+           <Card className="p-4 bg-muted/20 border-none shadow-none">
+             <div className="flex flex-wrap gap-4 items-end">
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Tipo</Label>
+                 <Select value={filters.type} onValueChange={(v) => setFilters({ ...filters, type: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os tipos</SelectItem>
+                     {Object.entries(TYPE_LABEL).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Almoxarifado</Label>
+                 <Select value={filters.warehouse} onValueChange={(v) => setFilters({ ...filters, warehouse: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os almoxarifados</SelectItem>
+                     {warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <div className="space-y-1.5 flex-1 min-w-[150px]">
+                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Material</Label>
+                 <Select value={filters.material} onValueChange={(v) => setFilters({ ...filters, material: v })}>
+                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                   <SelectContent>
+                     <SelectItem value="all">Todos os materiais</SelectItem>
+                     {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+               </div>
+               <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => { setFilters({ type: 'all', warehouse: 'all', material: 'all' }); setOsFilter('all'); setEquipeFilter('all'); }} title="Limpar Filtros">
+                 <X className="h-4 w-4" />
+               </Button>
+               <Button size="sm" variant="outline" className="h-9" onClick={exportMovementsToCSV}>
+                 <Download className="h-4 w-4 mr-2" /> Exportar
+               </Button>
+             </div>
+           </Card>
+ 
+           <Card>
+             <Table>
               <TableHeader><TableRow>
                 <TableHead>Data</TableHead><TableHead>Tipo</TableHead><TableHead>Material</TableHead>
                 <TableHead className="text-right">Qtd</TableHead><TableHead>Origem → Destino</TableHead>
                 <TableHead>OS</TableHead><TableHead>Profissional</TableHead><TableHead>Por</TableHead>
               </TableRow></TableHeader>
-              <TableBody>
-                {movements.map(m => (
-                  <TableRow key={m.id}>
+               <TableBody>
+                 {filteredMovements.map(m => (
+                   <TableRow key={m.id}>
                     <TableCell className="text-xs whitespace-nowrap">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
                     <TableCell><Badge variant="outline" className={TYPE_COLOR[m.type]}>{TYPE_LABEL[m.type]}</Badge></TableCell>
                     <TableCell><div className="font-medium text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground">{m.materials?.code}</div></TableCell>

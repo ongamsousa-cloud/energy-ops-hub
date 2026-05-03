@@ -50,7 +50,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     if (defaultTab) setActiveTab(defaultTab);
   }, [defaultTab]);
 
-  const canWrite = hasRole(["admin","gestor","supervisor"]);
+  const canWrite = hasRole(["admin","gestor","supervisor","estoque"]);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<any[]>([]);
   const [movements, setMovements] = useState<any[]>([]);

@@ -1,6 +1,6 @@
  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
  import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Cell, AreaChart, Area } from "recharts";
- import { Users, Briefcase, Activity, AlertCircle, CheckCircle2, MapPin, Clock, Search, Filter } from "lucide-react";
+ import { Users, Briefcase, Activity, AlertCircle, CheckCircle2, MapPin, Clock, Search, Filter, TrendingUp, Heart, ShieldAlert, BarChart3 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
  import { Link } from "react-router-dom";
  import { Button } from "@/components/ui/button";

@@ -17,10 +17,10 @@ export default function Login() {
    const [loading, setLoading] = useState(false);
  
    const testAccounts = [
-     { role: "Admin", email: "admin@teste.com", desc: "Acesso total" },
+     { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
      { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
      { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
-     { role: "Campo", email: "campo@teste.com", desc: "Lançamentos" },
+     { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
    ];
@@ -80,7 +80,10 @@ export default function Login() {
         <p className="mb-6 text-sm text-muted-foreground">
           {mode === "login" ? "Use suas credenciais corporativas." : "Defina suas credenciais de acesso."}
         </p>
-        <form onSubmit={submit} className="space-y-4">
+         <form onSubmit={submit} className="space-y-4">
+           <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+             Dica: Para todas as contas de teste abaixo, a senha é <span className="font-bold">Energia123!</span>
+           </div>
           {mode === "signup" && (
             <div className="space-y-1.5">
               <Label htmlFor="nome">Nome completo</Label>

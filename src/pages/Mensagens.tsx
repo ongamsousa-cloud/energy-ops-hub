@@ -707,16 +707,22 @@ export default function Mensagens() {
                             isRecording ? "text-red-500 bg-red-50" : "text-muted-foreground hover:text-primary hover:bg-primary/5",
                             selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
                           )}
-                           onClick={() => { 
+                           onClick={async () => { 
                              if (selectedContacts.length === 0) return;
-                             if (!isRecording) { 
-                               setRecordingMode('broadcast');
-                               recorderControls.startRecording();
-                               toast.info("Iniciando gravação...");
-                             } else { 
-                               recorderControls.stopRecording();
-                               toast.info("Processando áudio...");
-                             } 
+                             try {
+                               if (!isRecording) { 
+                                 setRecordingMode('broadcast');
+                                 await recorderControls.startRecording();
+                                 toast.info("Iniciando gravação...");
+                               } else { 
+                                 await recorderControls.stopRecording();
+                                 toast.info("Processando áudio...");
+                               }
+                             } catch (err: any) {
+                               console.error("Erro ao gerenciar gravação:", err);
+                               toast.error("Erro ao acessar microfone. Verifique as permissões.");
+                               setRecordingMode(null);
+                             }
                            }}
                           disabled={selectedContacts.length === 0}
                         >

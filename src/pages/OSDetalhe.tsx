@@ -614,20 +614,73 @@ export default function OSDetalhe() {
             )}
           </TabsContent>
 
-           <TabsContent value="materiais" className="mt-4">
-             <div className="flex items-end justify-between mb-3">
-               <h2 className="text-sm font-medium">Materiais utilizados</h2>
+           <TabsContent value="materiais" className="mt-4 space-y-4">
+             <div className="flex justify-between items-center">
+               <h3 className="text-sm font-semibold">Materiais Utilizados / Previstos</h3>
                {canEdit && (
-                 <Button size="sm" variant="outline"><Plus className="mr-1 h-3.5 w-3.5"/>Vincular Material</Button>
+                 <Dialog open={addMat} onOpenChange={setAddMat}>
+                   <DialogTrigger asChild><Button size="sm"><Package className="mr-2 h-4 w-4" /> Adicionar Material</Button></DialogTrigger>
+                   <DialogContent>
+                     <DialogHeader><DialogTitle>Adicionar Material à OS</DialogTitle></DialogHeader>
+                     <div className="space-y-4 py-4">
+                       <div className="space-y-2">
+                         <Label>Material</Label>
+                         <Select value={matForm.material_id} onValueChange={v => setMatForm({...matForm, material_id: v})}>
+                           <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                           <SelectContent>
+                             {allMaterials.map(m => (
+                               <SelectItem key={m.id} value={m.id}>{m.code} - {m.name} ({m.unit})</SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                       </div>
+                       <div className="space-y-2">
+                         <Label>Quantidade Planejada</Label>
+                         <Input type="number" step="0.01" value={matForm.quantity} onChange={e => setMatForm({...matForm, quantity: e.target.value})} />
+                       </div>
+                       <Button className="w-full" onClick={addMaterialToOS}>Adicionar</Button>
+                     </div>
+                   </DialogContent>
+                 </Dialog>
                )}
              </div>
-             <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground bg-muted/10">
-               <div className="flex flex-col items-center gap-2">
-                 <Package className="h-8 w-8 opacity-20" />
-                 <p>Nenhum material vinculado a esta OS.</p>
-                 {canEdit && <p className="text-[11px]">Clique em "Vincular Material" para registrar o consumo.</p>}
-               </div>
-             </div>
+ 
+             <Card className="overflow-hidden border-border shadow-none">
+               <table className="w-full text-sm">
+                 <thead>
+                   <tr className="border-b bg-muted/50 text-muted-foreground">
+                     <th className="px-4 py-3 text-left">Cód.</th>
+                     <th className="px-4 py-3 text-left">Material</th>
+                     <th className="px-4 py-3 text-right">Qtd. Prevista</th>
+                     <th className="px-4 py-3 text-right">Qtd. Usada</th>
+                     <th className="px-4 py-3 text-right">Ações</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {osMaterials.length === 0 ? (
+                     <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Nenhum material vinculado.</td></tr>
+                   ) : (
+                     osMaterials.map(m => (
+                       <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30">
+                         <td className="px-4 py-3 font-mono text-xs">{m.materials?.code}</td>
+                         <td className="px-4 py-3">{m.materials?.name}</td>
+                         <td className="px-4 py-3 text-right font-medium">{m.quantity_planned} {m.materials?.unit}</td>
+                         <td className="px-4 py-3 text-right">
+                           {m.quantity_used > 0 ? (
+                             <Badge variant="secondary">{m.quantity_used} {m.materials?.unit}</Badge>
+                           ) : (
+                             <span className="text-muted-foreground">-</span>
+                           )}
+                         </td>
+                         <td className="px-4 py-3 text-right">
+                           {canEdit && <Button size="icon" variant="ghost" onClick={() => removeMaterial(m.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                         </td>
+                       </tr>
+                     ))
+                   )}
+                 </tbody>
+               </table>
+             </Card>
            </TabsContent>
 
            <TabsContent value="comunicacao" className="mt-4">

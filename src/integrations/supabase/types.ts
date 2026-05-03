@@ -1343,6 +1343,67 @@ export type Database = {
         }
         Relationships: []
       }
+      material_reservations: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          material_id: string
+          os_id: string
+          quantity: number
+          released_at: string | null
+          status: string
+          warehouse_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          material_id: string
+          os_id: string
+          quantity: number
+          released_at?: string | null
+          status?: string
+          warehouse_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          material_id?: string
+          os_id?: string
+          quantity?: number
+          released_at?: string | null
+          status?: string
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_reservations_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_reservations_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_reservations_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           active: boolean | null
@@ -2814,6 +2875,60 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          material_id: string | null
+          message: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          message: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          material_id?: string | null
+          message?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_alerts_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_alerts_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_levels: {
         Row: {
           id: string
@@ -2858,43 +2973,67 @@ export type Database = {
       }
       stock_movements: {
         Row: {
+          batch_number: string | null
           created_at: string
           created_by: string
           from_warehouse_id: string | null
           id: string
+          invoice_number: string | null
           material_id: string
           notes: string | null
           os_id: string | null
+          parent_movement_id: string | null
           professional_id: string | null
           quantity: number
+          reason: string | null
+          status: string | null
+          supplier: string | null
           to_warehouse_id: string | null
+          total_cost: number | null
           type: Database["public"]["Enums"]["stock_movement_type"]
+          unit_cost: number | null
         }
         Insert: {
+          batch_number?: string | null
           created_at?: string
           created_by: string
           from_warehouse_id?: string | null
           id?: string
+          invoice_number?: string | null
           material_id: string
           notes?: string | null
           os_id?: string | null
+          parent_movement_id?: string | null
           professional_id?: string | null
           quantity: number
+          reason?: string | null
+          status?: string | null
+          supplier?: string | null
           to_warehouse_id?: string | null
+          total_cost?: number | null
           type: Database["public"]["Enums"]["stock_movement_type"]
+          unit_cost?: number | null
         }
         Update: {
+          batch_number?: string | null
           created_at?: string
           created_by?: string
           from_warehouse_id?: string | null
           id?: string
+          invoice_number?: string | null
           material_id?: string
           notes?: string | null
           os_id?: string | null
+          parent_movement_id?: string | null
           professional_id?: string | null
           quantity?: number
+          reason?: string | null
+          status?: string | null
+          supplier?: string | null
           to_warehouse_id?: string | null
+          total_cost?: number | null
           type?: Database["public"]["Enums"]["stock_movement_type"]
+          unit_cost?: number | null
         }
         Relationships: [
           {
@@ -2916,6 +3055,13 @@ export type Database = {
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_parent_movement_id_fkey"
+            columns: ["parent_movement_id"]
+            isOneToOne: false
+            referencedRelation: "stock_movements"
             referencedColumns: ["id"]
           },
           {

@@ -1,143 +1,207 @@
-  import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-  import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus } from "lucide-react";
-  import { Button } from "@/components/ui/button";
-  import { Link } from "react-router-dom";
-  import { Badge } from "@/components/ui/badge";
-  import StatusBadge from "@/components/StatusBadge";
- 
- interface CampoDashboardProps {
-   stats: any;
-   profile: any;
- }
- 
- export default function CampoDashboard({ stats, profile }: CampoDashboardProps) {
-   const metaMensal = 2000;
-   const progresso = Math.min(100, (stats.umd / metaMensal) * 100);
- 
-   return (
-     <div className="space-y-6">
-       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-         <Card className="p-4 shadow-none border-l-4 border-l-blue-500">
-           <div className="flex flex-col">
-             <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Minhas OS</span>
-             <span className="text-2xl font-bold mt-1">{stats.osAbertas + stats.osAprov + stats.osPend}</span>
-             <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground">
-               <Clock className="h-3 w-3" />
-               <span>{stats.osAbertas} em andamento</span>
-             </div>
-           </div>
-         </Card>
-         <Card className="p-4 shadow-none border-l-4 border-l-green-500">
-           <div className="flex flex-col">
-             <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Produtividade (UMD)</span>
-             <span className="text-2xl font-bold mt-1">{stats.umd.toLocaleString()}</span>
-             <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground">
-               <CheckCircle2 className="h-3 w-3" />
-               <span>{stats.osAprov} aprovadas</span>
-             </div>
-           </div>
-         </Card>
-         <Card className="p-4 shadow-none border-l-4 border-l-amber-500">
-           <div className="flex flex-col">
-             <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Aguardando Revisão</span>
-             <span className="text-2xl font-bold mt-1">{stats.osPend}</span>
-             <p className="text-[10px] text-muted-foreground mt-2">Pendente de validação</p>
-           </div>
-         </Card>
-         <Card className="p-4 shadow-none border-l-4 border-l-red-500">
-           <div className="flex flex-col">
-             <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Reprovadas</span>
-             <span className="text-2xl font-bold mt-1 text-red-600">{stats.osRejeitadas}</span>
-             <p className="text-[10px] text-muted-foreground mt-2">Necessita correção</p>
-           </div>
-         </Card>
-       </div>
- 
-       <Card className="p-6 shadow-none">
-         <div className="flex items-center justify-between mb-6">
-           <div>
-             <h4 className="text-base font-semibold">Minha Meta Mensal</h4>
-             <p className="text-xs text-muted-foreground">Acompanhamento de UMD em relação ao objetivo.</p>
-           </div>
-           <Target className="h-5 w-5 text-muted-foreground" />
-         </div>
-         <div className="space-y-4">
-           <div className="flex justify-between text-sm">
-             <span>Progresso: {stats.umd.toLocaleString()} / {metaMensal.toLocaleString()} UMD</span>
-             <span className="font-bold">{Math.round(progresso)}%</span>
-           </div>
-           <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
-             <div 
-               className="h-full bg-primary transition-all duration-500" 
-               style={{ width: `${progresso}%` }}
-             />
-           </div>
-         </div>
-       </Card>
- 
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="shadow-none border-none bg-muted/20">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                Minhas Atividades Recentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {stats.osRecentes?.length === 0 ? (
-                  <div className="p-4 text-center text-xs text-muted-foreground">Nenhuma OS encontrada.</div>
-                ) : (
-                  stats.osRecentes?.map((os: any) => (
-                    <Link key={os.id} to={`/app/os/${os.id}`} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="text-xs font-bold">OS #{os.numero}</p>
-                        <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">{os.obra?.nome}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <StatusBadge status={os.status} />
-                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-              <Link to="/app/os" className="block p-3 text-center text-[10px] uppercase font-bold text-primary hover:bg-primary/5 transition-colors border-t border-border">
-                Ver todas as minhas ordens
-              </Link>
-            </CardContent>
-          </Card>
+import { useRef, useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus, Camera, Video, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import StatusBadge from "@/components/StatusBadge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
-          <Card className="shadow-none border-none bg-primary/[0.03]">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-primary" />
-                Manual de Campo
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="h-3 w-3 text-primary" />
-                </div>
-                <p className="text-xs text-muted-foreground"><strong>Fotos e Vídeos:</strong> Sempre capture o antes, durante e depois da execução.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <MapPin className="h-3 w-3 text-primary" />
-                </div>
-                <p className="text-xs text-muted-foreground"><strong>Localização:</strong> Certifique-se que o GPS está ativo para registrar o local de início e fim.</p>
-              </div>
-              <div className="pt-2">
-                <Link to="/app/os/nova">
-                  <Button className="w-full text-xs h-9" size="sm">
-                    <Plus className="mr-2 h-3 w-3" /> Abrir Nova OS
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+interface CampoDashboardProps { stats: any; profile: any; }
+
+export default function CampoDashboard({ stats }: CampoDashboardProps) {
+  const { user } = useAuth();
+  const metaMensal = 2000;
+  const progresso = Math.min(100, (stats.umd / metaMensal) * 100);
+  const osAtiva = stats.osAtiva;
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  function getGeo(): Promise<{ lat?: number; lng?: number }> {
+    return new Promise((res) => {
+      if (!navigator.geolocation) return res({});
+      navigator.geolocation.getCurrentPosition(
+        (p) => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+        () => res({}),
+        { timeout: 5000 }
+      );
+    });
+  }
+
+  async function handleQuickUpload(e: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!osAtiva?.id) { toast.error("Inicie uma OS antes de enviar mídia"); return; }
+    if (f.size > 1073741824) { toast.error("Arquivo maior que 1 GB"); return; }
+    setUploading(true);
+    try {
+      const path = `${osAtiva.id}/${crypto.randomUUID()}-${f.name}`;
+      const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
+      if (error) throw error;
+      const geo = await getGeo();
+      const { error: insErr } = await supabase.from("os_evidences").insert({
+        os_id: osAtiva.id,
+        url: path,
+        user_id: user!.id,
+        tipo: isVideo ? "video" : "foto",
+        localizacao: geo,
+        metadata: { size: f.size, name: f.name, type: f.type },
+      });
+      if (insErr) throw insErr;
+      toast.success(isVideo ? "Vídeo enviado" : "Foto enviada");
+    } catch (err: any) {
+      toast.error(err.message || "Falha no upload");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="p-4 shadow-none border-l-4 border-l-blue-500">
+          <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Minhas OS</span>
+          <span className="block text-2xl font-bold mt-1">{stats.osAbertas + stats.osAprov + stats.osPend}</span>
+          <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground">
+            <Clock className="h-3 w-3" /><span>{stats.osAbertas} em andamento</span>
+          </div>
+        </Card>
+        <Card className="p-4 shadow-none border-l-4 border-l-green-500">
+          <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Produtividade (UMD)</span>
+          <span className="block text-2xl font-bold mt-1">{stats.umd.toLocaleString()}</span>
+          <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground">
+            <CheckCircle2 className="h-3 w-3" /><span>{stats.osAprov} aprovadas</span>
+          </div>
+        </Card>
+        <Card className="p-4 shadow-none border-l-4 border-l-amber-500">
+          <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Aguardando Revisão</span>
+          <span className="block text-2xl font-bold mt-1">{stats.osPend}</span>
+          <p className="text-[10px] text-muted-foreground mt-2">Pendente de validação</p>
+        </Card>
+        <Card className="p-4 shadow-none border-l-4 border-l-red-500">
+          <span className="text-[11px] font-bold uppercase text-muted-foreground tracking-wider">Reprovadas</span>
+          <span className="block text-2xl font-bold mt-1 text-red-600">{stats.osRejeitadas}</span>
+          <p className="text-[10px] text-muted-foreground mt-2">Necessita correção</p>
+        </Card>
+      </div>
+
+      {/* Ação rápida de campo */}
+      <Card className="p-5 shadow-none border-2 border-dashed border-primary/30 bg-primary/5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h4 className="text-sm font-semibold flex items-center gap-2"><Camera className="h-4 w-4 text-primary" />Registro rápido de campo</h4>
+            {osAtiva ? (
+              <p className="text-xs text-muted-foreground mt-1">
+                OS ativa: <Link to={`/app/os/${osAtiva.id}`} className="font-bold text-primary hover:underline">#{osAtiva.numero}</Link> · {osAtiva.obra?.nome}
+              </p>
+            ) : (
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" /> Nenhuma OS em execução. Inicie uma OS para enviar fotos/vídeos.
+              </p>
+            )}
+          </div>
         </div>
-     </div>
-   );
- }
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <Button size="lg" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => photoRef.current?.click()}>
+            <Camera className="h-5 w-5" /> Tirar Foto
+          </Button>
+          <Button size="lg" variant="secondary" className="h-14 gap-2" disabled={!osAtiva || uploading} onClick={() => videoRef.current?.click()}>
+            <Video className="h-5 w-5" /> Gravar Vídeo
+          </Button>
+          <Link to={osAtiva ? `/app/os/${osAtiva.id}` : "/app/os"} className="col-span-2 sm:col-span-1">
+            <Button size="lg" variant="outline" className="h-14 w-full gap-2">
+              <ArrowRight className="h-5 w-5" /> Abrir OS
+            </Button>
+          </Link>
+        </div>
+        <input ref={photoRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, false)} />
+        <input ref={videoRef} type="file" accept="video/*" capture="environment" className="hidden" onChange={(e) => handleQuickUpload(e, true)} />
+        {uploading && <p className="text-xs text-muted-foreground mt-3 animate-pulse">Enviando arquivo… não feche o app.</p>}
+      </Card>
+
+      <Card className="p-6 shadow-none">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h4 className="text-base font-semibold">Minha Meta Mensal</h4>
+            <p className="text-xs text-muted-foreground">Acompanhamento de UMD em relação ao objetivo.</p>
+          </div>
+          <Target className="h-5 w-5 text-muted-foreground" />
+        </div>
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm">
+            <span>Progresso: {stats.umd.toLocaleString()} / {metaMensal.toLocaleString()} UMD</span>
+            <span className="font-bold">{Math.round(progresso)}%</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+            <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progresso}%` }} />
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="shadow-none border-none bg-muted/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" /> Minhas OS Recentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {stats.osRecentes?.length === 0 ? (
+                <div className="p-4 text-center text-xs text-muted-foreground">Nenhuma OS atribuída.</div>
+              ) : (
+                stats.osRecentes?.map((os: any) => (
+                  <Link key={os.id} to={`/app/os/${os.id}`} className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                    <div className="space-y-1">
+                      <p className="text-xs font-bold">OS #{os.numero}</p>
+                      <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">{os.obra?.nome}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={os.status} />
+                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+            <Link to="/app/os" className="block p-3 text-center text-[10px] uppercase font-bold text-primary hover:bg-primary/5 transition-colors border-t border-border">
+              Ver todas as minhas ordens
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-none border-none bg-primary/[0.03]">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-primary" /> Manual de Campo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-3 w-3 text-primary" />
+              </div>
+              <p className="text-xs text-muted-foreground"><strong>Fotos e Vídeos:</strong> capture antes, durante e depois. Tudo fica salvo (até 1 GB por arquivo) e não pode ser apagado.</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="h-3 w-3 text-primary" />
+              </div>
+              <p className="text-xs text-muted-foreground"><strong>Localização:</strong> mantenha o GPS ativo para registrar o ponto de cada evidência.</p>
+            </div>
+            <div className="pt-2">
+              <Link to="/app/os">
+                <Button className="w-full text-xs h-9" size="sm">
+                  <Plus className="mr-2 h-3 w-3" /> Ver minhas OS
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

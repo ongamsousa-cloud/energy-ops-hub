@@ -117,24 +117,24 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
                   Status das Equipes
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm">Em deslocamento</div>
-                  <Badge variant="secondary">{stats.osAbertas || 0}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-blue-600">Em execução</div>
-                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{stats.osPend || 0}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-orange-600">Aguardando validação</div>
-                  <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">{stats.osPend || 0}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-green-600">Concluídas hoje</div>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{stats.osAprov || 0}</Badge>
-                </div>
-              </CardContent>
+               <CardContent className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <div className="text-sm font-medium text-blue-600">Em execução</div>
+                   <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{stats.osAbertas || 0}</Badge>
+                 </div>
+                 <div className="flex items-center justify-between">
+                   <div className="text-sm font-medium text-orange-600">Aguardando validação</div>
+                   <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100">{stats.osPend || 0}</Badge>
+                 </div>
+                 <div className="flex items-center justify-between">
+                   <div className="text-sm font-medium text-green-600">Aprovadas</div>
+                   <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{stats.osAprov || 0}</Badge>
+                 </div>
+                 <div className="flex items-center justify-between">
+                   <div className="text-sm font-medium text-red-600">Reprovadas</div>
+                   <Badge className="bg-red-100 text-red-700 hover:bg-red-100">{stats.osRejeitadas || 0}</Badge>
+                 </div>
+               </CardContent>
             </Card>
 
             <Card className="border-none shadow-sm md:col-span-2">
@@ -145,22 +145,21 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="divide-y divide-border">
-                  <div className="px-6 py-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
-                    <div className="h-2 w-2 mt-1.5 rounded-full bg-red-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">OS atrasada há mais de 24h</p>
-                      <p className="text-xs text-muted-foreground">OS #10293 aguardando início por Equipe Norte</p>
-                    </div>
+                {(!stats.alertas || stats.alertas.length === 0) ? (
+                  <div className="px-6 py-6 text-xs text-muted-foreground text-center">Nenhum alerta operacional aberto.</div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {stats.alertas.map((a: any) => (
+                      <div key={a.id} className="px-6 py-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
+                        <div className={`h-2 w-2 mt-1.5 rounded-full shrink-0 ${a.severity === 'high' || a.severity === 'critical' ? 'bg-red-500' : a.severity === 'medium' ? 'bg-orange-500' : 'bg-yellow-500'}`} />
+                        <div>
+                          <p className="text-sm font-medium">{a.title}</p>
+                          <p className="text-xs text-muted-foreground">{a.description || new Date(a.created_at).toLocaleString('pt-BR')}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="px-6 py-3 flex items-start gap-3 hover:bg-muted/30 transition-colors">
-                    <div className="h-2 w-2 mt-1.5 rounded-full bg-orange-500 shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">Execução sem evidência obrigatória</p>
-                      <p className="text-xs text-muted-foreground">Técnico enviou OS #10442 sem foto do ponto final</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
          </div>

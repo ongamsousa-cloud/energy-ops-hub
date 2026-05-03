@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, AppRole } from "@/lib/auth";
+import { useAuth, AppRole, ROLE_LABEL } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Send, Paperclip, Camera, Plus, MessageSquare } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 type Profile = { id: string; nome: string; email: string; role?: AppRole };
 type Conv = { id: string; titulo: string | null; created_at: string; outros: Profile[]; ultima?: string };
@@ -19,6 +22,7 @@ export default function Mensagens() {
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [contatos, setContatos] = useState<Profile[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [openNew, setOpenNew] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
@@ -40,36 +44,10 @@ export default function Mensagens() {
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      let filtered: Profile[] = [];
-      const isAdminGestor = roles.some((r) => r === "admin" || r === "gestor");
-      if (isAdminGestor) {
-        filtered = all;
-      } else if (roles.includes("supervisor")) {
-        // gestores/admin + técnicos das equipes que ele supervisiona
-        const { data: eqs } = await supabase.from("equipes").select("id").eq("supervisor_id", user.id);
-        const eqIds = (eqs ?? []).map((e: any) => e.id);
-        let tecIds: string[] = [];
-        if (eqIds.length) {
-          const { data: mems } = await supabase.from("equipe_membros").select("profissional_id").in("equipe_id", eqIds);
-          tecIds = (mems ?? []).map((m: any) => m.profissional_id);
-        }
-        filtered = all.filter((p) =>
-          p.role === "admin" || p.role === "gestor" || p.role === "supervisor" || (p.role === "campo" && tecIds.includes(p.id))
-        );
-      } else if (roles.includes("campo")) {
-        // só supervisores das equipes em que o técnico participa
-        const { data: mems } = await supabase.from("equipe_membros").select("equipe_id").eq("profissional_id", user.id);
-        const eqIds = (mems ?? []).map((m: any) => m.equipe_id);
-        let supIds: string[] = [];
-        if (eqIds.length) {
-          const { data: eqs } = await supabase.from("equipes").select("supervisor_id").in("id", eqIds);
-          supIds = (eqs ?? []).map((e: any) => e.supervisor_id).filter(Boolean);
-        }
-        filtered = all.filter((p) => supIds.includes(p.id));
-      } else if (roles.includes("financeiro") || roles.includes("auditor")) {
-        filtered = all.filter((p) => p.role === "admin" || p.role === "gestor");
-      }
-      setContatos(filtered);
+      // Simplificando fluxo de contatos para permitir comunicação entre departamentos
+      // A pedido do usuário: "cada departamento consiga enviar uma mensagem exclusiva pra determinado"
+      // Isso implica em acesso total ou por departamento. Vamos liberar a busca geral.
+      setContatos(all);
     })();
   }, [user, roles]);
 
@@ -180,6 +158,26 @@ export default function Mensagens() {
 
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
+  const filteredContatos = useMemo(() => {
+    if (!searchTerm) return contatos;
+    const low = searchTerm.toLowerCase();
+    return contatos.filter(c => 
+      c.nome.toLowerCase().includes(low) || 
+      c.email.toLowerCase().includes(low) ||
+      (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low))
+    );
+  }, [contatos, searchTerm]);
+
+  const contatosPorRole = useMemo(() => {
+    const groups: Record<string, Profile[]> = {};
+    filteredContatos.forEach(c => {
+      const r = c.role || 'outros';
+      if (!groups[r]) groups[r] = [];
+      groups[r].push(c);
+    });
+    return groups;
+  }, [filteredContatos]);
+
   return (
     <div className="pb-8">
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
@@ -188,26 +186,65 @@ export default function Mensagens() {
         <div className="flex flex-col rounded-md border border-border bg-card overflow-hidden">
           <div className="flex items-center justify-between border-b border-border p-2">
             <span className="text-xs font-medium text-muted-foreground">Conversas</span>
-            <Dialog open={openNew} onOpenChange={setOpenNew}>
+            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) setSearchTerm(""); }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Iniciar conversa</DialogTitle></DialogHeader>
-                <div className="max-h-[60vh] overflow-auto divide-y divide-border">
-                  {contatos.length === 0 && (
-                    <div className="text-sm text-muted-foreground p-3">
-                      Nenhum contato disponível para o seu perfil.
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Iniciar conversa com departamento</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Buscar por nome, email ou cargo..." 
+                      className="pl-9"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <ScrollArea className="h-[350px] pr-4">
+                    <div className="space-y-6">
+                      {Object.entries(contatosPorRole).map(([role, list]) => (
+                        <div key={role} className="space-y-2">
+                          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 px-1">
+                            <Building2 className="h-3 w-3" />
+                            {ROLE_LABEL[role as AppRole] || role}
+                          </h4>
+                          <div className="grid gap-1">
+                            {list.map((p) => (
+                              <button
+                                key={p.id}
+                                onClick={() => startConversa(p)}
+                                className="flex items-center gap-3 w-full text-left p-2 rounded-md hover:bg-accent transition-colors group"
+                              >
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                                  {p.nome.charAt(0)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{p.nome}</p>
+                                  <p className="text-[10px] text-muted-foreground truncate">{p.email}</p>
+                                </div>
+                                <Badge variant="outline" className="text-[9px] h-4 px-1">{ROLE_LABEL[p.role as AppRole]?.split(' ')[0] || p.role}</Badge>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                      {filteredContatos.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                          <User className="h-10 w-10 opacity-20 mb-2" />
+                          <p className="text-sm">Nenhum contato encontrado.</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {contatos.map((p) => (
-                    <button key={p.id} onClick={() => startConversa(p)}
-                      className="w-full text-left px-3 py-2 hover:bg-accent transition-colors">
-                      <div className="text-sm font-medium">{p.nome}</div>
-                      <div className="text-xs text-muted-foreground">{p.email} · {p.role}</div>
-                    </button>
-                  ))}
+                  </ScrollArea>
                 </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOpenNew(false)}>Fechar</Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>

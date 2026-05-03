@@ -90,12 +90,23 @@ export default function Obras() {
             <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Nova obra</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Nova obra</DialogTitle></DialogHeader>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div><Label>Número *</Label><Input value={form.numero} onChange={(e)=>setForm({...form, numero: e.target.value})} /></div>
-                <div><Label>Nome *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})} /></div>
-                <div><Label>Cliente</Label><Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} /></div>
-                <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} /></div>
-                <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
+               <div className="grid gap-3 sm:grid-cols-2 max-h-[60vh] overflow-y-auto pr-2">
+                 <div><Label>Número da Obra *</Label><Input value={form.numero} onChange={(e)=>setForm({...form, numero: e.target.value})} /></div>
+                 <div><Label>Nome da Obra *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})} /></div>
+                 <div className="sm:col-span-2">
+                   <Label>CEP</Label>
+                   <div className="flex gap-2">
+                     <Input placeholder="00000-000" value={form.cep} onChange={(e)=>setForm({...form, cep: e.target.value})} />
+                     <Button size="icon" variant="outline" type="button" onClick={handleCepSearch} disabled={searchingCep}>
+                       <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
+                     </Button>
+                   </div>
+                 </div>
+                 <div className="sm:col-span-2"><Label>Cliente</Label><Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} /></div>
+                 <div className="sm:col-span-2"><Label>Endereço</Label><Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} /></div>
+                 <div><Label>Bairro</Label><Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} /></div>
+                 <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} /></div>
+                 <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
                 <div>
                   <Label>Status</Label>
                   <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>

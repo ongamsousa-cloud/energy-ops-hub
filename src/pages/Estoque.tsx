@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
@@ -39,8 +40,16 @@ const TYPE_COLOR: Record<string,string> = {
   reserva: "bg-slate-500/10 text-slate-600 border-slate-500/30",
 };
 
-export default function Estoque() {
+export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const { hasRole } = useAuth();
+  const location = useLocation();
+  const isEstoquePortal = location.pathname.startsWith("/estoque-app");
+  const [activeTab, setActiveTab] = useState(defaultTab || "overview");
+
+  useEffect(() => {
+    if (defaultTab) setActiveTab(defaultTab);
+  }, [defaultTab]);
+
   const canWrite = hasRole(["admin","gestor","supervisor"]);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<any[]>([]);
@@ -273,15 +282,17 @@ export default function Estoque() {
         <Kpi icon={Activity} label="Movimentações hoje" value={kpis.movToday} hint={`${kpis.reservedActive} reservas ativas`}/>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList className="flex w-full overflow-x-auto">
-          <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
-          <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
-          <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
-          <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
-          <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
-          <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {!isEstoquePortal && (
+          <TabsList className="flex w-full overflow-x-auto">
+            <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
+            <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
+            <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
+            <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
+            <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
+            <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+          </TabsList>
+        )}
 
         <TabsContent value="overview" className="space-y-4 mt-4">
           <div className="grid lg:grid-cols-2 gap-4">

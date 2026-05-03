@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
@@ -39,8 +40,16 @@ const TYPE_COLOR: Record<string,string> = {
   reserva: "bg-slate-500/10 text-slate-600 border-slate-500/30",
 };
 
-export default function Estoque() {
+export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const { hasRole } = useAuth();
+  const location = useLocation();
+  const isEstoquePortal = location.pathname.startsWith("/estoque-app");
+  const [activeTab, setActiveTab] = useState(defaultTab || "overview");
+
+  useEffect(() => {
+    if (defaultTab) setActiveTab(defaultTab);
+  }, [defaultTab]);
+
   const canWrite = hasRole(["admin","gestor","supervisor"]);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<any[]>([]);
@@ -273,95 +282,148 @@ export default function Estoque() {
         <Kpi icon={Activity} label="Movimentações hoje" value={kpis.movToday} hint={`${kpis.reservedActive} reservas ativas`}/>
       </div>
 
-      <Tabs defaultValue="overview">
-        <TabsList className="flex w-full overflow-x-auto">
-          <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
-          <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
-          <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
-          <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
-          <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
-          <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {!isEstoquePortal && (
+          <TabsList className="flex w-full overflow-x-auto">
+            <TabsTrigger value="overview"><Activity className="h-4 w-4 mr-1.5"/>Visão Geral</TabsTrigger>
+            <TabsTrigger value="materials"><Boxes className="h-4 w-4 mr-1.5"/>Materiais</TabsTrigger>
+            <TabsTrigger value="warehouses"><WarehouseIcon className="h-4 w-4 mr-1.5"/>Almoxarifados</TabsTrigger>
+            <TabsTrigger value="movements"><History className="h-4 w-4 mr-1.5"/>Movimentações</TabsTrigger>
+            <TabsTrigger value="reservations"><Package className="h-4 w-4 mr-1.5"/>Reservas/OS</TabsTrigger>
+            <TabsTrigger value="alerts"><AlertCircle className="h-4 w-4 mr-1.5"/>Alertas {alerts.length > 0 && <Badge className="ml-1.5" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+          </TabsList>
+        )}
 
-        <TabsContent value="overview" className="space-y-4 mt-4">
-          <div className="grid lg:grid-cols-2 gap-4">
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Entradas vs Saídas (14 dias)</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={chartFlow}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
-                  <XAxis dataKey="dia" tick={{fontSize:11}}/><YAxis tick={{fontSize:11}}/>
-                  <Tooltip contentStyle={{background:"hsl(var(--card))", border:"1px solid hsl(var(--border))"}}/>
-                  <Legend/>
-                  <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={2}/>
-                  <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={2}/>
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Top materiais consumidos</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={chartTopConsumed} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))"/>
-                  <XAxis type="number" tick={{fontSize:11}}/>
-                  <YAxis dataKey="nome" type="category" width={140} tick={{fontSize:10}}/>
-                  <Tooltip contentStyle={{background:"hsl(var(--card))", border:"1px solid hsl(var(--border))"}}/>
-                  <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0,4,4,0]}/>
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3">Valor por categoria</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} label={(d:any)=>d.name}>
-                    {chartByCategory.map((_,i)=> <Cell key={i} fill={COLORS[i % COLORS.length]}/>)}
-                  </Pie>
-                  <Tooltip formatter={(v:any)=> Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}/>
-                </PieChart>
-              </ResponsiveContainer>
-            </Card>
-             <Card className="p-4 flex flex-col h-full">
-               <div className="flex items-center justify-between mb-3">
-                 <div className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Atividade ao vivo</div>
-                 <div className="flex gap-2">
-                   <Select value={osFilter} onValueChange={setOsFilter}>
-                     <SelectTrigger className="h-7 text-[10px] w-[120px]"><SelectValue placeholder="Obra"/></SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="all">Todas Obras</SelectItem>
-                       {allObras.map(o => <SelectItem key={o.id} value={o.id}>{o.numero}</SelectItem>)}
-                     </SelectContent>
-                   </Select>
-                   <Select value={equipeFilter} onValueChange={setEquipeFilter}>
-                     <SelectTrigger className="h-7 text-[10px] w-[120px]"><SelectValue placeholder="Equipe"/></SelectTrigger>
-                     <SelectContent>
-                       <SelectItem value="all">Todas Equipes</SelectItem>
-                       {allEquipes.map(e => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
-                     </SelectContent>
-                   </Select>
-                 </div>
-               </div>
-               <div className="space-y-2 flex-1 overflow-y-auto max-h-[350px]">
-                 {filteredMovements.slice(0, 15).map(m => (
-                   <div key={m.id} className="flex items-start gap-2 text-xs border-l-2 pl-3 py-1.5" style={{borderColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'}}>
-                     <div className="flex-1">
-                       <div className="font-medium">
-                         <Badge variant="outline" className={cn("text-[9px] h-4 px-1", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge>
-                         {" "}{Number(m.quantity)} {m.materials?.unit} de <strong>{m.materials?.name}</strong>
-                       </div>
-                       <div className="text-[10px] text-muted-foreground">
-                         {m.creator?.nome || "—"}
-                         {m.ordens_servico?.numero && <> · OS {m.ordens_servico.numero}</>}
-                         {m.from_wh?.name && <> · de {m.from_wh.name}</>}
-                         {m.to_wh?.name && <> → {m.to_wh.name}</>}
-                       </div>
-                     </div>
-                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">{format(new Date(m.created_at), "HH:mm", {locale: ptBR})}</span>
-                   </div>
-                 ))}
-                 {filteredMovements.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">Nenhuma atividade com estes filtros.</p>}
-               </div>
-             </Card>
+        <TabsContent value="overview" className="mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content Area - Left 2/3 */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="p-5 border-t-4 border-t-primary shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-foreground">Fluxo de Materiais</h3>
+                    <Badge variant="secondary" className="text-[10px]">Últimos 14 dias</Badge>
+                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart data={chartFlow}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis dataKey="dia" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px" }} />
+                      <Legend verticalAlign="top" height={36} iconType="circle" />
+                      <Line type="monotone" dataKey="Entradas" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="Saídas" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                <Card className="p-5 border-t-4 border-t-amber-500 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-foreground">Top Consumidos</h3>
+                    <Boxes className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={chartTopConsumed} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="nome" type="category" width={120} tick={{ fontSize: 9 }} axisLine={false} tickLine={false} />
+                      <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: "8px" }} />
+                      <Bar dataKey="qtd" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={12} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+              </div>
+
+              <Card className="p-5 shadow-sm border-none bg-accent/5">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">Status do Inventário</h3>
+                    <p className="text-xs text-muted-foreground">Distribuição de valor por categoria e alertas</p>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={5}>
+                          {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-3">
+                    {chartByCategory.slice(0, 5).map((cat, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                          <span className="text-muted-foreground truncate max-w-[140px] font-medium">{cat.name}</span>
+                        </div>
+                        <span className="font-bold">{cat.value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Sidebar Activity - Right 1/3 */}
+            <div className="space-y-6">
+              <Card className="p-5 h-full flex flex-col shadow-sm border-l-4 border-l-primary/50">
+                <div className="flex flex-col gap-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-primary animate-pulse" />
+                      Feed de Operações
+                    </h3>
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px]">Tempo Real</Badge>
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    <Select value={osFilter} onValueChange={setOsFilter}>
+                      <SelectTrigger className="h-8 text-[10px] flex-1 min-w-[100px]"><SelectValue placeholder="Obra" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas Obras</SelectItem>
+                        {allObras.map(o => <SelectItem key={o.id} value={o.id}>{o.numero}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={equipeFilter} onValueChange={setEquipeFilter}>
+                      <SelectTrigger className="h-8 text-[10px] flex-1 min-w-[100px]"><SelectValue placeholder="Equipe" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas Equipes</SelectItem>
+                        {allEquipes.map(e => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-3 flex-1 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin">
+                  {filteredMovements.slice(0, 20).map(m => (
+                    <div key={m.id} className="flex items-start gap-3 text-xs border-l-2 pl-4 py-2 hover:bg-accent/30 transition-colors group" style={{ borderColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className={cn("text-[8px] h-4 px-1 leading-none uppercase tracking-wider", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge>
+                          <span className="text-[10px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm", { locale: ptBR })}</span>
+                        </div>
+                        <div className="font-medium text-[13px] text-foreground">
+                          {Number(m.quantity)} {m.materials?.unit} de <span className="font-bold underline decoration-primary/20 decoration-2 underline-offset-2">{m.materials?.name}</span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground flex flex-wrap gap-x-2 gap-y-1">
+                          <span className="flex items-center gap-1 font-medium text-foreground/80">{m.creator?.nome || "—"}</span>
+                          {m.ordens_servico?.numero && <span className="text-primary font-bold">· OS {m.ordens_servico.numero}</span>}
+                          {m.from_wh?.name && <span className="bg-accent/50 px-1 rounded">de {m.from_wh.name}</span>}
+                          {m.to_wh?.name && <span className="bg-primary/10 text-primary px-1 rounded">→ {m.to_wh.name}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredMovements.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Activity className="h-10 w-10 text-muted-foreground/20 mb-2" />
+                      <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
@@ -510,13 +572,30 @@ export default function Estoque() {
 
 function Kpi({ icon: Icon, label, value, hint, tone }: any) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground uppercase tracking-wide">{label}</div>
-        <Icon className={`h-4 w-4 ${tone === 'warn' ? 'text-amber-500' : 'text-primary'}`}/>
+    <Card className={cn(
+      "p-4 relative overflow-hidden transition-all hover:shadow-md border-none shadow-sm",
+      tone === 'warn' ? "bg-amber-500/5" : "bg-primary/[0.03]"
+    )}>
+      <div className="flex items-center justify-between relative z-10">
+        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</div>
+        <div className={cn(
+          "p-1.5 rounded-lg",
+          tone === 'warn' ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"
+        )}>
+          <Icon className="h-4 w-4" />
+        </div>
       </div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
-      {hint && <div className="text-[10px] text-muted-foreground mt-1">{hint}</div>}
+      <div className="mt-3 relative z-10">
+        <div className="text-2xl font-black tracking-tight">{value}</div>
+        {hint && <div className="text-[10px] font-medium text-muted-foreground mt-1 flex items-center gap-1.5">
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+          {hint}
+        </div>}
+      </div>
+      {/* Subtle background decoration */}
+      <div className="absolute -right-2 -bottom-2 opacity-[0.05] pointer-events-none">
+        <Icon size={64} />
+      </div>
     </Card>
   );
 }

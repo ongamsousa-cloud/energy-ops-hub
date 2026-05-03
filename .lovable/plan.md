@@ -1,52 +1,98 @@
-## Diagnóstico
+## Plano revisado — preservar todas as separações por departamento
 
-Verifiquei o fluxo Obras → Ordens de Serviço e a base de dados. O que encontrei:
+Mantenho **integralmente** os dashboards e abas existentes (Admin, Gestor, Supervisor, Financeiro, Auditor, Campo, Estoque) e a aba "Estoque" dentro do AdminDashboard. O trabalho fica só em (1) conectar a comunicação entre departamentos e (2) substituir números fictícios por dados reais.
 
-1. **A criação da OS funciona** (existem registros recentes em `ordens_servico` com `obra_id` e `numero` corretos).
-2. **A listagem em `/app/os` (OSList.tsx) já busca todas as OS** sem filtro por departamento/obra para admin/gestor/supervisor — então o problema reportado ("não aparece") tem causas combinadas:
-   - **Sem realtime / sem refetch**: a OSList carrega só no `mount`. Depois de criar a OS em "Obras", se a aba já estiver montada em cache (ou aberta em outra guia), não atualiza.
-   - **Sem invalidação de cache** em queries (não usa React Query — cada página tem seu `useEffect` isolado).
-   - **Sem notificação cruzada**: ao criar a OS, nenhum departamento (supervisor, almoxarife, financeiro) é avisado. Não há registro em `notificacoes` nem em filas de aprovação.
-   - **Sem roteamento para os departamentos**: a OS nasce com `assigned_supervisor_id = null`, `equipe_id` opcional e sem vínculo com almoxarifado, então supervisores/almoxarifes não a veem em suas filas filtradas.
-   - **Filtro padrão da OSList** mostra "Todos os Status" ✅, mas o card só renderiza `r.status` (não `operational_status`) — pode dar a sensação de "sumido" em status novos.
-   - **Status inicial inconsistente**: dialog grava `status: 'iniciada'` + `operational_status: 'pendente'`, sem disparar nenhum hook downstream (estoque, financeiro, supervisor).
+### Diagnóstico do banco hoje
+- 24 OS no sistema, **0 supervisores atribuídos**, **0 notificações**, **0 reservas de material**, **0 registros financeiros**, **0 histórico**.
+- O trigger `fn_os_after_insert` só age em OS novas → todo o histórico ficou órfão.
+- Faltam triggers para os demais eventos (aprovação, reprovação, mensagem, alerta de estoque).
 
-## Plano de Ação — Comunicação entre todas as seções
+---
 
-### 1. Camada de dados unificada (Realtime + cache)
-- Adicionar **Supabase Realtime** em `ordens_servico`, `notificacoes`, `material_reservations`, `stock_movements`.
-- Criar hook `useOrdens()` central (com refetch/subscribe) usado em: OSList, ObraDetalhe, Dashboard admin, Painel Supervisor, Painel Almoxarife, Painel Financeiro.
-- Toda criação/edição de OS dispara `channel.send` para invalidar todos os consumidores.
+### Etapa A — Banco: triggers que faltam + backfill
 
-### 2. Roteamento automático ao criar a OS
-No `NewServiceOrderDialog.handleSave`, após inserir a OS:
-- Se `equipe_id` informada → buscar `supervisor_id` da equipe e gravar em `assigned_supervisor_id`.
-- Se nenhuma equipe → marcar `status='aguardando_atribuicao'` e criar alerta para gestores.
-- Inserir em `notificacoes` para: supervisor designado, gestor da obra, almoxarife responsável, financeiro (uma linha por destinatário, com `link='/app/os/{id}'`).
-- Criar reservas em `material_reservations` para os itens que demandam material (a partir de `os_atividades`).
+**A1. Triggers novos (criados via migration):**
+- `trg_os_status_route` em `ordens_servico` AFTER UPDATE OF status
+  - status `correcao_solicitada`/`reprovada` → notifica `profissional_id`
+  - status `aprovada` → notifica `financeiro` + `auditor` + popula `financial_order_records`
+  - status `aguardando_revisao` → notifica `assigned_supervisor_id`
+- `trg_stock_alert_notify` em `stock_alerts` AFTER INSERT → notifica roles `estoque` + `gestor` + `admin`
+- `trg_os_message_notify` em `os_messages` AFTER INSERT → notifica supervisor/profissional da OS
+- `trg_os_atividade_reserve` em `os_atividades` AFTER INSERT → cria `material_reservations` quando atividade tem materiais previstos (status `reservado`, almoxarife libera depois)
+- Todos gravam linha em `service_order_history` para a timeline.
 
-### 3. Ajustes no banco (migrations)
-- Trigger `fn_os_after_insert` em `ordens_servico` que:
-  - Insere notificações para roles `supervisor`, `gestor`, `estoque`, `financeiro` ligados à obra/região.
-  - Cria registro inicial em `financial_order_records` (status `aguardando_analise`).
-  - Cria registro em `service_order_history` (status `criada`).
-- Verificar/ajustar política RLS de `notificacoes` (insert por trigger SECURITY DEFINER).
+**A2. Backfill (via insert tool):**
+- Preencher `assigned_supervisor_id` nas 24 OS atuais a partir de `equipes.supervisor_id`.
+- Criar `financial_order_records` para todas OS já aprovadas.
+- Disparar 1 notificação "catch-up" para gestores/supervisores das OS pendentes.
 
-### 4. UI consistente em todos os painéis
-- **OSList** (`/app/os`): mostrar badge duplo (operacional + financeiro), filtro por obra, indicador "Nova" para OS criadas nas últimas 24h.
-- **Dashboard Admin**: card "Últimas OS criadas" com link direto.
-- **Painel Supervisor**: aba "OS recebidas" alimentada por `assigned_supervisor_id = auth.uid()` (já existe RLS).
-- **Painel Almoxarife (Estoque)**: aba "Liberações pendentes" lendo `material_reservations` da OS.
-- **Painel Financeiro**: aba "OS para análise" lendo `financial_order_records.financial_status='aguardando_analise'`.
-- **ObraDetalhe**: após criar OS, refetch + toast com botão "Ver na lista de OS".
+---
 
-### 5. Notificação visual global
-- Sino de notificações no `AppShell` (já há tabela `notificacoes`) com contador realtime e dropdown.
-- Toast persistente quando uma OS chega para o usuário (subscribe em `notificacoes` filtrado por `user_id`).
+### Etapa B — Frontend: trocar mocks por dados reais (sem remover abas)
 
-### 6. Auditoria & Histórico
-- Registrar em `audit_logs` cada transição de OS (criação, atribuição, liberação de material, validação financeira).
-- Aba "Histórico" dentro de `OSDetalhe` lendo `service_order_history` + `audit_logs`.
+Mantém todas as seções; só substitui os números fixos:
 
-## Entrega
-Após sua aprovação, implemento na ordem: migrations (3) → hook + realtime (1) → roteamento dialog (2) → UI dos painéis (4,5) → histórico/auditoria (6). Todos os módulos passarão a se comunicar via os mesmos canais e tabelas centrais.
+| Arquivo | O que troca |
+|---|---|
+| `Dashboard.tsx` | Remover `weeklyNewOS` hardcoded (datas 27/04→03/05) e calcular a partir de `ordens_servico.created_at` dos últimos 7 dias |
+| `AdminDashboard.tsx` | Eficiência mock 85% → calcular `osAprov/(osAprov+osRejeitadas)` real |
+| `FinanceiroOrdens.tsx` | Card "Margem Média 62%" → calcular de `financial_order_records` (approved_value vs estimated_cost). Coluna `valor_aprovado` (campo inexistente) → usar `financial.approved_value` |
+| `FinanceiroMateriais.tsx` | "Consumo Mensal +12.4%" e "Itens Extras 05" → calcular de `os_materials` + `stock_movements`. Mostrar materiais reais (não atividades) |
+| `FinanceiroDashboard.tsx` | Mantém tudo; só conecta o card "Pendências" ao `financial_order_records` real |
+
+Nada é apagado; cada dashboard/aba continua existindo com sua identidade.
+
+---
+
+### Etapa C — Comunicação cruzada entre departamentos
+
+Sem mover nenhuma página, adiciono os elos:
+
+```text
+┌────────────┐  cria OS   ┌────────────┐ assigned   ┌────────────┐
+│  ADMIN /   │──────────►│ ordens_    │───────────►│ SUPERVISOR │
+│  GESTOR    │            │ servico    │            │ (Aprovações)│
+└────────────┘            └────┬───────┘            └────┬───────┘
+                               │ trg_os_atividade        │ aprova
+                               ▼                          ▼
+                        ┌────────────┐           ┌────────────────┐
+                        │  ESTOQUE   │           │   FINANCEIRO   │
+                        │ (reservas) │           │ (records auto) │
+                        └─────┬──────┘           └────────┬───────┘
+                              │ libera                     │
+                              ▼                            ▼
+                        ┌────────────┐           ┌────────────────┐
+                        │   CAMPO    │           │    AUDITOR     │
+                        │ (executa)  │           │ (revisa pós-OK)│
+                        └────────────┘           └────────────────┘
+```
+
+Cada seta vira uma linha em `notificacoes` com `link` direto para a OS de origem — o `NotificationBell` (já existente) e o realtime já cuidam da exibição instantânea.
+
+---
+
+### Etapa D — Menu/AppShell (não-destrutivo)
+
+- Mantém todos os itens do menu.
+- Adiciona **badge de contador realtime** ao lado dos itens "Aprovações", "Estoque", "Financeiro/Ordens" e "Mensagens", lendo `notificacoes` não-lidas filtrando pelo prefixo do `link` (ex.: `/app/aprovacoes`, `/app/estoque`, etc.). Assim cada departamento sabe quando tem coisa nova sem mistura.
+
+---
+
+### Etapa E — OSDetalhe como hub (sem reescrever)
+
+Adições, sem remover nada do que já está:
+- Linha do tempo lendo `service_order_history` (Etapa A já popula).
+- Bloco "Reservas de Material" lendo `material_reservations` da OS.
+- Bloco "Status Financeiro" lendo `financial_order_records`.
+
+---
+
+### Ordem de execução (uma única passada)
+1. Migration: triggers da Etapa A1.
+2. Inserts/updates de backfill (Etapa A2).
+3. Frontend: substituir mocks (Etapa B).
+4. Frontend: badges no AppShell (Etapa D).
+5. Frontend: blocos novos no OSDetalhe (Etapa E).
+6. Teste end-to-end: criar OS no Admin → conferir notificação no Supervisor, reserva no Estoque, registro no Financeiro, log no Auditor.
+
+Confirma para eu implementar nessa ordem?

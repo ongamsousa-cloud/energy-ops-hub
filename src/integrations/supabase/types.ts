@@ -2344,12 +2344,12 @@ export type Database = {
           description: string | null
           execution_record_id: string | null
           file_name: string | null
-          file_path: string
           file_size: number | null
-          file_type: string
           id: string
-          latitude: number | null
-          longitude: number | null
+          lat: number | null
+          lng: number | null
+          media_type: string
+          media_url: string
           service_order_id: string
           user_id: string
         }
@@ -2360,12 +2360,12 @@ export type Database = {
           description?: string | null
           execution_record_id?: string | null
           file_name?: string | null
-          file_path: string
           file_size?: number | null
-          file_type: string
           id?: string
-          latitude?: number | null
-          longitude?: number | null
+          lat?: number | null
+          lng?: number | null
+          media_type: string
+          media_url: string
           service_order_id: string
           user_id: string
         }
@@ -2376,12 +2376,12 @@ export type Database = {
           description?: string | null
           execution_record_id?: string | null
           file_name?: string | null
-          file_path?: string
           file_size?: number | null
-          file_type?: string
           id?: string
-          latitude?: number | null
-          longitude?: number | null
+          lat?: number | null
+          lng?: number | null
+          media_type?: string
+          media_url?: string
           service_order_id?: string
           user_id?: string
         }

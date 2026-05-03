@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import InstallAppButton from "@/components/InstallAppButton";
+import NotificationBell from "@/components/NotificationBell";
 
 type Item = { to: string; label: string; icon: any; roles?: AppRole[] };
 
@@ -52,7 +53,7 @@ export default function AppShell() {
         </div>
         <div className="flex items-center gap-3">
           <InstallAppButton variant="ghost" size="sm" label="Baixar app" className="hidden sm:inline-flex" />
-          <Button variant="ghost" size="icon"><Bell className="h-4 w-4" /></Button>
+          <NotificationBell />
           <div className="hidden text-right md:block">
             <div className="text-xs font-medium leading-tight">{profile?.nome}</div>
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground">

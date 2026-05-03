@@ -477,12 +477,18 @@ export default function OSDetalhe() {
              Registrar Chegada ao Local
            </Button>
          )}
-        {canApprove && ["aguardando_revisao","corrigida","em_revisao"].includes(os.status) && (
-          <>
-            <Button onClick={aprovar} className="bg-success text-success-foreground hover:bg-success/90">Aprovar</Button>
-            <Button onClick={correcao} variant="outline">Solicitar correção</Button>
-            <Button onClick={reprovar} variant="destructive">Reprovar</Button>
-          </>
+        {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={aprovar} className="gap-1.5 bg-green-600 hover:bg-green-700">
+              <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+              <History className="h-3.5 w-3.5" /> Solicitar Correção
+            </Button>
+            <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+              <XCircle className="h-3.5 w-3.5" /> Reprovar
+            </Button>
+          </div>
         )}
         <Button variant="ghost" onClick={()=>nav(-1)}>Voltar</Button>
       </div>

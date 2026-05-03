@@ -1,7 +1,7 @@
  import { Card } from "@/components/ui/card";
  import { ShieldCheck, AlertCircle, XCircle, Clock, CheckCircle2, History } from "lucide-react";
  import { Link } from "react-router-dom";
- import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
  
  interface AuditorDashboardProps {
    stats: any;

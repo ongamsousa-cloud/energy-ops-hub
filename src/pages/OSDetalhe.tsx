@@ -440,10 +440,27 @@ export default function OSDetalhe() {
        </Tabs>
 
       {/* Ações de fluxo */}
-      <div className="mt-8 flex flex-wrap gap-2">
-        {canEdit && os.status !== "aguardando_revisao" && (
-          <Button onClick={finalizar}>Finalizar e enviar para revisão</Button>
-        )}
+       <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
+         {canEdit && os.status !== "aguardando_revisao" && (
+           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar}>
+             <CheckCircle className="mr-2 h-5 w-5" />
+             Finalizar e enviar para revisão
+           </Button>
+         )}
+         
+         {os.status === "iniciada" && isOwner && (
+           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+             const geo = await getGeo();
+             await supabase.from("ordens_servico").update({ 
+               status: "em_andamento",
+               inicio_atendimento: new Date().toISOString()
+             }).eq("id", id);
+             toast.success("Atendimento iniciado");
+             load();
+           }}>
+             Registrar Chegada ao Local
+           </Button>
+         )}
         {canApprove && ["aguardando_revisao","corrigida","em_revisao"].includes(os.status) && (
           <>
             <Button onClick={aprovar} className="bg-success text-success-foreground hover:bg-success/90">Aprovar</Button>

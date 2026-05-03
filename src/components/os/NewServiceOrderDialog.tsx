@@ -20,7 +20,14 @@ interface NewServiceOrderDialogProps {
   onSuccess?: (id: string) => void;
 }
 
-export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess }: NewServiceOrderDialogProps) {
+interface NewServiceOrderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess?: (id: string) => void;
+  initialObraId?: string;
+}
+
+export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, initialObraId }: NewServiceOrderDialogProps) {
   const { user, profile, hasRole } = useAuth();
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
@@ -31,7 +38,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess }:
   const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
 
   const [formData, setFormData] = useState({
-    obraId: "",
+    obraId: initialObraId || "",
     prioridade: "media",
     data_agendada: new Date().toISOString().split('T')[0],
     hora_agendada: "08:00",
@@ -44,8 +51,11 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess }:
   useEffect(() => {
     if (open) {
       fetchInitialData();
+      if (initialObraId) {
+        setFormData(prev => ({ ...prev, obraId: initialObraId }));
+      }
     }
-  }, [open]);
+  }, [open, initialObraId]);
 
   async function fetchInitialData() {
     const [resObras, resAtividades, resGestores, resEquipes] = await Promise.all([

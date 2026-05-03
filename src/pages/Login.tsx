@@ -30,6 +30,7 @@ export default function Login() {
      { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+     { role: "Estoque", email: "estoque@energyops.demo", desc: "Almoxarifado" },
    ];
  
    const quickLogin = async (email: string) => {
@@ -37,7 +38,7 @@ export default function Login() {
      try {
        await mockSignIn(email);
        toast.success("Acesso de teste liberado");
-       nav("/app");
+       nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
      } catch (e: any) {
        toast.error(e.message ?? "Erro ao autenticar");
      } finally { setLoading(false); }
@@ -69,7 +70,7 @@ export default function Login() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Bem-vindo");
-        nav("/app");
+        nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
       } else {
          const { error } = await supabase.auth.signUp({
            email, password,

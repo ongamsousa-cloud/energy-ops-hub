@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppShell from "@/components/AppShell";
+import EstoqueShell from "@/components/EstoqueShell";
+import EstoqueRedirect from "@/components/EstoqueRedirect";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
@@ -21,11 +23,11 @@ import OSNova from "./pages/OSNova";
 import OSDetalhe from "./pages/OSDetalhe";
 import Aprovacoes from "./pages/Aprovacoes";
 import Relatorios from "./pages/Relatorios";
- import Medicao from "./pages/Medicao";
- import FinanceiroOrdens from "./pages/FinanceiroOrdens";
- import FinanceiroMateriais from "./pages/FinanceiroMateriais";
- import MateriaisEstoque from "./pages/MateriaisEstoque";
- import Estoque from "./pages/Estoque";
+import Medicao from "./pages/Medicao";
+import FinanceiroOrdens from "./pages/FinanceiroOrdens";
+import FinanceiroMateriais from "./pages/FinanceiroMateriais";
+import MateriaisEstoque from "./pages/MateriaisEstoque";
+import Estoque from "./pages/Estoque";
 import Mensagens from "./pages/Mensagens";
 import AprovacoesUsuarios from "./pages/AprovacoesUsuarios";
 import NotFound from "./pages/NotFound";
@@ -51,7 +53,14 @@ const App = () => (
             <Route path="/" element={<Navigate to="/app" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+
+            {/* Departamento de Estoque - shell isolado */}
+            <Route path="/estoque-app" element={<ProtectedRoute><EstoqueShell /></ProtectedRoute>}>
+              <Route index element={<Estoque />} />
+            </Route>
+
+            {/* Demais departamentos */}
+            <Route path="/app" element={<ProtectedRoute><EstoqueRedirect><AppShell /></EstoqueRedirect></ProtectedRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="obras" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><Obras /></ProtectedRoute>} />
               <Route path="obras/:id" element={<ObraDetalhe />} />
@@ -68,9 +77,9 @@ const App = () => (
               <Route path="relatorios" element={<ProtectedRoute roles={["admin","gestor","financeiro","auditor"]}><Relatorios /></ProtectedRoute>} />
               <Route path="medicao" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><Medicao /></ProtectedRoute>} />
               <Route path="financeiro/ordens" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroOrdens /></ProtectedRoute>} />
- <Route path="financeiro/materiais" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroMateriais /></ProtectedRoute>} />
- <Route path="materiais" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><MateriaisEstoque /></ProtectedRoute>} />
- <Route path="estoque" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor","campo"]}><Estoque /></ProtectedRoute>} />
+              <Route path="financeiro/materiais" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroMateriais /></ProtectedRoute>} />
+              <Route path="materiais" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><MateriaisEstoque /></ProtectedRoute>} />
+              <Route path="estoque" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor","campo","estoque"]}><Estoque /></ProtectedRoute>} />
               <Route path="mensagens" element={<Mensagens />} />
               <Route path="configuracoes" element={<ProtectedRoute roles={["admin"]}><Configuracoes /></ProtectedRoute>} />
             </Route>

@@ -21,8 +21,11 @@
     const [teamProductivity, setTeamProductivity] = useState<{ team: string; umd: number }[]>([]);
     const [weeklyNewOS, setWeeklyNewOS] = useState<{ date: string; count: number }[]>([]);
     const [weeklySummary, setWeeklySummary] = useState<{ day: string; prod: number; meta: number }[]>([]);
-    const [materialUsage, setMaterialUsage] = useState<{ category: string; value: number }[]>([]);
-    const [stockStats, setStockStats] = useState({ totalItems: 0, lowStock: 0 });
+     const [materialUsage, setMaterialUsage] = useState<{ category: string; value: number }[]>([]);
+     const [stockStats, setStockStats] = useState({ totalItems: 0, lowStock: 0 });
+     const [materials, setMaterials] = useState<any[]>([]);
+     const [movements, setMovements] = useState<any[]>([]);
+     const [warehouses, setWarehouses] = useState<any[]>([]);
     const [auditHistory, setAuditHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
  

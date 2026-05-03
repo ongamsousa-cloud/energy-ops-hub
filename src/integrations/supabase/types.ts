@@ -526,6 +526,7 @@ export type Database = {
           id: string
           nome: string
           ordem: number
+          servico_id: string | null
           updated_at: string
         }
         Insert: {
@@ -536,6 +537,7 @@ export type Database = {
           id?: string
           nome: string
           ordem?: number
+          servico_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -546,9 +548,18 @@ export type Database = {
           id?: string
           nome?: string
           ordem?: number
+          servico_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categorias_servico_id_fkey"
+            columns: ["servico_id"]
+            isOneToOne: false
+            referencedRelation: "servicos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_participants: {
         Row: {
@@ -1677,6 +1688,7 @@ export type Database = {
           prioridade: string | null
           profissional_id: string
           region_id: string | null
+          servico_id: string | null
           status: Database["public"]["Enums"]["os_status"]
           status_financeiro: string | null
           supervisor_id: string | null
@@ -1733,6 +1745,7 @@ export type Database = {
           prioridade?: string | null
           profissional_id: string
           region_id?: string | null
+          servico_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
           supervisor_id?: string | null
@@ -1789,6 +1802,7 @@ export type Database = {
           prioridade?: string | null
           profissional_id?: string
           region_id?: string | null
+          servico_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
           supervisor_id?: string | null
@@ -1827,6 +1841,13 @@ export type Database = {
             columns: ["profissional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_servico_id_fkey"
+            columns: ["servico_id"]
+            isOneToOne: false
+            referencedRelation: "servicos"
             referencedColumns: ["id"]
           },
           {
@@ -2634,6 +2655,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      servicos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          created_by: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       supervisors: {
         Row: {

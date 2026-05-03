@@ -24,6 +24,7 @@ import Relatorios from "./pages/Relatorios";
  import Medicao from "./pages/Medicao";
  import FinanceiroOrdens from "./pages/FinanceiroOrdens";
  import FinanceiroMateriais from "./pages/FinanceiroMateriais";
+ import MateriaisEstoque from "./pages/MateriaisEstoque";
 import Mensagens from "./pages/Mensagens";
 import AprovacoesUsuarios from "./pages/AprovacoesUsuarios";
 import NotFound from "./pages/NotFound";
@@ -66,7 +67,8 @@ const App = () => (
               <Route path="relatorios" element={<ProtectedRoute roles={["admin","gestor","financeiro","auditor"]}><Relatorios /></ProtectedRoute>} />
               <Route path="medicao" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><Medicao /></ProtectedRoute>} />
               <Route path="financeiro/ordens" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroOrdens /></ProtectedRoute>} />
-              <Route path="financeiro/materiais" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroMateriais /></ProtectedRoute>} />
+ <Route path="financeiro/materiais" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroMateriais /></ProtectedRoute>} />
+ <Route path="materiais" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><MateriaisEstoque /></ProtectedRoute>} />
               <Route path="mensagens" element={<Mensagens />} />
               <Route path="configuracoes" element={<ProtectedRoute roles={["admin"]}><Configuracoes /></ProtectedRoute>} />
             </Route>

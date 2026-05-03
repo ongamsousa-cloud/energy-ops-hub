@@ -1,0 +1,99 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import PageHeader from "@/components/PageHeader";
+import EmptyState from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ROLE_LABEL, AppRole } from "@/lib/auth";
+import { toast } from "sonner";
+import { Check, X } from "lucide-react";
+
+const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor"];
+
+export default function AprovacoesUsuarios() {
+  const [rows, setRows] = useState<any[]>([]);
+  const [roleSel, setRoleSel] = useState<Record<string, AppRole>>({});
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id,nome,email,cargo,created_at")
+      .eq("ativo", false)
+      .order("created_at", { ascending: false });
+    if (error) toast.error(error.message);
+    setRows(data ?? []);
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function approve(id: string) {
+    const role = roleSel[id] ?? "campo";
+    const { error: rErr } = await supabase.from("user_roles").insert({ user_id: id, role });
+    if (rErr && !rErr.message.includes("duplicate")) {
+      toast.error(rErr.message); return;
+    }
+    const { error } = await supabase.from("profiles").update({ ativo: true }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Usuário aprovado");
+    load();
+  }
+
+  async function reject(id: string) {
+    if (!confirm("Rejeitar e remover este cadastro?")) return;
+    const { error } = await supabase.from("profiles").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Cadastro rejeitado");
+    load();
+  }
+
+  return (
+    <div>
+      <PageHeader title="Aprovações de Usuários" description="Novos cadastros aguardando liberação." />
+      {loading ? null : rows.length === 0 ? (
+        <EmptyState title="Nenhum cadastro pendente" />
+      ) : (
+        <div className="overflow-hidden rounded-md border border-border bg-card">
+          <table className="w-full text-sm">
+            <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2">Nome</th>
+                <th className="px-3 py-2">Email</th>
+                <th className="px-3 py-2 w-48">Função</th>
+                <th className="px-3 py-2 w-44 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((p) => (
+                <tr key={p.id} className="border-b border-border last:border-0">
+                  <td className="px-3 py-2">{p.nome}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
+                  <td className="px-3 py-2">
+                    <Select
+                      value={roleSel[p.id] ?? "campo"}
+                      onValueChange={(v) => setRoleSel({ ...roleSel, [p.id]: v as AppRole })}
+                    >
+                      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ROLES.map((r) => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-3 py-2 text-right space-x-2">
+                    <Button size="sm" onClick={() => approve(p.id)}>
+                      <Check className="h-4 w-4 mr-1" /> Aprovar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => reject(p.id)}>
+                      <X className="h-4 w-4 mr-1" /> Rejeitar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}

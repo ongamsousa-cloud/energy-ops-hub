@@ -329,6 +329,51 @@ export type Database = {
           },
         ]
       }
+      execution_codes: {
+        Row: {
+          active: boolean | null
+          category: string | null
+          checklist_template: Json | null
+          code: string
+          created_at: string | null
+          default_instructions: string | null
+          description: string | null
+          id: string
+          required_fields: Json | null
+          service_type: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          category?: string | null
+          checklist_template?: Json | null
+          code: string
+          created_at?: string | null
+          default_instructions?: string | null
+          description?: string | null
+          id?: string
+          required_fields?: Json | null
+          service_type?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          category?: string | null
+          checklist_template?: Json | null
+          code?: string
+          created_at?: string | null
+          default_instructions?: string | null
+          description?: string | null
+          id?: string
+          required_fields?: Json | null
+          service_type?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           anexo_tipo: string | null
@@ -517,22 +562,35 @@ export type Database = {
         Row: {
           aprovado_em: string | null
           aprovado_por: string | null
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
           created_at: string
           created_by: string | null
+          data_agendada: string | null
+          endereco_completo: string | null
           equipe_id: string | null
+          estado: string | null
+          fim_atendimento: string | null
           fim_em: string | null
           fim_lat: number | null
           fim_lng: number | null
+          hora_agendada: string | null
           id: string
+          inicio_atendimento: string | null
           inicio_em: string
           inicio_lat: number | null
           inicio_lng: number | null
+          local_lat: number | null
+          local_lng: number | null
           localizacao_gps: Json | null
           motivo_reprovacao: string | null
           numero: string
           obra_id: string
           observacao_supervisor: string | null
           observacoes: string | null
+          observacoes_admin: string | null
+          prioridade: string | null
           profissional_id: string
           status: Database["public"]["Enums"]["os_status"]
           supervisor_id: string | null
@@ -543,22 +601,35 @@ export type Database = {
         Insert: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           created_by?: string | null
+          data_agendada?: string | null
+          endereco_completo?: string | null
           equipe_id?: string | null
+          estado?: string | null
+          fim_atendimento?: string | null
           fim_em?: string | null
           fim_lat?: number | null
           fim_lng?: number | null
+          hora_agendada?: string | null
           id?: string
+          inicio_atendimento?: string | null
           inicio_em?: string
           inicio_lat?: number | null
           inicio_lng?: number | null
+          local_lat?: number | null
+          local_lng?: number | null
           localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
           obra_id: string
           observacao_supervisor?: string | null
           observacoes?: string | null
+          observacoes_admin?: string | null
+          prioridade?: string | null
           profissional_id: string
           status?: Database["public"]["Enums"]["os_status"]
           supervisor_id?: string | null
@@ -569,22 +640,35 @@ export type Database = {
         Update: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
           created_at?: string
           created_by?: string | null
+          data_agendada?: string | null
+          endereco_completo?: string | null
           equipe_id?: string | null
+          estado?: string | null
+          fim_atendimento?: string | null
           fim_em?: string | null
           fim_lat?: number | null
           fim_lng?: number | null
+          hora_agendada?: string | null
           id?: string
+          inicio_atendimento?: string | null
           inicio_em?: string
           inicio_lat?: number | null
           inicio_lng?: number | null
+          local_lat?: number | null
+          local_lng?: number | null
           localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
           obra_id?: string
           observacao_supervisor?: string | null
           observacoes?: string | null
+          observacoes_admin?: string | null
+          prioridade?: string | null
           profissional_id?: string
           status?: Database["public"]["Enums"]["os_status"]
           supervisor_id?: string | null
@@ -827,6 +911,274 @@ export type Database = {
           telefone?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      service_execution_records: {
+        Row: {
+          checklist_answers: Json | null
+          created_at: string | null
+          end_time: string | null
+          execution_code_id: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          materials_used: Json | null
+          problems_found: string | null
+          reason_not_executed: string | null
+          service_order_id: string
+          solution_applied: string | null
+          start_time: string | null
+          status: string
+          submitted_at: string | null
+          technical_notes: string | null
+          technician_id: string
+          total_duration: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          checklist_answers?: Json | null
+          created_at?: string | null
+          end_time?: string | null
+          execution_code_id?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          materials_used?: Json | null
+          problems_found?: string | null
+          reason_not_executed?: string | null
+          service_order_id: string
+          solution_applied?: string | null
+          start_time?: string | null
+          status: string
+          submitted_at?: string | null
+          technical_notes?: string | null
+          technician_id: string
+          total_duration?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          checklist_answers?: Json | null
+          created_at?: string | null
+          end_time?: string | null
+          execution_code_id?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          materials_used?: Json | null
+          problems_found?: string | null
+          reason_not_executed?: string | null
+          service_order_id?: string
+          solution_applied?: string | null
+          start_time?: string | null
+          status?: string
+          submitted_at?: string | null
+          technical_notes?: string | null
+          technician_id?: string
+          total_duration?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_execution_records_execution_code_id_fkey"
+            columns: ["execution_code_id"]
+            isOneToOne: false
+            referencedRelation: "execution_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_execution_records_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_history: {
+        Row: {
+          action: string
+          created_at: string | null
+          description: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          metadata: Json | null
+          new_status: string | null
+          previous_status: string | null
+          service_order_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          description?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          previous_status?: string | null
+          service_order_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          description?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          metadata?: Json | null
+          new_status?: string | null
+          previous_status?: string | null
+          service_order_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_history_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_media: {
+        Row: {
+          captured_at: string | null
+          created_at: string | null
+          description: string | null
+          execution_record_id: string | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          media_type: string
+          service_order_id: string
+          stage: string | null
+          technician_id: string
+        }
+        Insert: {
+          captured_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          execution_record_id?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url: string
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          media_type: string
+          service_order_id: string
+          stage?: string | null
+          technician_id: string
+        }
+        Update: {
+          captured_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          execution_record_id?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          media_type?: string
+          service_order_id?: string
+          stage?: string | null
+          technician_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_media_execution_record_id_fkey"
+            columns: ["execution_record_id"]
+            isOneToOne: false
+            referencedRelation: "service_execution_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_order_media_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_validations: {
+        Row: {
+          id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewer_id: string
+          service_order_id: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id: string
+          service_order_id: string
+          status: string
+        }
+        Update: {
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string
+          service_order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_validations_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          department_id: string | null
+          function: string | null
+          id: string
+          name: string
+          team_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          function?: string | null
+          id?: string
+          name: string
+          team_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          function?: string | null
+          id?: string
+          name?: string
+          team_id?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

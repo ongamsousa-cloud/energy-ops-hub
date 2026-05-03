@@ -510,11 +510,9 @@ export default function OSDetalhe() {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="atividades">Atividades</TabsTrigger>
             <TabsTrigger value="materiais">Materiais</TabsTrigger>
-            <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
-             <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-             <TabsTrigger value="materiais">Materiais</TabsTrigger>
-             <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
             <TabsTrigger value="auditoria">Histórico</TabsTrigger>
+            <TabsTrigger value="comunicacao">Chat</TabsTrigger>
           </TabsList>
 
           <TabsContent value="atividades" className="mt-4">

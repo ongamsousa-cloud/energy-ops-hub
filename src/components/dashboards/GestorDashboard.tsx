@@ -107,7 +107,7 @@ export default function GestorDashboard({ stats, byStatus }: GestorDashboardProp
                 >
                   {byStatus.map((entry, index) => (
                     <Cell 
-                      key={} 
+                      key={`cell-${index}`} 
                       fill={statusColors[entry.status.toLowerCase()] || "hsl(var(--primary))"} 
                     />
                   ))}

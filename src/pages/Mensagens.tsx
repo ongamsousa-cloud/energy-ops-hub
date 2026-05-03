@@ -263,28 +263,71 @@ export default function Mensagens() {
      if (convId) {
        setActive(convId);
        setOpenNew(false);
-       setSelectedContact(null);
+       setSelectedContacts([]);
      }
    }
 
-   async function sendDirectly(contact: Profile) {
-     const convId = await getOrCreateConversa(contact);
-     if (convId) {
-       // Usar temporariamente o 'active' para o envio de áudio ou texto funcionar
-       const prevActive = active;
-       setActive(convId);
-       
-       if (audioBlob) {
-         await enviarAudioDirect(convId);
-       } else if (text.trim()) {
-         await enviarDirect(convId);
-       }
-       
-       setOpenNew(false);
-       setSelectedContact(null);
-       setActive(convId); // Mantém a conversa ativa para o usuário ver o envio
+   async function sendBroadcast() {
+     if (selectedContacts.length === 0) {
+       toast.error("Selecione ao menos um destinatário.");
+       return;
      }
+     if (!text.trim() && !audioBlob) {
+       toast.error("Digite uma mensagem ou grave um áudio.");
+       return;
+     }
+
+     // Upload do áudio uma única vez (se houver)
+     let audioUrl: string | null = null;
+     if (audioBlob) {
+       const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+       const path = `chat/broadcast/${file.name}`;
+       const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+       if (upErr) { toast.error(upErr.message); return; }
+       audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+     }
+
+     const conteudo = text.trim() || null;
+     let lastConvId: string | null = null;
+     let okCount = 0;
+
+     for (const contact of selectedContacts) {
+       const convId = await getOrCreateConversa(contact);
+       if (!convId) continue;
+       lastConvId = convId;
+
+       if (conteudo) {
+         const { error } = await supabase.from("messages").insert({
+           conversation_id: convId,
+           sender_id: user!.id,
+           conteudo,
+         });
+         if (error) { toast.error(error.message); continue; }
+       }
+       if (audioUrl) {
+         const { error } = await supabase.from("messages").insert({
+           conversation_id: convId,
+           sender_id: user!.id,
+           anexo_url: audioUrl,
+           anexo_tipo: "audio",
+         });
+         if (error) { toast.error(error.message); continue; }
+       }
+       okCount++;
+     }
+
+     setText("");
+     setAudioBlob(null);
+     setSelectedContacts([]);
+     setOpenNew(false);
+     if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
+     toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
    }
+
+   const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
+   const toggleContact = (c: Profile) => {
+     setSelectedContacts(prev => prev.some(x => x.id === c.id) ? prev.filter(x => x.id !== c.id) : [...prev, c]);
+   };
 
    async function enviarDirect(convId: string) {
      const { error } = await supabase.from("messages").insert({

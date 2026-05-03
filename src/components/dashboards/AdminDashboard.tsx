@@ -9,32 +9,39 @@ import {
   BarChart3, Layers, Target, Clock
 } from "lucide-react";
  import { Badge } from "@/components/ui/badge";
- import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ import AdminStockView from "@/components/stock/AdminStockView";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import NewServiceOrderDialog from "@/components/os/NewServiceOrderDialog";
 import { useState } from "react";
 
-interface AdminDashboardProps {
-  stats: any;
-  byStatus: any[];
-  umdHistory: any[];
-  teamProductivity?: any[];
-  weeklySummary?: any[];
-    weeklyNewOS?: any[];
-    osRecentes?: any[];
+ interface AdminDashboardProps {
+   stats: any;
+   byStatus: any[];
+   umdHistory: any[];
+   teamProductivity?: any[];
+   weeklySummary?: any[];
+   weeklyNewOS?: any[];
+   osRecentes?: any[];
    stockStats?: { totalItems: number; lowStock: number };
-}
+   materials?: any[];
+   movements?: any[];
+   warehouses?: any[];
+ }
 
-export default function AdminDashboard({ 
-  stats, 
-  byStatus, 
-  umdHistory, 
-  teamProductivity = [], 
-  weeklySummary = [], 
+ export default function AdminDashboard({ 
+   stats, 
+   byStatus, 
+   umdHistory, 
+   teamProductivity = [], 
+   weeklySummary = [], 
    weeklyNewOS = [],
    osRecentes = [],
-   stockStats = { totalItems: 0, lowStock: 0 }
+   stockStats = { totalItems: 0, lowStock: 0 },
+   materials = [],
+   movements = [],
+   warehouses = []
  }: AdminDashboardProps) {
   const [osDialogOpen, setOsDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -73,9 +80,35 @@ export default function AdminDashboard({
     { name: 'Restante', value: 15, fill: 'hsl(var(--muted))' }
   ];
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-700">
-      <div className="flex flex-wrap gap-3">
+   return (
+     <div className="space-y-6 animate-in fade-in duration-700">
+       <Tabs defaultValue="geral" className="w-full">
+         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+           <TabsList className="bg-muted/50 p-1">
+             <TabsTrigger value="geral" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Visão Geral</TabsTrigger>
+             <TabsTrigger value="estoque" className="data-[state=active]:bg-background data-[state=active]:shadow-sm">Estoque</TabsTrigger>
+           </TabsList>
+ 
+           <div className="flex flex-wrap gap-3">
+             <Button 
+               onClick={() => setOsDialogOpen(true)}
+               className="shadow-md gap-2 h-9 px-4 text-xs"
+             >
+               <PlusCircle className="h-4 w-4" />
+               Abrir Nova OS
+             </Button>
+ 
+             <Button asChild variant="outline" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50 h-9 px-4 text-xs">
+               <Link to="/estoque-app" className="flex items-center">
+                 <Package className="mr-2 h-4 w-4 text-primary" />
+                 Painel Almoxarifado
+               </Link>
+             </Button>
+           </div>
+         </div>
+ 
+         <TabsContent value="geral" className="space-y-6 animate-in fade-in duration-500">
+           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Button 
           onClick={() => setOsDialogOpen(true)}
           className="shadow-md gap-2"

@@ -446,8 +446,18 @@ export default function Mensagens() {
     return groups;
   }, [filteredContatos]);
 
-  return (
-    <div className="pb-8">
+   return (
+     <div className="pb-8 relative">
+       {/* Headless Audio Recorder logic - always rendered but invisible */}
+       <div className="fixed -top-96 -left-96 opacity-0 pointer-events-none">
+         <AudioRecorder 
+           onRecordingComplete={addAudioElement} 
+           recorderControls={recorderControls}
+           downloadOnSavePress={false}
+           downloadFileExtension="webm"
+         />
+       </div>
+ 
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
       <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}

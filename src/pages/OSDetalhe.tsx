@@ -614,7 +614,7 @@ export default function OSDetalhe() {
                          </div>
                          <div className="space-y-2">
                            <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                           <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantity: e.target.value})}/>
+                           <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
                          </div>
                        </div>
 

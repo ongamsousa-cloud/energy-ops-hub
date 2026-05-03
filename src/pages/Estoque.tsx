@@ -315,17 +315,15 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        {!isEstoquePortal && (
-          <TabsList className="flex w-full overflow-x-auto">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-background"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
-            <TabsTrigger value="materials" className="data-[state=active]:bg-background"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
-            <TabsTrigger value="entradas" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-            <TabsTrigger value="liberacao" className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberação (OS)</TabsTrigger>
-            <TabsTrigger value="warehouses" className="data-[state=active]:bg-background"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
-            <TabsTrigger value="movements" className="data-[state=active]:bg-background"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
-            <TabsTrigger value="alerts" className="data-[state=active]:bg-background"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-          </TabsList>
-        )}
+         <TabsList className="flex w-full overflow-x-auto">
+           <TabsTrigger value="overview" className="data-[state=active]:bg-background"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
+           <TabsTrigger value="materials" className="data-[state=active]:bg-background"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
+           <TabsTrigger value="entradas" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
+           <TabsTrigger value="liberacao" className="data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberação (OS)</TabsTrigger>
+           <TabsTrigger value="warehouses" className="data-[state=active]:bg-background"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
+           <TabsTrigger value="movements" className="data-[state=active]:bg-background"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
+           <TabsTrigger value="alerts" className="data-[state=active]:bg-background"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
+         </TabsList>
 
          <TabsContent value="overview" className="mt-4 space-y-6">
            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">

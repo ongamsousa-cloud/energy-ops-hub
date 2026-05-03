@@ -41,9 +41,19 @@ export default function OSDetalhe() {
   const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
 
    const load = useCallback(async () => {
-     const { data: o } = await supabase.from("ordens_servico")
-       .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
-       .eq("id", id).maybeSingle();
+      const { data: o, error: osError } = await supabase.from("ordens_servico")
+        .select(`
+          *, 
+          obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
+          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+        `)
+        .eq("id", id).maybeSingle();
+
+      if (!o && !osError) {
+        toast.error("Você não possui permissão para acessar esta ordem de serviço.");
+        nav("/app/os");
+        return;
+      }
      setOS(o);
      const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
      setItems(it ?? []);

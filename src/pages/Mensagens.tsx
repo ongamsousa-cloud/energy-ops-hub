@@ -671,7 +671,7 @@ export default function Mensagens() {
                           <Mic className="h-4 w-4" />
                         </div>
                          <audio src={audioPreviewUrl || ""} controls className="h-8 flex-1" />
-                        <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                         <Button size="icon" variant="ghost" onClick={() => { setAudioBlob(null); setAudioPreviewUrl(null); }} className="h-8 w-8 text-destructive hover:bg-destructive/10">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -879,7 +879,7 @@ export default function Mensagens() {
                     <div className="flex-1">
                        <audio src={audioPreviewUrl || ""} controls className="h-8 w-full" />
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                     <Button size="icon" variant="ghost" onClick={() => { setAudioBlob(null); setAudioPreviewUrl(null); }} className="text-destructive hover:text-destructive hover:bg-destructive/10">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                     <Button size="icon" className="bg-emerald-600 hover:bg-emerald-700" onClick={enviarAudio}>

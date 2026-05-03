@@ -17,24 +17,22 @@ class MediaService {
       const location = await geoLocationService.capturarLocalizacaoAtual();
 
       const { error: uploadError } = await supabase.storage
-        .from("media")
+        .from("service-orders-media")
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from("media").getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from("service-orders-media").getPublicUrl(filePath);
 
       const { error: dbError } = await supabase.from("service_order_media").insert({
         service_order_id: serviceOrderId,
         user_id: userId,
-        file_type: file.type.startsWith("image") ? "image" : "video",
-        file_path: publicUrl,
-        file_name: file.name,
-        file_size: file.size,
+        media_url: publicUrl,
+        media_type: file.type.startsWith("image") ? "image" : "video",
         description,
         category: stage,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
+        lat: location?.latitude,
+        lng: location?.longitude,
       });
 
       if (dbError) throw dbError;

@@ -1,6 +1,9 @@
  import { Card } from "@/components/ui/card";
  import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
- import { Calculator, TrendingUp, DollarSign, FileCheck } from "lucide-react";
+ import { Calculator, TrendingUp, DollarSign, FileCheck, Landmark, Receipt, Package, AlertCircle } from "lucide-react";
+ import { Link } from "react-router-dom";
+ import { Button } from "@/components/ui/button";
+ import { CardContent } from "@/components/ui/card";
  
  interface FinanceiroDashboardProps {
    stats: any;

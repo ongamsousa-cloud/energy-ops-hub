@@ -1,5 +1,5 @@
  import { Card } from "@/components/ui/card";
- import { ShieldCheck, AlertCircle, XCircle, Clock, CheckCircle2, History } from "lucide-react";
+ import { ShieldCheck, AlertCircle, XCircle, Clock, CheckCircle2, History, ClipboardList, MapPin, DollarSign, Filter, Search } from "lucide-react";
  import { Link } from "react-router-dom";
  import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
  

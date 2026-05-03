@@ -19,7 +19,7 @@ import { toast } from "sonner";
 export default function OSDetalhe() {
   const { id } = useParams();
   const nav = useNavigate();
-   const { user, hasRole, roles } = useAuth();
+    const { user, hasRole, roles, profile } = useAuth();
   const [os, setOS] = useState<any>(null);
    const [fin, setFin] = useState<any>(null);
    const [items, setItems] = useState<any[]>([]);

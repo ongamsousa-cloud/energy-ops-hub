@@ -12,7 +12,9 @@
  export default function Dashboard() {
    const { profile, roles, hasRole, user } = useAuth();
     const [stats, setStats] = useState({
-      obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0, osRejeitadas: 0, osRecentes: [] as any[]
+      obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0, osRejeitadas: 0,
+      osRecentes: [] as any[], alertas: [] as any[], divergencias: 0, valorUmd: 0, auditCriticos: 0,
+      umdAtual: 0, umdAnterior: 0, osAtiva: null as any
     });
    const [byStatus, setByStatus] = useState<{ status: string; n: number }[]>([]);
     const [umdHistory, setUmdHistory] = useState<{ date: string; umd: number }[]>([]);
@@ -77,6 +79,31 @@
              return q;
            })(),
         ]);
+       // Dados auxiliares: alertas, regras financeiras, casos críticos, OS ativa do técnico, UMD em andamento
+       const [alertasRes, ruleRes, divRes, criticosRes, osAtivaRes, umdMesRes] = await Promise.all([
+         supabase.from("operational_alerts").select("id, title, description, severity, created_at").eq("status", "open").order("created_at", { ascending: false }).limit(5),
+         supabase.from("financial_rules").select("rule_config").eq("rule_key", "umd_unit_value").eq("active", true).maybeSingle(),
+         supabase.from("financial_order_records").select("id", { count: "exact", head: true }).eq("financial_status", "divergente"),
+         supabase.from("audit_findings").select("id", { count: "exact", head: true }).eq("severity", "alta").eq("status", "aberto"),
+         isCampo
+           ? supabase.from("ordens_servico").select("id, numero, obra:obras(nome)").eq("profissional_id", user.id).in("status", ["iniciada","em_andamento","corrigida"]).order("updated_at", { ascending: false }).limit(1).maybeSingle()
+           : Promise.resolve({ data: null }),
+         (() => {
+           const start = new Date(); start.setDate(start.getDate() - 30);
+           const prev = new Date(); prev.setDate(prev.getDate() - 60);
+           return supabase.from("ordens_servico").select("total_umd_aprovada, fim_em").eq("status","aprovada").gte("fim_em", prev.toISOString());
+         })(),
+       ]);
+       const valorUmd = Number((ruleRes as any)?.data?.rule_config?.value ?? 0);
+       const now = Date.now();
+       const d30 = now - 30*24*60*60*1000;
+       let umdAtual = 0, umdAnterior = 0;
+       (umdMesRes.data ?? []).forEach((r: any) => {
+         const t = r.fim_em ? new Date(r.fim_em).getTime() : 0;
+         if (t >= d30) umdAtual += Number(r.total_umd_aprovada || 0);
+         else umdAnterior += Number(r.total_umd_aprovada || 0);
+       });
+       const osAbertasReal = (statusAggRes.data ?? []).filter((r:any) => ["iniciada","em_andamento","corrigida"].includes(r.status)).length;
         setAuditHistory(auditRes.data ?? []);
  
        const totalUmd = (umdRes.data ?? []).reduce((a: number, r: any) => a + Number(r.total_umd_aprovada || 0), 0);
@@ -95,7 +122,7 @@
        setStats({
          obras: (obrasRes.data ?? []).length,
          obrasExec: (obrasExecRes.data ?? []).length,
-         osAbertas: 0,
+         osAbertas: osAbertasReal,
          osAprov: (osAprovRes.data ?? []).length,
          osPend: (osPendRes.data ?? []).length,
          osRejeitadas: (osRejeitadasRes.data ?? []).length,
@@ -103,6 +130,12 @@
           profs: (profsRes.data ?? []).length,
           equipes: (equipesRes.data ?? []).length,
           osRecentes: osRecentesRes.data ?? [],
+          alertas: alertasRes.data ?? [],
+          divergencias: (divRes as any).count ?? 0,
+          valorUmd,
+          auditCriticos: (criticosRes as any).count ?? 0,
+          umdAtual, umdAnterior,
+          osAtiva: (osAtivaRes as any).data ?? null,
         });
        setLoading(false);
      })();

@@ -40,7 +40,7 @@ export default function Dashboard() {
        }
  
       const [obras, obrasExec, osAbertas, osAprov, osPend, osRejeitadas, umdRes, profs, equipes, statusAgg, historyRes] = await Promise.all([
-        (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "rejeitada"),
+        (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "reprovada"),
         supabase.from("ordens_servico").select("fim_em, total_umd_aprovada").eq("status", "aprovada").order("fim_em"),
          supabase.from("obras").select("id", { count: "exact", head: true }),
          supabase.from("obras").select("id", { count: "exact", head: true }).eq("status", "execucao"),

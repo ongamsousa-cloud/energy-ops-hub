@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
   LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks,
-  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck
+ ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,7 +19,8 @@ const NAV: Item[] = [
   { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
   { to: "/app/categorias", label: "Categorias", icon: Tag, roles: ["admin","gestor"] },
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
-  { to: "/app/atividades/importar", label: "Importar Excel", icon: Upload, roles: ["admin","gestor"] },
+ { to: "/app/atividades/importar", label: "Importar Excel", icon: Upload, roles: ["admin","gestor"] },
+ { to: "/app/materiais", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor"] },
   { to: "/app/os", label: "Ordens de Serviço", icon: ClipboardList },
   { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
   { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },

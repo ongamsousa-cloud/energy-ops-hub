@@ -246,6 +246,13 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
      return filtered;
    }, [materials, search]);
 
+  const summary = useMemo(() => {
+    const today = startOfDay(new Date());
+    const outToday = movements.filter(m => m.type === "saida" && new Date(m.created_at) >= today);
+    const inToday = movements.filter(m => m.type === "entrada" && new Date(m.created_at) >= today);
+    return { outToday, inToday };
+  }, [movements]);
+
   function openMovement(type: string) {
     setMovementType(type);
     setMovementOpen(true);

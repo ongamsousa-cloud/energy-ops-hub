@@ -195,6 +195,33 @@ export type Database = {
         }
         Relationships: []
       }
+      departments: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equipe_membros: {
         Row: {
           created_at: string
@@ -239,7 +266,9 @@ export type Database = {
           ativo: boolean
           codigo: string | null
           created_at: string
+          department_id: string | null
           id: string
+          manager_id: string | null
           nome: string
           observacoes: string | null
           regiao: string | null
@@ -250,7 +279,9 @@ export type Database = {
           ativo?: boolean
           codigo?: string | null
           created_at?: string
+          department_id?: string | null
           id?: string
+          manager_id?: string | null
           nome: string
           observacoes?: string | null
           regiao?: string | null
@@ -261,7 +292,9 @@ export type Database = {
           ativo?: boolean
           codigo?: string | null
           created_at?: string
+          department_id?: string | null
           id?: string
+          manager_id?: string | null
           nome?: string
           observacoes?: string | null
           regiao?: string | null
@@ -269,6 +302,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "equipes_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "equipes_supervisor_id_fkey"
             columns: ["supervisor_id"]
@@ -987,11 +1027,15 @@ export type Database = {
           cargo: string | null
           cpf: string | null
           created_at: string
+          department_id: string | null
+          documento: string | null
           email: string
           especialidade: string | null
           foto_url: string | null
           id: string
+          manager_id: string | null
           nome: string
+          supervisor_id: string | null
           telefone: string | null
           ultimo_acesso: string | null
           updated_at: string
@@ -1001,11 +1045,15 @@ export type Database = {
           cargo?: string | null
           cpf?: string | null
           created_at?: string
+          department_id?: string | null
+          documento?: string | null
           email: string
           especialidade?: string | null
           foto_url?: string | null
           id: string
+          manager_id?: string | null
           nome: string
+          supervisor_id?: string | null
           telefone?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
@@ -1015,16 +1063,28 @@ export type Database = {
           cargo?: string | null
           cpf?: string | null
           created_at?: string
+          department_id?: string | null
+          documento?: string | null
           email?: string
           especialidade?: string | null
           foto_url?: string | null
           id?: string
+          manager_id?: string | null
           nome?: string
+          supervisor_id?: string | null
           telefone?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_execution_records: {
         Row: {
@@ -1341,6 +1401,33 @@ export type Database = {
           team_id?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }

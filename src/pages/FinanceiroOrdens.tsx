@@ -41,9 +41,21 @@ export default function FinanceiroOrdens() {
   }, [rows, search, filterStatus]);
 
   const stats = useMemo(() => {
-    const total = filteredRows.reduce((acc, r) => acc + Number(r.valor_aprovado || 0), 0);
-    const billable = filteredRows.filter(r => r.financial?.is_billable).length;
-    return { total, billable };
+    const fin = (r: any) => Array.isArray(r.financial) ? r.financial[0] : r.financial;
+    const total = filteredRows.reduce(
+      (acc, r) => acc + Number(fin(r)?.approved_value ?? r.valor_aprovado ?? 0),
+      0
+    );
+    const billable = filteredRows.filter(r => fin(r)?.is_billable).length;
+    let estimSum = 0, approvedSum = 0;
+    filteredRows.forEach(r => {
+      const f = fin(r);
+      const est = Number(f?.estimated_cost ?? 0);
+      const apr = Number(f?.approved_value ?? r.valor_aprovado ?? 0);
+      if (est > 0) { estimSum += est; approvedSum += apr; }
+    });
+    const margem = estimSum > 0 ? Math.round(((approvedSum - estimSum) / estimSum) * 100 + 100) : 0;
+    return { total, billable, margem };
   }, [filteredRows]);
 
   return (
@@ -74,7 +86,7 @@ export default function FinanceiroOrdens() {
             <div className="p-2 bg-purple-100 rounded-lg text-purple-600"><Calculator className="h-5 w-5" /></div>
             <div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Margem Média</p>
-              <p className="text-xl font-bold text-purple-700">62%</p>
+              <p className="text-xl font-bold text-purple-700">{stats.margem}%</p>
             </div>
           </CardContent>
         </Card>
@@ -136,7 +148,7 @@ export default function FinanceiroOrdens() {
                     R$ {Number(r.financial?.real_cost || 0).toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-emerald-600 font-bold">
-                    R$ {Number(r.valor_aprovado || 0).toLocaleString()}
+                    R$ {Number((Array.isArray(r.financial) ? r.financial[0] : r.financial)?.approved_value ?? r.valor_aprovado ?? 0).toLocaleString()}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant="outline" className={cn(

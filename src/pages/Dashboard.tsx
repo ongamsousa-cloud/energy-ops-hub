@@ -193,16 +193,27 @@
           meta: 120 // Meta exemplo
         })));
 
-        // Novas OS (últimos 7 dias) - Simulado com base nos dados reais disponíveis
-        setWeeklyNewOS([
-          { date: '27/04', count: 4 },
-          { date: '28/04', count: 7 },
-          { date: '29/04', count: 5 },
-          { date: '30/04', count: 8 },
-          { date: '01/05', count: 12 },
-          { date: '02/05', count: 10 },
-          { date: '03/05', count: 6 },
-        ]);
+        // Novas OS (últimos 7 dias) – calculado a partir de ordens_servico.created_at
+        {
+          const sevenAgo = new Date();
+          sevenAgo.setDate(sevenAgo.getDate() - 6);
+          sevenAgo.setHours(0,0,0,0);
+          const { data: newOsRows } = await supabase
+            .from("ordens_servico")
+            .select("created_at")
+            .gte("created_at", sevenAgo.toISOString());
+          const buckets: Record<string, number> = {};
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            buckets[d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })] = 0;
+          }
+          (newOsRows ?? []).forEach((r: any) => {
+            const k = new Date(r.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+            if (k in buckets) buckets[k] += 1;
+          });
+          setWeeklyNewOS(Object.entries(buckets).map(([date, count]) => ({ date, count })));
+        }
        setStats({
          obras: (obrasRes.data ?? []).length,
          obrasExec: (obrasExecRes.data ?? []).length,

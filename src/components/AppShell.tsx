@@ -5,7 +5,8 @@ import {
  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import InstallAppButton from "@/components/InstallAppButton";
 import NotificationBell from "@/components/NotificationBell";
@@ -32,6 +33,32 @@ const NAV: Item[] = [
 export default function AppShell() {
   const { profile, roles, hasRole, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("notificacoes")
+        .select("link")
+        .eq("user_id", profile.id)
+        .eq("lida", false);
+      const c: Record<string, number> = {};
+      (data ?? []).forEach((n: any) => {
+        const link: string = n.link || "";
+        const prefixes = ["/app/os", "/app/aprovacoes", "/app/estoque", "/app/mensagens", "/app/medicao"];
+        const p = prefixes.find(pref => link.startsWith(pref));
+        if (p) c[p] = (c[p] ?? 0) + 1;
+      });
+      setCounts(c);
+    };
+    load();
+    const ch = supabase
+      .channel("appshell-notif")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notificacoes", filter: `user_id=eq.${profile.id}` }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [profile?.id]);
 
   const items = NAV.filter((i) => !i.roles || hasRole(i.roles));
 
@@ -90,7 +117,12 @@ export default function AppShell() {
                 }
               >
                 <i.icon className="h-4 w-4" strokeWidth={1.5} />
-                <span>{i.label}</span>
+                <span className="flex-1">{i.label}</span>
+                {counts[i.to] ? (
+                  <span className="ml-auto inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
+                    {counts[i.to]}
+                  </span>
+                ) : null}
               </NavLink>
             ))}
           </nav>

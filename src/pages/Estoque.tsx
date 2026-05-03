@@ -63,13 +63,21 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
    const [allObras, setAllObras] = useState<any[]>([]);
    const [allEquipes, setAllEquipes] = useState<any[]>([]);
 
-  const [newMaterialOpen, setNewMaterialOpen] = useState(false);
-  const [movementOpen, setMovementOpen] = useState(false);
+   const [newMaterialOpen, setNewMaterialOpen] = useState(false);
+   const [editMaterial, setEditMaterial] = useState<any>(null);
+   const [movementOpen, setMovementOpen] = useState(false);
   const [warehouseOpen, setWarehouseOpen] = useState(false);
   const [editWarehouse, setEditWarehouse] = useState<any>(null);
   const [movementType, setMovementType] = useState<string>("entrada");
 
-  useEffect(() => { loadAll(); }, []);
+   useEffect(() => { loadAll(); }, []);
+ 
+   async function deleteMaterial(id: string) {
+     if (!confirm("Tem certeza que deseja desativar este material?")) return;
+     const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
+     if (error) toast.error("Erro ao desativar: " + error.message);
+     else { toast.success("Material desativado"); loadMaterials(); }
+   }
 
   useEffect(() => {
     const ch = supabase.channel("stock-realtime")

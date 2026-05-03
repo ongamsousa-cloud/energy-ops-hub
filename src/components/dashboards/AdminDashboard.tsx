@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText, Upload, PlusCircle } from "lucide-react";
+ import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText, Upload, PlusCircle, Package } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -52,9 +52,16 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
         >
           <PlusCircle className="h-4 w-4" />
           Abrir Nova OS
-        </Button>
+         </Button>
+ 
+         <Button asChild variant="outline" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
+           <Link to="/app/materiais" className="flex items-center">
+             <Package className="mr-2 h-4 w-4 text-primary" />
+             Gestão de Estoque
+           </Link>
+         </Button>
 
-        <Button asChild variant="outline" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
+         <Button asChild variant="outline" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
           <Link to="/app/atividades/importar" className="flex items-center">
             <Upload className="mr-2 h-4 w-4 text-primary" />
             Importar Excel

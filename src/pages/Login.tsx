@@ -30,6 +30,7 @@ export default function Login() {
      { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+     { role: "Estoque", email: "estoque@energyops.demo", desc: "Almoxarifado" },
    ];
  
    const quickLogin = async (email: string) => {

@@ -377,6 +377,7 @@ export default function Mensagens() {
 
        setText("");
        setAudioBlob(null);
+       setAudioPreviewUrl(null);
        setPendingAudioUrl(null);
        setSelectedContacts([]);
        setOpenNew(false);

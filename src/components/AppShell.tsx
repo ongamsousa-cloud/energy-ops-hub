@@ -36,7 +36,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-background">
       {/* Topbar */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 safe-top">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
             <Menu className="h-5 w-5" />
@@ -91,7 +91,7 @@ export default function AppShell() {
           </nav>
         </aside>
 
-        <main className="flex-1 min-h-[calc(100vh-3.5rem)] p-4 md:p-8">
+        <main className="flex-1 min-h-[calc(100vh-3.5rem)] p-[10px] md:p-8">
           <Outlet />
         </main>
       </div>

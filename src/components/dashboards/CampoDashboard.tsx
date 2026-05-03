@@ -1,8 +1,9 @@
  import { useRef, useState, useEffect } from "react";
  import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
- import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus, Camera, Video, AlertCircle, Map as MapIcon } from "lucide-react";
+import { CheckCircle2, Clock, ClipboardList, Target, ArrowRight, Activity, MapPin, Plus, Camera, Video, AlertCircle, Map as MapIcon, PlusCircle } from "lucide-react";
  import { Button } from "@/components/ui/button";
- import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import NewServiceOrderDialog from "@/components/os/NewServiceOrderDialog";
  import StatusBadge from "@/components/StatusBadge";
  import { mediaService, geoLocationService, notificationService } from "@/services";
  import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,8 @@
 interface CampoDashboardProps { stats: any; profile: any; }
 
 export default function CampoDashboard({ stats }: CampoDashboardProps) {
+  const [osDialogOpen, setOsDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const metaMensal = 2000;
   const progresso = Math.min(100, (stats.umd / metaMensal) * 100);
@@ -94,6 +97,22 @@ export default function CampoDashboard({ stats }: CampoDashboardProps) {
           <p className="text-[10px] text-muted-foreground mt-2">Necessita correção</p>
         </Card>
       </div>
+
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          onClick={() => setOsDialogOpen(true)}
+          className="shadow-md gap-2 w-full sm:w-auto"
+        >
+          <PlusCircle className="h-4 w-4" />
+          Abrir Nova OS
+        </Button>
+      </div>
+
+      <NewServiceOrderDialog 
+        open={osDialogOpen} 
+        onOpenChange={setOsDialogOpen} 
+        onSuccess={(id) => navigate(`/app/os/${id}`)}
+      />
 
       {/* Ação rápida de campo */}
       <Card className="p-5 shadow-none border-2 border-dashed border-primary/30 bg-primary/5">

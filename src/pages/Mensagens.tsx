@@ -5,7 +5,8 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2 } from "lucide-react";
+import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft } from "lucide-react";
+import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,9 +25,42 @@ export default function Mensagens() {
   const [contatos, setContatos] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openNew, setOpenNew] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (active) setMobileView('thread');
+  }, [active]);
+
+  const recorderControls = useAudioRecorder();
+
+  const addAudioElement = async (blob: Blob) => {
+    setAudioBlob(blob);
+    setIsRecording(false);
+  };
+
+  async function enviarAudio() {
+    if (!audioBlob || !active) return;
+    const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+    const path = `chat/${active}/${file.name}`;
+    
+    const { error } = await supabase.storage
+      .from("os-evidences")
+      .upload(path, file);
+      
+    if (error) {
+      toast.error("Erro ao enviar áudio: " + error.message);
+      return;
+    }
+    
+    const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+    await enviar({ url: data.publicUrl, tipo: "audio" });
+    setAudioBlob(null);
+  }
 
   const myRole = roles[0];
 
@@ -161,18 +195,20 @@ export default function Mensagens() {
     setOpenNew(false);
   }
 
-  async function enviar(anexo?: { url: string; tipo: string }) {
+  async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;
-    if (!text.trim() && !anexo) return;
+    const finalContent = messageText !== undefined ? messageText : text.trim();
+    if (!finalContent && !anexo) return;
+
     const { error } = await supabase.from("messages").insert({
       conversation_id: active,
       sender_id: user!.id,
-      conteudo: text.trim() || null,
+      conteudo: finalContent || null,
       anexo_url: anexo?.url ?? null,
       anexo_tipo: anexo?.tipo ?? null,
     });
     if (error) return toast.error(error.message);
-    setText("");
+    if (messageText === undefined) setText("");
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -211,11 +247,14 @@ export default function Mensagens() {
   return (
     <div className="pb-8">
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
-      <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[280px_1fr]">
+      <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}
-        <div className="flex flex-col rounded-md border border-border bg-card overflow-hidden">
+        <div className={cn(
+          "flex flex-col rounded-md border border-border bg-card overflow-hidden transition-all duration-300",
+          mobileView === 'thread' ? "hidden md:flex" : "flex"
+        )}>
           <div className="flex items-center justify-between border-b border-border p-2">
-            <span className="text-xs font-medium text-muted-foreground">Conversas</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
             <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) setSearchTerm(""); }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
@@ -300,16 +339,41 @@ export default function Mensagens() {
         </div>
 
         {/* Thread */}
-        <div className="flex flex-col rounded-md border border-border bg-card overflow-hidden">
+        <div className={cn(
+          "flex flex-col rounded-md border border-border bg-card overflow-hidden transition-all duration-300",
+          mobileView === 'list' ? "hidden md:flex" : "flex"
+        )}>
           {!active ? (
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              Selecione uma conversa para começar
+            <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground bg-muted/5">
+              <div className="p-6 bg-muted/20 rounded-full mb-4">
+                <MessageSquare className="h-10 w-10 opacity-40" />
+              </div>
+              <p className="text-sm font-medium">Selecione uma conversa para começar</p>
+              <p className="text-[11px] opacity-60 mt-1">Sua comunicação segura e direta</p>
             </div>
           ) : (
             <>
-              <div className="border-b border-border p-3">
-                <div className="text-sm font-medium">
-                  {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
+              <div className="border-b border-border p-3 flex items-center gap-3 bg-card/50">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="md:hidden h-8 w-8" 
+                  onClick={() => setMobileView('list')}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                    {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <div className="text-sm font-bold truncate">
+                      {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                      {activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Online"}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 space-y-2">
@@ -325,6 +389,9 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "video" && (
                           <video src={m.anexo_url} controls className="mb-1 max-h-64 rounded" />
                         )}
+                        {m.anexo_url && m.anexo_tipo === "audio" && (
+                          <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
+                        )}
                         {m.conteudo && <div className="whitespace-pre-wrap break-words">{m.conteudo}</div>}
                         <div className={cn("mt-1 text-[10px] opacity-70", mine ? "text-right" : "")}>
                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
@@ -335,19 +402,87 @@ export default function Mensagens() {
                 })}
                 <div ref={endRef} />
               </div>
-              <div className="flex items-center gap-2 border-t border-border p-2">
-                <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
-                <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
-                <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar">
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera">
-                  <Camera className="h-4 w-4" />
-                </Button>
-                <Input value={text} onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
-                  placeholder="Mensagem..." />
-                <Button size="icon" onClick={() => enviar()}><Send className="h-4 w-4" /></Button>
+              <div className="border-t border-border p-2 bg-muted/30">
+                {audioBlob ? (
+                  <div className="flex items-center gap-3 bg-card p-2 rounded-lg border border-primary/20 animate-in fade-in zoom-in duration-200">
+                    <div className="p-2 bg-primary/10 rounded-full text-primary">
+                      <Mic className="h-4 w-4" />
+                    </div>
+                    <div className="flex-1">
+                      <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 w-full" />
+                    </div>
+                    <Button size="icon" variant="ghost" onClick={() => setAudioBlob(null)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" className="bg-emerald-600 hover:bg-emerald-700" onClick={enviarAudio}>
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : isRecording ? (
+                  <div className="flex items-center justify-between bg-card p-2 rounded-lg border border-red-200 animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                      <span className="text-xs font-medium text-red-600">Gravando...</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" onClick={() => { recorderControls.stopRecording(); setIsRecording(false); }} className="text-muted-foreground h-8">
+                        Cancelar
+                      </Button>
+                      <Button size="sm" className="bg-red-500 hover:bg-red-600 h-8" onClick={() => recorderControls.stopRecording()}>
+                        Parar e Enviar
+                      </Button>
+                    </div>
+                    <div className="hidden">
+                      <AudioRecorder 
+                        onRecordingComplete={addAudioElement}
+                        recorderControls={recorderControls}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
+                    <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
+                    <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar" className="text-muted-foreground hover:text-primary">
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera" className="text-muted-foreground hover:text-primary">
+                      <Camera className="h-4 w-4" />
+                    </Button>
+                    <div className="relative flex-1">
+                      <Input 
+                        value={text} 
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
+                        placeholder="Escreva sua mensagem..." 
+                        className="pr-10 bg-card border-border/50 focus:border-primary/50 transition-all"
+                      />
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        className={cn(
+                          "absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
+                          isRecording && "text-red-500"
+                        )}
+                        onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
+                        title="Gravar Áudio"
+                      >
+                        <Mic className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button 
+                      size="icon" 
+                      onClick={() => enviar()} 
+                      disabled={!text.trim()}
+                      className={cn(
+                        "shadow-sm transition-all",
+                        text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </>
           )}

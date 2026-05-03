@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Search, Plus, Trash2, X } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +32,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const nav = useNavigate();
   const [obras, setObras] = useState<any[]>([]);
   const [atividades, setAtividades] = useState<any[]>([]);
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
   const [equipes, setEquipes] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
@@ -58,15 +60,17 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   }, [open, initialObraId]);
 
   async function fetchInitialData() {
-    const [resObras, resAtividades, resGestores, resEquipes] = await Promise.all([
+    const [resObras, resAtividades, resCats, resGestores, resEquipes] = await Promise.all([
       supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
       supabase.from("atividades").select("*, categoria:categorias(nome)").eq("ativo", true).order("codigo_item"),
+      supabase.from("categorias").select("*").order("nome"),
       supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
       supabase.from("equipes").select("id, nome").order("nome")
     ]);
 
     setObras(resObras.data ?? []);
     setAtividades(resAtividades.data ?? []);
+    setCategorias(resCats.data ?? []);
     setGestores(resGestores.data ?? []);
     setEquipes(resEquipes.data ?? []);
     
@@ -249,11 +253,26 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                 </PopoverTrigger>
                 <PopoverContent className="w-[400px] p-0" align="end">
                   <Command>
+                    <div className="p-2 border-b">
+                      <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Filtrar por Categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas as Categorias</SelectItem>
+                          {categorias.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <CommandInput placeholder="Buscar código ou descrição..." />
                     <CommandList>
                       <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
                       <CommandGroup>
-                        {atividades.map((a) => (
+                        {atividades
+                          .filter(a => selectedCategoriaId === "all" || a.categoria_id === selectedCategoriaId)
+                          .map((a) => (
                           <CommandItem
                             key={a.id}
                             value={`${a.codigo_item} ${a.descricao}`}

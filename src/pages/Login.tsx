@@ -23,15 +23,14 @@ export default function Login() {
    const [forgotEmail, setForgotEmail] = useState("");
    const [forgotLoading, setForgotLoading] = useState(false);
  
-   const testAccounts = [
-     { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
-     { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
-     { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
-     { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
-     { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
-     { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
-     { role: "Estoque", email: "estoque@energyops.demo", desc: "Almoxarifado" },
-   ];
+    const testAccounts = [
+      { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
+      { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
+      { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
+      { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
+      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
+      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+    ];
  
    const quickLogin = async (email: string) => {
      setLoading(true);
@@ -153,21 +152,37 @@ export default function Login() {
             </button>
           )}
         </form>
-         <div className="mt-8 pt-6 border-t border-border">
-           <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Contas de Teste</div>
-           <div className="grid grid-cols-2 gap-2">
-             {testAccounts.map((acc) => (
-               <button
-                 key={acc.role}
-                 onClick={() => quickLogin(acc.email)}
-                 className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
-               >
-                 <span className="text-[11px] font-semibold">{acc.role}</span>
-                 <span className="text-[9px] text-muted-foreground">{acc.desc}</span>
-               </button>
-             ))}
-           </div>
-         </div>
+          <div className="mt-8 pt-6 border-t border-border space-y-4">
+            <div className="rounded-lg border-2 border-orange-200 bg-orange-50/50 p-4 dark:border-orange-900/30 dark:bg-orange-900/10">
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Portal Especializado</div>
+              <button
+                onClick={() => quickLogin("estoque@energyops.demo")}
+                className="flex w-full items-center justify-between rounded-md bg-orange-600 p-3 text-white shadow-sm transition-all hover:bg-orange-700 active:scale-[0.98]"
+              >
+                <div className="flex flex-col items-start text-left">
+                  <span className="text-sm font-bold">Estoque · Almoxarifado</span>
+                  <span className="text-[10px] opacity-90">Acesso direto ao centro de logística</span>
+                </div>
+                <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
+              </button>
+            </div>
+
+            <div>
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Painéis Operacionais</div>
+              <div className="grid grid-cols-2 gap-2">
+                {testAccounts.map((acc) => (
+                  <button
+                    key={acc.role}
+                    onClick={() => quickLogin(acc.email)}
+                    className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
+                  >
+                    <span className="text-[11px] font-semibold">{acc.role}</span>
+                    <span className="text-[9px] text-muted-foreground">{acc.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
  
          <button
            onClick={() => setMode(mode === "login" ? "signup" : "login")}

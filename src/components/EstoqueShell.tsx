@@ -4,7 +4,7 @@ import {
   LogOut, Package, Bell, LayoutDashboard, Boxes, 
   Warehouse as WarehouseIcon, History, AlertCircle, 
   Menu, TrendingUp, Settings
- dark} from "lucide-react";
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";

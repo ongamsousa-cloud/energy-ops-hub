@@ -918,10 +918,16 @@ export default function Mensagens() {
                            "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
                            isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
                          )}
-                          onClick={() => { 
-                            setRecordingMode('direct');
-                            recorderControls.startRecording();
-                            toast.info("Iniciando gravação...");
+                          onClick={async () => { 
+                            try {
+                              setRecordingMode('direct');
+                              await recorderControls.startRecording();
+                              toast.info("Iniciando gravação...");
+                            } catch (err: any) {
+                              console.error("Erro ao iniciar gravação direta:", err);
+                              toast.error("Erro ao acessar microfone.");
+                              setRecordingMode(null);
+                            }
                           }}
                          title="Gravar Áudio"
                        >

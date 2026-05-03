@@ -27,13 +27,13 @@ export default function Login() {
  
    const quickLogin = async (email: string) => {
      setEmail(email);
-     setPassword("senha123");
+      setPassword("Energia123!");
      setMode("login");
      // We'll let the user click submit or we can trigger it
      // Triggering directly for convenience
      setLoading(true);
      try {
-       const { error } = await supabase.auth.signInWithPassword({ email, password: "senha123" });
+        const { error } = await supabase.auth.signInWithPassword({ email, password: "Energia123!" });
        if (error) throw error;
        toast.success("Bem-vindo");
        nav("/app");

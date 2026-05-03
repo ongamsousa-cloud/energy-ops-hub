@@ -60,8 +60,7 @@ export default function Obras() {
      }
    }
  
-   async function save() {
-  async function load() {
+   async function load() {
     const { data } = await supabase.from("obras").select("*").order("created_at", { ascending: false });
     setRows(data ?? []);
   }

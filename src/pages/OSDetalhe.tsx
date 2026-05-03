@@ -225,13 +225,25 @@ export default function OSDetalhe() {
                     <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label>Atividade</Label>
-                  <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                    <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                    <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                  </Select>
-                </div>
+                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                   <div>
+                     <Label>Atividade</Label>
+                     <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
+                       <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                       <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
+                     </Select>
+                   </div>
+                   <div>
+                     <Label>Código Técnico (Base Técnica)</Label>
+                     <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
+                       <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="none">Nenhum</SelectItem>
+                         {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Quantidade ({ativSel?.unidade || "—"})</Label>

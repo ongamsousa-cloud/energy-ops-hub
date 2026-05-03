@@ -928,26 +928,28 @@ export default function Mensagens() {
                          placeholder="Escreva sua mensagem..." 
                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
                        />
-                       <button 
-                         className={cn(
-                           "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
-                           isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
-                         )}
-                          onClick={async () => { 
-                            try {
-                              setRecordingMode('direct');
-                              await recorderControls.startRecording();
-                              toast.info("Iniciando gravação...");
-                            } catch (err: any) {
-                              console.error("Erro ao iniciar gravação direta:", err);
-                              toast.error("Erro ao acessar microfone.");
-                              setRecordingMode(null);
-                            }
-                          }}
-                         title="Gravar Áudio"
-                       >
-                         <Mic className="h-4 w-4" />
-                       </button>
+                        {!isRecording && (
+                          <button 
+                            className={cn(
+                              "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                              "text-muted-foreground hover:text-primary"
+                            )}
+                             onClick={async () => { 
+                               try {
+                                 setRecordingMode('direct');
+                                 await recorderControls.startRecording();
+                                 toast.info("Iniciando gravação...");
+                               } catch (err: any) {
+                                 console.error("Erro ao iniciar gravação direta:", err);
+                                 toast.error("Erro ao acessar microfone.");
+                                 setRecordingMode(null);
+                               }
+                             }}
+                            title="Gravar Áudio"
+                          >
+                            <Mic className="h-4 w-4" />
+                          </button>
+                        )}
                      </div>
 
                       <Button 

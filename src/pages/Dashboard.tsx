@@ -237,9 +237,12 @@
            weeklySummary={weeklySummary}
            weeklyNewOS={weeklyNewOS}
            osRecentes={stats.osRecentes}
-           stockStats={stockStats}
-         />
-      );
+            stockStats={stockStats}
+            materials={materials}
+            movements={movements}
+            warehouses={warehouses}
+          />
+       );
      if (hasRole("gestor") || hasRole("supervisor")) return <GestorDashboard stats={stats} byStatus={byStatus} />;
      if (hasRole("financeiro")) return <FinanceiroDashboard stats={stats} umdHistory={umdHistory} />;
       if (hasRole("auditor")) return <AuditorDashboard stats={stats} auditHistory={auditHistory} />;

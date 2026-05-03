@@ -277,6 +277,21 @@ export default function OSDetalhe() {
      load();
    }
 
+   async function deleteEvidence(ev: any) {
+     if (!confirm("Tem certeza que deseja excluir esta evidência? Esta ação não pode ser desfeita.")) return;
+     try {
+       const { error: dbError } = await supabase
+         .from("os_evidences")
+         .update({ deleted_at: new Date().toISOString() })
+         .eq("id", ev.id);
+       if (dbError) throw dbError;
+       toast.success("Evidência removida com sucesso");
+       load();
+     } catch (err: any) {
+       toast.error("Erro ao remover: " + err.message);
+     }
+   }
+
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
   return (

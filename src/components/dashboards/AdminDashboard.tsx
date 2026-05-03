@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, 
+   AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip,
   CartesianGrid, LineChart, Line, PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend 
 } from "recharts";
 import { 
@@ -8,7 +8,8 @@ import {
   Database, Activity, FileText, Upload, PlusCircle, Package, Calendar, PieChart as PieChartIcon, 
   BarChart3, Layers, Target, Clock
 } from "lucide-react";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+ import { Badge } from "@/components/ui/badge";
+ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import NewServiceOrderDialog from "@/components/os/NewServiceOrderDialog";
@@ -138,20 +139,20 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-        <Card asChild className="cursor-pointer border-none bg-gradient-to-br from-orange-50 to-white shadow-sm dark:from-orange-950/20 dark:to-background transition-transform hover:scale-[1.02]">
-          <Link to="/app/estoque">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between space-y-0 pb-2">
-                <p className="text-sm font-medium text-muted-foreground">Status do Estoque</p>
-                <Package className="h-4 w-4 text-orange-500" />
-              </div>
-              <div className="text-2xl font-bold">{stockStats.totalItems}</div>
-              <p className="text-xs text-muted-foreground mt-1 text-orange-600 font-semibold">
-                {stockStats.lowStock > 0 ? `${stockStats.lowStock} alertas críticos` : 'Estoque regularizado'}
-              </p>
-            </CardContent>
-          </Link>
-         </Card>
+         <Link to="/app/estoque" className="block transition-transform hover:scale-[1.02]">
+           <Card className="cursor-pointer border-none bg-gradient-to-br from-orange-50 to-white shadow-sm dark:from-orange-950/20 dark:to-background h-full">
+             <CardContent className="p-6">
+               <div className="flex items-center justify-between space-y-0 pb-2">
+                 <p className="text-sm font-medium text-muted-foreground">Status do Estoque</p>
+                 <Package className="h-4 w-4 text-orange-500" />
+               </div>
+               <div className="text-2xl font-bold">{stockStats.totalItems}</div>
+               <p className="text-xs text-muted-foreground mt-1 text-orange-600 font-semibold">
+                 {stockStats.lowStock > 0 ? `${stockStats.lowStock} alertas críticos` : 'Estoque regularizado'}
+               </p>
+             </CardContent>
+           </Card>
+         </Link>
       </div>
 
       {/* Dashboard BI Refined */}

@@ -222,9 +222,9 @@
           byStatus={byStatus} 
           umdHistory={umdHistory}
           teamProductivity={teamProductivity}
-          weeklySummary={weeklySummary}
-          materialUsage={materialUsage}
+           weeklySummary={weeklySummary}
            weeklyNewOS={weeklyNewOS}
+           osRecentes={stats.osRecentes}
            stockStats={stockStats}
          />
       );

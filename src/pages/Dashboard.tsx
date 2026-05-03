@@ -149,15 +149,21 @@
          });
          setMaterialUsage(Object.entries(matsUsageMap).map(([category, value]) => ({ category, value })));
 
-         // Processar Estoque
-         if (stockRes.data) {
-           const totalItems = stockRes.data.length;
-           const lowStock = stockRes.data.filter(m => {
-             const qty = (m.stock_levels as any[] || []).reduce((acc, curr) => acc + (curr.quantity || 0), 0);
-             return qty <= (m.minimum_stock || 0);
-           }).length;
-           setStockStats({ totalItems, lowStock });
-         }
+          // Processar Estoque
+          if (stockRes.data) {
+            const enriched = (stockRes.data as any[]).map(m => ({
+              ...m,
+              total_quantity: (m.stock_levels || []).reduce((s: number, l: any) => s + Number(l.quantity || 0), 0),
+              total_value: (m.stock_levels || []).reduce((s: number, l: any) => s + Number(l.quantity || 0), 0) * Number(m.cost_price || 0),
+            }));
+            setMaterials(enriched);
+            setStockStats({ 
+              totalItems: enriched.length, 
+              lowStock: enriched.filter(m => m.total_quantity <= Number(m.minimum_stock || 0)).length 
+            });
+          }
+          if (movRes.data) setMovements(movRes.data);
+          if (whRes.data) setWarehouses(whRes.data);
 
         // Resumo Semanal (últimos 7 dias)
         const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];

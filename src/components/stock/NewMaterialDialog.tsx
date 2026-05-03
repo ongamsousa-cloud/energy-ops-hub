@@ -13,9 +13,10 @@
    open: boolean;
    onOpenChange: (open: boolean) => void;
    onSuccess: () => void;
+   material?: any;
  }
  
- export default function NewMaterialDialog({ open, onOpenChange, onSuccess }: NewMaterialDialogProps) {
+ export default function NewMaterialDialog({ open, onOpenChange, onSuccess, material }: NewMaterialDialogProps) {
    const [loading, setLoading] = useState(false);
    const [categories, setCategories] = useState<any[]>([]);
    const [formData, setFormData] = useState({
@@ -33,8 +34,33 @@
    useEffect(() => {
      if (open) {
        loadCategories();
+       if (material) {
+         setFormData({
+           code: material.code || "",
+           name: material.name || "",
+           description: material.description || "",
+           category_id: material.category_id || "",
+           unit: material.unit || "un",
+           cost_price: String(material.cost_price || 0),
+           sale_price: String(material.sale_price || 0),
+           minimum_stock: String(material.minimum_stock || 0),
+           critical_stock: String(material.critical_stock || 0)
+         });
+       } else {
+         setFormData({
+           code: "",
+           name: "",
+           description: "",
+           category_id: "",
+           unit: "un",
+           cost_price: "0",
+           sale_price: "0",
+           minimum_stock: "0",
+           critical_stock: "0"
+         });
+       }
      }
-   }, [open]);
+   }, [open, material]);
  
    async function loadCategories() {
      const { data } = await supabase.from("material_categories").select("*").order("name");
@@ -45,7 +71,7 @@
      e.preventDefault();
      setLoading(true);
      try {
-       const { error } = await supabase.from("materials").insert({
+       const payload = {
          code: formData.code,
          name: formData.name,
          description: formData.description,
@@ -55,11 +81,15 @@
          sale_price: parseFloat(formData.sale_price),
          minimum_stock: parseFloat(formData.minimum_stock),
          critical_stock: parseFloat(formData.critical_stock)
-       });
+       };
+ 
+       const { error } = material?.id 
+         ? await supabase.from("materials").update(payload).eq("id", material.id)
+         : await supabase.from("materials").insert(payload);
  
        if (error) throw error;
  
-       toast.success("Material cadastrado com sucesso!");
+       toast.success(material?.id ? "Material atualizado!" : "Material cadastrado!");
        onSuccess();
        onOpenChange(false);
        setFormData({
@@ -84,8 +114,8 @@
      <Dialog open={open} onOpenChange={onOpenChange}>
        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
          <DialogHeader>
-           <DialogTitle>Novo Material</DialogTitle>
-           <DialogDescription>Cadastre um novo item no catálogo de materiais.</DialogDescription>
+           <DialogTitle>{material ? "Editar Material" : "Novo Material"}</DialogTitle>
+           <DialogDescription>{material ? "Atualize as informações do item no catálogo." : "Cadastre um novo item no catálogo de materiais."}</DialogDescription>
          </DialogHeader>
          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
            <div className="grid grid-cols-2 gap-4">

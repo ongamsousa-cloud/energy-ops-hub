@@ -56,7 +56,11 @@ export default function AtividadesImport() {
     })).filter((r) => r.categoria_id);
     for (let i = 0; i < payload.length; i += 200) {
       const chunk = payload.slice(i, i + 200);
-      const { error, count } = await supabase.from("atividades").upsert(chunk, { onConflict: "codigo_item", count: "exact" });
+      const { error, count } = await supabase.from("atividades").upsert(chunk, { 
+        onConflict: "codigo_item", 
+        count: "exact",
+        ignoreDuplicates: false // Garante que atualize os dados existentes (UMD, Descrição) baseando-se no código_item
+      });
       if (error) { erros.push(error.message); continue; }
       inseridas += count ?? chunk.length;
     }

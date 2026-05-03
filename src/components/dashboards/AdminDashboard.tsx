@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
- import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText } from "lucide-react";
+ import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText, Upload } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface AdminDashboardProps {
   stats: any;
@@ -39,6 +41,15 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
+      <div className="flex flex-wrap gap-2">
+        <Button asChild variant="outline" size="sm" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50">
+          <Link to="/app/atividades/import" className="flex items-center">
+            <Upload className="mr-2 h-4 w-4 text-primary" />
+            Importar Excel (Serviços/Atividades)
+          </Link>
+        </Button>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-none bg-gradient-to-br from-blue-50 to-white shadow-sm dark:from-blue-950/20 dark:to-background">
           <CardContent className="p-6">

@@ -21,6 +21,7 @@ import OSDetalhe from "./pages/OSDetalhe";
 import Aprovacoes from "./pages/Aprovacoes";
 import Relatorios from "./pages/Relatorios";
 import Medicao from "./pages/Medicao";
+import Mensagens from "./pages/Mensagens";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="aprovacoes" element={<ProtectedRoute roles={["admin","gestor","supervisor"]}><Aprovacoes /></ProtectedRoute>} />
               <Route path="relatorios" element={<ProtectedRoute roles={["admin","gestor","financeiro","auditor"]}><Relatorios /></ProtectedRoute>} />
               <Route path="medicao" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><Medicao /></ProtectedRoute>} />
+              <Route path="mensagens" element={<Mensagens />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
   LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks,
-  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload
+  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,6 +19,7 @@ const NAV: Item[] = [
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
   { to: "/app/atividades/importar", label: "Importar Excel", icon: Upload, roles: ["admin","gestor"] },
   { to: "/app/os", label: "Ordens de Serviço", icon: ClipboardList },
+  { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
   { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
   { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },
   { to: "/app/medicao", label: "Medição", icon: Calculator, roles: ["admin","gestor","financeiro"] },

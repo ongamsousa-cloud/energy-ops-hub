@@ -139,6 +139,62 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          ultima_leitura: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          ultima_leitura?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          ultima_leitura?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          obra_id: string | null
+          tipo: string
+          titulo: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id?: string | null
+          tipo?: string
+          titulo?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          obra_id?: string | null
+          tipo?: string
+          titulo?: string | null
+        }
+        Relationships: []
+      }
       equipe_membros: {
         Row: {
           created_at: string
@@ -269,6 +325,44 @@ export type Database = {
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          anexo_tipo: string | null
+          anexo_url: string | null
+          conteudo: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          anexo_tipo?: string | null
+          anexo_url?: string | null
+          conteudo?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          anexo_tipo?: string | null
+          anexo_url?: string | null
+          conteudo?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -762,6 +856,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_message: {
+        Args: { _receiver: string; _sender: string }
+        Returns: boolean
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -774,6 +872,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { _conv: string; _user: string }
         Returns: boolean
       }
     }

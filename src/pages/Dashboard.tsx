@@ -224,8 +224,9 @@
           teamProductivity={teamProductivity}
           weeklySummary={weeklySummary}
           materialUsage={materialUsage}
-          weeklyNewOS={weeklyNewOS}
-        />
+           weeklyNewOS={weeklyNewOS}
+           stockStats={stockStats}
+         />
       );
      if (hasRole("gestor") || hasRole("supervisor")) return <GestorDashboard stats={stats} byStatus={byStatus} />;
      if (hasRole("financeiro")) return <FinanceiroDashboard stats={stats} umdHistory={umdHistory} />;

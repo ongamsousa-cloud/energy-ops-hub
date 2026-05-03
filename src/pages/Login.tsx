@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth";
 
 export default function Login() {
   const nav = useNavigate();
-  const { user } = useAuth();
+  const { user, mockSignIn } = useAuth();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,16 +26,10 @@ export default function Login() {
    ];
  
    const quickLogin = async (email: string) => {
-     setEmail(email);
-     setPassword("senha123");
-     setMode("login");
-     // We'll let the user click submit or we can trigger it
-     // Triggering directly for convenience
      setLoading(true);
      try {
-       const { error } = await supabase.auth.signInWithPassword({ email, password: "senha123" });
-       if (error) throw error;
-       toast.success("Bem-vindo");
+       await mockSignIn(email);
+       toast.success("Acesso de teste liberado");
        nav("/app");
      } catch (e: any) {
        toast.error(e.message ?? "Erro ao autenticar");

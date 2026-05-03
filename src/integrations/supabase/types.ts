@@ -1729,7 +1729,9 @@ export type Database = {
       }
       os_evidences: {
         Row: {
+          audit_verified: boolean | null
           created_at: string | null
+          deleted_at: string | null
           id: string
           localizacao: Json | null
           metadata: Json | null
@@ -1739,7 +1741,9 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          audit_verified?: boolean | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           localizacao?: Json | null
           metadata?: Json | null
@@ -1749,7 +1753,9 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          audit_verified?: boolean | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           localizacao?: Json | null
           metadata?: Json | null
@@ -1761,6 +1767,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "os_evidences_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          os_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          os_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          os_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_messages_os_id_fkey"
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"

@@ -11,9 +11,9 @@
  
  export default function Dashboard() {
    const { profile, roles, hasRole, user } = useAuth();
-   const [stats, setStats] = useState({
-     obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0, osRejeitadas: 0,
-   });
+    const [stats, setStats] = useState({
+      obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0, osRejeitadas: 0, osRecentes: [] as any[]
+    });
    const [byStatus, setByStatus] = useState<{ status: string; n: number }[]>([]);
     const [umdHistory, setUmdHistory] = useState<{ date: string; umd: number }[]>([]);
     const [auditHistory, setAuditHistory] = useState<any[]>([]);
@@ -38,7 +38,7 @@
           statusQuery.eq("assigned_supervisor_id", user.id);
         }
  
-        const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes] = await Promise.all([
+         const [obrasRes, obrasExecRes, osRejeitadasRes, osAprovRes, osPendRes, umdRes, profsRes, equipesRes, statusAggRes, historyRes, auditRes, osRecentesRes] = await Promise.all([
          supabase.from("obras").select("id"),
          supabase.from("obras").select("id").eq("status", "execucao"),
           (() => {
@@ -69,7 +69,13 @@
              if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
              return q.order("fim_em");
            })(),
-          supabase.from("os_audit_logs").select("*, profile:profiles(nome), ordens_servico(numero)").order("created_at", { ascending: false }).limit(5),
+           supabase.from("os_audit_logs").select("*, profile:profiles(nome), ordens_servico(numero)").order("created_at", { ascending: false }).limit(5),
+           (() => {
+             let q = supabase.from("ordens_servico").select("id, numero, status, total_umd, obra:obras(nome)").order("created_at", { ascending: false }).limit(5);
+             if (isCampo) q = q.eq("profissional_id", user.id);
+             if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);
+             return q;
+           })(),
         ]);
         setAuditHistory(auditRes.data ?? []);
  
@@ -94,9 +100,10 @@
          osPend: (osPendRes.data ?? []).length,
          osRejeitadas: (osRejeitadasRes.data ?? []).length,
          umd: Math.round(totalUmd * 100) / 100,
-         profs: (profsRes.data ?? []).length,
-         equipes: (equipesRes.data ?? []).length,
-       });
+          profs: (profsRes.data ?? []).length,
+          equipes: (equipesRes.data ?? []).length,
+          osRecentes: osRecentesRes.data ?? [],
+        });
        setLoading(false);
      })();
    }, [user, roles]);

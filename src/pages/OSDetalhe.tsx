@@ -23,8 +23,10 @@ export default function OSDetalhe() {
   const [os, setOS] = useState<any>(null);
    const [fin, setFin] = useState<any>(null);
    const [items, setItems] = useState<any[]>([]);
-   const [evid, setEvid] = useState<any[]>([]);
-   const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [evid, setEvid] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState("");
   const [cats, setCats] = useState<any[]>([]);
   const [atvs, setAtvs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
@@ -60,10 +62,12 @@ export default function OSDetalhe() {
      setOS(o);
      const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
      setItems(it ?? []);
-     const { data: ev } = await supabase.from("os_evidences").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at");
-     setEvid(ev ?? []);
-     const { data: logs } = await supabase.from("os_audit_logs").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at", { ascending: false });
-     setAuditLogs(logs ?? []);
+      const { data: ev } = await supabase.from("os_evidences").select("*, profile:profiles(nome)").eq("os_id", id).is("deleted_at", null).order("created_at");
+      setEvid(ev ?? []);
+      const { data: logs } = await supabase.from("os_audit_logs").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at", { ascending: false });
+      setAuditLogs(logs ?? []);
+      const { data: msg } = await supabase.from("os_messages").select("*, sender:profiles(nome)").eq("os_id", id).order("created_at", { ascending: true });
+      setMessages(msg ?? []);
    }, [id]);
 
   useEffect(() => {
@@ -130,6 +134,14 @@ export default function OSDetalhe() {
   async function removeItem(itemId: string) {
     if (!confirm("Remover este lançamento?")) return;
     await supabase.from("os_atividades").delete().eq("id", itemId);
+    load();
+  }
+
+  async function sendMessage() {
+    if (!newMessage.trim()) return;
+    const { error } = await supabase.from("os_messages").insert({ os_id: id, sender_id: user!.id, content: newMessage });
+    if (error) return toast.error(error.message);
+    setNewMessage("");
     load();
   }
 
@@ -316,82 +328,102 @@ export default function OSDetalhe() {
         </div>
       )}
 
-      {/* Evidências */}
        <Tabs defaultValue="atividades" className="mt-8">
-          <TabsList className="grid w-full grid-cols-4 lg:w-[500px]">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
             <TabsTrigger value="evidencias">Evidências</TabsTrigger>
             <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
             <TabsTrigger value="auditoria">Histórico</TabsTrigger>
           </TabsList>
-         
-         <TabsContent value="atividades" className="mt-4">
-           {/* Conteúdo de Atividades moved from lines 169-232 */}
-           <div className="flex items-end justify-between mb-3">
-             <h2 className="text-sm font-medium">Lançamentos realizados</h2>
-             {canEdit && (
-               <Dialog open={add} onOpenChange={setAdd}>
-                 <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
-                 <DialogContent>
-                   <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
-                   <div className="grid gap-3">
-                     <div>
-                       <Label>Categoria</Label>
-                       <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
-                         <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                         <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
-                       </Select>
-                     </div>
-                     <div>
-                       <Label>Atividade</Label>
-                       <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
-                         <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
-                         <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
-                       </Select>
-                     </div>
-                     <div className="grid grid-cols-2 gap-3">
-                       <div>
-                         <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                         <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
-                       </div>
-                       <div>
-                         <Label>UMD calculada</Label>
-                         <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
-                       </div>
-                     </div>
-                     <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
-                     <Button onClick={addItem}>Salvar lançamento</Button>
-                   </div>
-                 </DialogContent>
-               </Dialog>
-             )}
-           </div>
-           {items.length === 0 ? (
-             <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
-           ) : (
-             <div className="overflow-hidden rounded-md border border-border bg-card">
-               <table className="w-full text-sm">
-                 <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                   <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
-                 </thead>
-                 <tbody>
-                   {items.map((i)=>(
-                     <tr key={i.id} className="border-b border-border last:border-0">
-                       <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
-                       <td className="px-3 py-2">{i.atividade?.descricao}</td>
-                       <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
-                       <td className="px-3 py-2">{i.unidade}</td>
-                       <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
-                       <td className="px-3 py-2 text-right">
-                         {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-             </div>
-           )}
-         </TabsContent>
+
+          <TabsContent value="atividades" className="mt-4">
+            <div className="flex items-end justify-between mb-3">
+              <h2 className="text-sm font-medium">Lançamentos realizados</h2>
+              {canEdit && (
+                <Dialog open={add} onOpenChange={setAdd}>
+                  <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Adicionar</Button></DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Lançar atividade</DialogTitle></DialogHeader>
+                    <div className="grid gap-3">
+                      <div>
+                        <Label>Categoria</Label>
+                        <Select value={form.categoria_id} onValueChange={(v)=>setForm({...form, categoria_id: v, atividade_id: ""})}>
+                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                          <SelectContent>{cats.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>))}</SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Atividade</Label>
+                        <Select value={form.atividade_id} onValueChange={(v)=>setForm({...form, atividade_id: v})} disabled={!form.categoria_id}>
+                          <SelectTrigger><SelectValue placeholder="Selecione"/></SelectTrigger>
+                          <SelectContent>{atvs.map((a)=>(<SelectItem key={a.id} value={a.id}>{a.codigo_item} · {a.descricao}</SelectItem>))}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
+                          <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
+                        </div>
+                        <div>
+                          <Label>UMD calculada</Label>
+                          <Input value={umdTotal.toFixed(4)} disabled className="bg-muted/30 tabular-nums"/>
+                        </div>
+                      </div>
+                      <div><Label>Observação</Label><Textarea value={form.observacao} onChange={(e)=>setForm({...form, observacao: e.target.value})}/></div>
+                      <Button onClick={addItem}>Salvar lançamento</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
+            {items.length === 0 ? (
+              <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum lançamento ainda.</div>
+            ) : (
+              <div className="overflow-hidden rounded-md border border-border bg-card">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr><th className="px-3 py-2">Item</th><th className="px-3 py-2">Atividade</th><th className="px-3 py-2 text-right">Qtd</th><th className="px-3 py-2">Un</th><th className="px-3 py-2 text-right">UMD</th><th className="px-3 py-2"/></tr>
+                  </thead>
+                  <tbody>
+                    {items.map((i)=>(
+                      <tr key={i.id} className="border-b border-border last:border-0">
+                        <td className="px-3 py-2 font-mono text-xs">{i.atividade?.codigo_item}</td>
+                        <td className="px-3 py-2">{i.atividade?.descricao}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{Number(i.quantidade).toFixed(2)}</td>
+                        <td className="px-3 py-2">{i.unidade}</td>
+                        <td className="px-3 py-2 text-right tabular-nums">{Number(i.umd_total).toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right">
+                          {canEdit && <Button variant="ghost" size="icon" onClick={()=>removeItem(i.id)}><Trash2 className="h-3.5 w-3.5"/></Button>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="comunicacao" className="mt-4">
+            <Card className="p-4 border-none shadow-none bg-muted/20 h-[400px] flex flex-col">
+              <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+                {messages.length === 0 ? (
+                  <div className="text-center text-xs text-muted-foreground mt-10">Inicie uma conversa operacional sobre esta OS.</div>
+                ) : (
+                  messages.map(m => (
+                    <div key={m.id} className={cn("max-w-[80%] rounded-lg p-2 text-xs shadow-sm", m.sender_id === user?.id ? "bg-primary text-primary-foreground ml-auto" : "bg-card border border-border mr-auto")}>
+                      <div className="font-bold mb-0.5">{m.sender?.nome || "Usuário"}</div>
+                      <div>{m.content}</div>
+                      <div className="text-[10px] opacity-70 mt-1">{new Date(m.created_at).toLocaleTimeString()}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="Mensagem para supervisor/gestor..." value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendMessage()} className="text-xs h-9 bg-background" />
+                <Button size="sm" onClick={sendMessage}><Send className="h-3.5 w-3.5" /></Button>
+              </div>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="evidencias" className="mt-4">
             <div className="flex flex-col gap-4 mb-4">

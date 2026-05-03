@@ -33,8 +33,19 @@ export default function OSDetalhe() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
    const [newMessage, setNewMessage] = useState("");
-   const [busy, setBusy] = useState(false);
-   const [cats, setCats] = useState<any[]>([]);
+    const [busy, setBusy] = useState(false);
+    const [stockLevels, setStockLevels] = useState<any[]>([]);
+    const [cats, setCats] = useState<any[]>([]);
+
+    async function loadStockLevels() {
+      const { data } = await supabase.from("stock_levels").select("*");
+      setStockLevels(data || []);
+    }
+
+    useEffect(() => {
+      loadStockLevels();
+    }, []);
+
     const [atvs, setAtvs] = useState<any[]>([]);
     const [allAtvs, setAllAtvs] = useState<any[]>([]);
     const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");

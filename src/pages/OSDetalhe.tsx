@@ -206,17 +206,13 @@ export default function OSDetalhe() {
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">UMD total</div>
           <div className="mt-1 text-2xl font-semibold tabular-nums">{Number(os.total_umd ?? 0).toFixed(2)}</div>
         </Card>
-        <Card className="rounded-md border-border p-4 shadow-none">
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Localização</div>
-          <div className="mt-1 flex items-center gap-1 text-sm">
-            <MapPin className="h-3.5 w-3.5" strokeWidth={1.5}/>
-            {os.inicio_lat ? (
-              <a className="hover:underline" target="_blank" href={`https://maps.google.com/?q=${os.inicio_lat},${os.inicio_lng}`}>
-                {Number(os.inicio_lat).toFixed(4)}, {Number(os.inicio_lng).toFixed(4)}
-              </a>
-            ) : "—"}
-          </div>
-        </Card>
+         <Card className="rounded-md border-border p-4 shadow-none">
+           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Local</div>
+           <div className="mt-1 text-sm flex items-center gap-1.5 truncate">
+             <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+             <span className="truncate">{os.cidade || os.obra?.cidade || 'Local não informado'}</span>
+           </div>
+         </Card>
       </div>
 
       {/* Itens */}

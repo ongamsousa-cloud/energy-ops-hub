@@ -356,7 +356,17 @@ import { useState } from "react";
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
-  );
-}
+         </TabsContent>
+ 
+         <TabsContent value="estoque" className="animate-in slide-in-from-right-2 duration-300">
+           <AdminStockView 
+             materials={materials} 
+             movements={movements} 
+             warehouses={warehouses} 
+             stockStats={stockStats} 
+           />
+         </TabsContent>
+       </Tabs>
+     </div>
+   );
+ }

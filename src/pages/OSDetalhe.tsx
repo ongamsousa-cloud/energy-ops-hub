@@ -346,12 +346,50 @@ export default function OSDetalhe() {
   }
 
   const [addMat, setAddMat] = useState(false);
-  const [matForm, setMatForm] = useState({ material_id: "", quantity: "1" });
+  const [matForm, setMatForm] = useState({ material_id: "", quantity: "1", warehouse_id: "" });
+  const [warehouses, setWarehouses] = useState<any[]>([]);
   const [allMaterials, setAllMaterials] = useState<any[]>([]);
 
   useEffect(() => {
     if (addMat) {
       supabase.from("materials").select("*").eq("active", true).order("name").then(({ data }) => setAllMaterials(data ?? []));
+      supabase.from("warehouses").select("*").eq("active", true).order("name").then(({ data }) => setWarehouses(data ?? []));
+  async function useMaterial(osMaterial: any, qty: number, warehouseId: string) {
+    if (!user) return;
+    setBusy(true);
+    try {
+      // 1. Registrar movimentação de saída
+      const { error: moveError } = await supabase.from("stock_movements").insert({
+        material_id: osMaterial.material_id,
+        from_warehouse_id: warehouseId,
+        quantity: qty,
+        type: "saida",
+        os_id: id,
+        professional_id: os.profissional_id,
+        created_by: user.id,
+        notes: `Consumo OS #${os.numero}`
+      });
+      if (moveError) throw moveError;
+
+      // 2. Atualizar quantidade usada no os_materials
+      const { error: updateError } = await supabase.from("os_materials")
+        .update({ quantity_used: (osMaterial.quantity_used || 0) + qty })
+        .eq("id", osMaterial.id);
+      if (updateError) throw updateError;
+
+      toast.success("Consumo registrado no estoque");
+      load();
+    } catch (err: any) {
+      toast.error("Erro ao registrar consumo: " + err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const [consumeDialog, setConsumeDialog] = useState<{ open: boolean; item: any; qty: string; warehouse_id: string }>({
+    open: false, item: null, qty: "1", warehouse_id: ""
+  });
+
     }
   }, [addMat]);
 

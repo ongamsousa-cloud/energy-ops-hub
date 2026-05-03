@@ -705,37 +705,99 @@ export default function OSDetalhe() {
   );
 }
 
-   function EvImg({ ev }: { ev: any }) {
+   function EvImg({ ev, onDelete }: { ev: any, onDelete: (ev: any) => void }) {
      const [url, setUrl] = useState<string>("");
+     const [showDetails, setShowDetails] = useState(false);
+     const { user } = useAuth();
+     
      useEffect(() => {
        supabase.storage.from("os-evidences").createSignedUrl(ev.url, 3600).then(({ data }) => setUrl(data?.signedUrl ?? ""));
      }, [ev.url]);
      
      const isVideo = ev.tipo === "video";
+     const metadata = ev.metadata || {};
+     const canDelete = user?.id === ev.user_id || hasRole(['admin', 'gestor']);
      
      return (
-       <div className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-         {url ? (
-           isVideo ? (
-             <video src={url} className="h-full w-full object-cover" />
-           ) : (
-             <img src={url} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
-           )
-         ) : null}
-         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-           <a href={url} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
-             <Download className="h-4 w-4" />
-           </a>
-           {ev.localizacao?.lat && (
-             <a href={`https://maps.google.com/?q=${ev.localizacao.lat},${ev.localizacao.lng}`} target="_blank" rel="noreferrer" className="p-1.5 bg-white rounded-full text-black hover:bg-white/90">
-               <MapPin className="h-4 w-4" />
+       <>
+         <div className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
+           {url ? (
+             isVideo ? (
+               <video src={url} className="h-full w-full object-cover" />
+             ) : (
+               <img src={url} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+             )
+           ) : null}
+           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+             <Button variant="ghost" size="icon" className="h-8 w-8 bg-white/20 hover:bg-white/40 text-white rounded-full" onClick={() => setShowDetails(true)} title="Informações">
+               <Info className="h-4 w-4" />
+             </Button>
+             <a href={url} target="_blank" rel="noreferrer" className="p-1.5 bg-white/20 hover:bg-white/40 rounded-full text-white" title="Download">
+               <Download className="h-4 w-4" />
              </a>
-           )}
+             {canDelete && (
+               <Button variant="ghost" size="icon" className="h-8 w-8 bg-destructive/20 hover:bg-destructive/60 text-white rounded-full" onClick={() => onDelete(ev)} title="Excluir">
+                 <Trash2 className="h-4 w-4" />
+               </Button>
+             )}
+           </div>
+           <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent pointer-events-none">
+             <div className="text-[9px] text-white truncate font-medium">{ev.profile?.nome}</div>
+             <div className="text-[8px] text-white/70">{new Date(ev.created_at).toLocaleDateString()}</div>
+           </div>
          </div>
-         <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/60 to-transparent">
-           <div className="text-[9px] text-white truncate">{ev.profile?.nome}</div>
-           <div className="text-[8px] text-white/70">{new Date(ev.created_at).toLocaleDateString()}</div>
-         </div>
-       </div>
+
+         <Dialog open={showDetails} onOpenChange={setShowDetails}>
+           <DialogContent className="max-w-md">
+             <DialogHeader>
+               <DialogTitle>Detalhes da Evidência</DialogTitle>
+             </DialogHeader>
+             <div className="space-y-4 py-4">
+               <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                 {isVideo ? (
+                   <video src={url} controls className="h-full w-full object-contain" />
+                 ) : (
+                   <img src={url} alt="Evidência" className="h-full w-full object-contain" />
+                 )}
+               </div>
+               <div className="grid grid-cols-2 gap-4 text-sm">
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Autor</p>
+                   <p className="font-medium">{ev.profile?.nome}</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Data de Envio</p>
+                   <p className="font-medium">{new Date(ev.created_at).toLocaleString('pt-BR')}</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Data de Captura</p>
+                   <p className="font-medium">{metadata.captured_at ? new Date(metadata.captured_at).toLocaleString('pt-BR') : 'Não registrada'}</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Tipo</p>
+                   <p className="font-medium uppercase">{metadata.type || ev.tipo}</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Tamanho</p>
+                   <p className="font-medium">{metadata.size ? (metadata.size / 1024 / 1024).toFixed(2) + ' MB' : 'Desconhecido'}</p>
+                 </div>
+                 <div className="space-y-1">
+                   <p className="text-xs text-muted-foreground uppercase font-bold">Nome Original</p>
+                   <p className="font-medium truncate" title={metadata.name}>{metadata.name || 'Sem nome'}</p>
+                 </div>
+               </div>
+               {ev.localizacao?.lat && (
+                 <div className="pt-2">
+                   <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                     <a href={`https://maps.google.com/?q=${ev.localizacao.lat},${ev.localizacao.lng}`} target="_blank" rel="noreferrer">
+                       <MapPin className="h-4 w-4" /> Ver localização no mapa
+                     </a>
+                   </Button>
+                 </div>
+               )}
+             </div>
+           </DialogContent>
+         </Dialog>
+       </>
      );
    }

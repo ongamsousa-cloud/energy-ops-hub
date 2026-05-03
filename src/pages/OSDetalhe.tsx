@@ -422,9 +422,16 @@ export default function OSDetalhe() {
     }
   }
 
-  const [consumeDialog, setConsumeDialog] = useState<{ open: boolean; item: any; qty: string; warehouse_id: string }>({
-    open: false, item: null, qty: "1", warehouse_id: ""
-  });
+   const [consumeDialog, setConsumeDialog] = useState<{ 
+     open: boolean; 
+     item: any; 
+     qty: string; 
+     warehouse_id: string;
+     type: "saida" | "devolucao";
+     originalMovementId?: string;
+   }>({
+     open: false, item: null, qty: "1", warehouse_id: "", type: "saida"
+   });
 
   async function addMaterialToOS() {
     if (!matForm.material_id || !matForm.quantity) return toast.error("Preencha os campos");

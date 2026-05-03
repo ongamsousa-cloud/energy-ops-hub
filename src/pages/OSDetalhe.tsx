@@ -504,8 +504,9 @@ export default function OSDetalhe() {
        <Tabs defaultValue="atividades" className="mt-8">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="atividades">Lançamentos</TabsTrigger>
-            <TabsTrigger value="evidencias">Evidências</TabsTrigger>
-            <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
+             <TabsTrigger value="evidencias">Evidências</TabsTrigger>
+             <TabsTrigger value="materiais">Materiais</TabsTrigger>
+             <TabsTrigger value="comunicacao">Comunicação</TabsTrigger>
             <TabsTrigger value="auditoria">Histórico</TabsTrigger>
           </TabsList>
 
@@ -576,7 +577,23 @@ export default function OSDetalhe() {
             )}
           </TabsContent>
 
-          <TabsContent value="comunicacao" className="mt-4">
+           <TabsContent value="materiais" className="mt-4">
+             <div className="flex items-end justify-between mb-3">
+               <h2 className="text-sm font-medium">Materiais utilizados</h2>
+               {canEdit && (
+                 <Button size="sm" variant="outline"><Plus className="mr-1 h-3.5 w-3.5"/>Vincular Material</Button>
+               )}
+             </div>
+             <div className="rounded-md border border-dashed border-border p-10 text-center text-sm text-muted-foreground bg-muted/10">
+               <div className="flex flex-col items-center gap-2">
+                 <Package className="h-8 w-8 opacity-20" />
+                 <p>Nenhum material vinculado a esta OS.</p>
+                 {canEdit && <p className="text-[11px]">Clique em "Vincular Material" para registrar o consumo.</p>}
+               </div>
+             </div>
+           </TabsContent>
+
+           <TabsContent value="comunicacao" className="mt-4">
             <Card className="p-4 border-none shadow-none bg-muted/20 h-[400px] flex flex-col">
               <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
                 {messages.length === 0 ? (

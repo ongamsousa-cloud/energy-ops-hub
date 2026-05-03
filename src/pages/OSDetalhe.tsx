@@ -354,6 +354,9 @@ export default function OSDetalhe() {
     if (addMat) {
       supabase.from("materials").select("*").eq("active", true).order("name").then(({ data }) => setAllMaterials(data ?? []));
       supabase.from("warehouses").select("*").eq("active", true).order("name").then(({ data }) => setWarehouses(data ?? []));
+    }
+  }, [addMat]);
+
   async function useMaterial(osMaterial: any, qty: number, warehouseId: string) {
     if (!user) return;
     setBusy(true);

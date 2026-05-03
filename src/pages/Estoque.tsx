@@ -259,6 +259,7 @@ export default function Estoque() {
             <Button size="sm" variant="outline" onClick={() => openMovement("devolucao")}><RotateCcw className="h-4 w-4 mr-1.5"/>Devolução</Button>
             <Button size="sm" variant="outline" onClick={() => openMovement("transferencia")}><ArrowLeftRight className="h-4 w-4 mr-1.5"/>Transferir</Button>
             <Button size="sm" variant="outline" onClick={() => openMovement("ajuste")}><MinusCircle className="h-4 w-4 mr-1.5"/>Perda/Ajuste</Button>
+            <Button size="sm" variant="secondary" onClick={exportMovementsToCSV}><Download className="h-4 w-4 mr-1.5"/>Exportar CSV</Button>
             <Button size="sm" onClick={() => setNewMaterialOpen(true)}><Plus className="h-4 w-4 mr-1.5"/>Material</Button>
           </div>
         )}

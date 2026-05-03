@@ -15,7 +15,9 @@ export default function OSList() {
   const { user, hasRole } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
    const [filters, setFilters] = useState({
-     status: "all",
+     operational_status: "all",
+     financial_status: "all",
+     audit_status: "all",
      priority: "all",
      search: ""
    });
@@ -44,20 +46,22 @@ export default function OSList() {
       .then(({ data }) => setRows(data ?? []));
   }, [user, hasRole]);
 
-   const filteredRows = useMemo(() => {
-     return rows.filter(r => {
-       const matchStatus = filters.status === "all" || r.status === filters.status;
-       const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
-       const searchLower = filters.search.toLowerCase();
-       const matchSearch = !filters.search || 
-         r.numero?.toLowerCase().includes(searchLower) ||
-         r.obra?.nome?.toLowerCase().includes(searchLower) ||
-         r.cidade?.toLowerCase().includes(searchLower) ||
-         r.bairro?.toLowerCase().includes(searchLower);
-       
-       return matchStatus && matchPriority && matchSearch;
-     });
-   }, [rows, filters]);
+    const filteredRows = useMemo(() => {
+      return rows.filter(r => {
+        const matchOp = filters.operational_status === "all" || (r.operational_status || r.status) === filters.operational_status;
+        const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
+        const matchAudit = filters.audit_status === "all" || r.audit_status === filters.audit_status;
+        const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
+        const searchLower = filters.search.toLowerCase();
+        const matchSearch = !filters.search || 
+          r.numero?.toLowerCase().includes(searchLower) ||
+          r.obra?.nome?.toLowerCase().includes(searchLower) ||
+          r.cidade?.toLowerCase().includes(searchLower) ||
+          r.bairro?.toLowerCase().includes(searchLower);
+        
+        return matchOp && matchFin && matchAudit && matchPriority && matchSearch;
+      });
+    }, [rows, filters]);
 
   return (
      <div className="flex flex-col gap-6">
@@ -78,21 +82,21 @@ export default function OSList() {
              />
            </div>
          </div>
-         <div className="space-y-1.5">
-           <label className="text-xs font-medium text-muted-foreground">Status</label>
-           <Select value={filters.status} onValueChange={(v) => setFilters(f => ({ ...f, status: v }))}>
-             <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-             <SelectContent>
-               <SelectItem value="all">Todos os Status</SelectItem>
-               <SelectItem value="pendente">Pendente</SelectItem>
-               <SelectItem value="iniciada">Em deslocamento</SelectItem>
-               <SelectItem value="em_andamento">Em execução</SelectItem>
-               <SelectItem value="aguardando_revisao">Aguardando validação</SelectItem>
-               <SelectItem value="aprovada">Concluída</SelectItem>
-               <SelectItem value="reprovada">Reprovada</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Status Operacional</label>
+            <Select value={filters.operational_status} onValueChange={(v) => setFilters(f => ({ ...f, operational_status: v }))}>
+              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="em_deslocamento">Em deslocamento</SelectItem>
+                <SelectItem value="em_execucao">Em execução</SelectItem>
+                <SelectItem value="aguardando_validacao">Aguardando validação</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
          <div className="space-y-1.5">
            <label className="text-xs font-medium text-muted-foreground">Prioridade</label>
            <Select value={filters.priority} onValueChange={(v) => setFilters(f => ({ ...f, priority: v }))}>

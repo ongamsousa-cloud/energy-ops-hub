@@ -1410,7 +1410,9 @@ export type Database = {
         Row: {
           aprovado_em: string | null
           aprovado_por: string | null
+          assigned_manager_id: string | null
           assigned_supervisor_id: string | null
+          audit_status: Database["public"]["Enums"]["os_audit_status"] | null
           bairro: string | null
           cep: string | null
           cidade: string | null
@@ -1426,6 +1428,9 @@ export type Database = {
           fim_em: string | null
           fim_lat: number | null
           fim_lng: number | null
+          financial_status:
+            | Database["public"]["Enums"]["os_financial_status"]
+            | null
           hora_agendada: string | null
           id: string
           inicio_atendimento: string | null
@@ -1441,6 +1446,9 @@ export type Database = {
           observacao_supervisor: string | null
           observacoes: string | null
           observacoes_admin: string | null
+          operational_status:
+            | Database["public"]["Enums"]["os_operational_status"]
+            | null
           prioridade: string | null
           profissional_id: string
           region_id: string | null
@@ -1458,7 +1466,9 @@ export type Database = {
         Insert: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
+          audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -1474,6 +1484,9 @@ export type Database = {
           fim_em?: string | null
           fim_lat?: number | null
           fim_lng?: number | null
+          financial_status?:
+            | Database["public"]["Enums"]["os_financial_status"]
+            | null
           hora_agendada?: string | null
           id?: string
           inicio_atendimento?: string | null
@@ -1489,6 +1502,9 @@ export type Database = {
           observacao_supervisor?: string | null
           observacoes?: string | null
           observacoes_admin?: string | null
+          operational_status?:
+            | Database["public"]["Enums"]["os_operational_status"]
+            | null
           prioridade?: string | null
           profissional_id: string
           region_id?: string | null
@@ -1506,7 +1522,9 @@ export type Database = {
         Update: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
+          audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -1522,6 +1540,9 @@ export type Database = {
           fim_em?: string | null
           fim_lat?: number | null
           fim_lng?: number | null
+          financial_status?:
+            | Database["public"]["Enums"]["os_financial_status"]
+            | null
           hora_agendada?: string | null
           id?: string
           inicio_atendimento?: string | null
@@ -1537,6 +1558,9 @@ export type Database = {
           observacao_supervisor?: string | null
           observacoes?: string | null
           observacoes_admin?: string | null
+          operational_status?:
+            | Database["public"]["Enums"]["os_operational_status"]
+            | null
           prioridade?: string | null
           profissional_id?: string
           region_id?: string | null
@@ -2257,6 +2281,52 @@ export type Database = {
         | "aguardando_aprovacao"
         | "concluida"
         | "cancelada"
+      os_audit_status:
+        | "nao_auditada"
+        | "pendente_auditoria"
+        | "em_auditoria"
+        | "aprovada_na_auditoria"
+        | "reprovada_na_auditoria"
+        | "com_ressalva"
+        | "com_inconsistencia"
+        | "em_investigacao"
+        | "aguardando_resposta"
+        | "corrigida_apos_auditoria"
+        | "encerrada"
+      os_financial_status:
+        | "sem_impacto"
+        | "aguardando_analise"
+        | "em_analise"
+        | "aprovada_financeiramente"
+        | "reprovada_financeiramente"
+        | "com_divergencia"
+        | "aguardando_correcao_operacional"
+        | "faturavel"
+        | "nao_faturavel"
+        | "aguardando_faturamento"
+        | "faturada"
+        | "cancelada_financeiramente"
+        | "em_auditoria_financeira"
+      os_operational_status:
+        | "pendente"
+        | "atribuida"
+        | "em_deslocamento"
+        | "chegou_ao_local"
+        | "em_execucao"
+        | "execucao_pausada"
+        | "nao_executada"
+        | "aguardando_validacao"
+        | "correcao_solicitada"
+        | "reaberta"
+        | "reprovada"
+        | "aprovada"
+        | "concluida"
+        | "cancelada"
+        | "critica"
+        | "em_auditoria"
+        | "aguardando_excecao"
+        | "excecao_aprovada"
+        | "excecao_negada"
       os_status:
         | "rascunho"
         | "iniciada"
@@ -2415,6 +2485,55 @@ export const Constants = {
         "aguardando_aprovacao",
         "concluida",
         "cancelada",
+      ],
+      os_audit_status: [
+        "nao_auditada",
+        "pendente_auditoria",
+        "em_auditoria",
+        "aprovada_na_auditoria",
+        "reprovada_na_auditoria",
+        "com_ressalva",
+        "com_inconsistencia",
+        "em_investigacao",
+        "aguardando_resposta",
+        "corrigida_apos_auditoria",
+        "encerrada",
+      ],
+      os_financial_status: [
+        "sem_impacto",
+        "aguardando_analise",
+        "em_analise",
+        "aprovada_financeiramente",
+        "reprovada_financeiramente",
+        "com_divergencia",
+        "aguardando_correcao_operacional",
+        "faturavel",
+        "nao_faturavel",
+        "aguardando_faturamento",
+        "faturada",
+        "cancelada_financeiramente",
+        "em_auditoria_financeira",
+      ],
+      os_operational_status: [
+        "pendente",
+        "atribuida",
+        "em_deslocamento",
+        "chegou_ao_local",
+        "em_execucao",
+        "execucao_pausada",
+        "nao_executada",
+        "aguardando_validacao",
+        "correcao_solicitada",
+        "reaberta",
+        "reprovada",
+        "aprovada",
+        "concluida",
+        "cancelada",
+        "critica",
+        "em_auditoria",
+        "aguardando_excecao",
+        "excecao_aprovada",
+        "excecao_negada",
       ],
       os_status: [
         "rascunho",

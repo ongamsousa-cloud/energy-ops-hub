@@ -7,14 +7,27 @@ import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+import { useAuth } from "@/lib/auth";
+
 export default function OSList() {
+  const { user, hasRole } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+
   useEffect(() => {
-    supabase.from("ordens_servico")
-      .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
-      .order("created_at", { ascending: false }).limit(200)
+    if (!user) return;
+
+    const isCampoOnly = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
+    
+    let query = supabase.from("ordens_servico")
+      .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)");
+
+    if (isCampoOnly) {
+      query = query.eq("profissional_id", user.id);
+    }
+
+    query.order("created_at", { ascending: false }).limit(200)
       .then(({ data }) => setRows(data ?? []));
-  }, []);
+  }, [user, hasRole]);
   return (
     <div>
       <PageHeader title="Ordens de Serviço" actions={

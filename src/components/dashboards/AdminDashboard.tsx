@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
-import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2 } from "lucide-react";
+ import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 interface AdminDashboardProps {

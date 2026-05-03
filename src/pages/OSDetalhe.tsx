@@ -82,6 +82,8 @@ export default function OSDetalhe() {
       setAuditLogs(logs ?? []);
       const { data: msg } = await supabase.from("os_messages").select("*, sender:profiles(nome)").eq("os_id", id).order("created_at", { ascending: true });
       setMessages(msg ?? []);
+      const { data: osm } = await supabase.from("os_materials").select("*, materials(name, code, unit)").eq("os_id", id);
+      setOsMaterials(osm ?? []);
    }, [id]);
 
    useEffect(() => {

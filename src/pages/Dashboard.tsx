@@ -16,26 +16,40 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
 }
 
 export default function Dashboard() {
-  const { profile, roles, hasRole } = useAuth();
+   const { profile, roles, hasRole, user } = useAuth();
   const [stats, setStats] = useState({
     obras: 0, obrasExec: 0, osAbertas: 0, osAprov: 0, osPend: 0, umd: 0, profs: 0, equipes: 0,
   });
   const [byStatus, setByStatus] = useState<{ status: string; n: number }[]>([]);
 
   useEffect(() => {
-    (async () => {
-      const [obras, obrasExec, osAbertas, osAprov, osPend, umd, profs, equipes, statusAgg] = await Promise.all([
-        supabase.from("obras").select("id", { count: "exact", head: true }),
-        supabase.from("obras").select("id", { count: "exact", head: true }).eq("status", "execucao"),
-        supabase.from("ordens_servico").select("id", { count: "exact", head: true }).in("status", ["iniciada","em_andamento"]),
-        supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("status", "aprovada"),
-        supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("status", "aguardando_revisao"),
-        supabase.from("ordens_servico").select("total_umd_aprovada"),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("ativo", true),
-        supabase.from("equipes").select("id", { count: "exact", head: true }).eq("ativo", true),
-        supabase.from("ordens_servico").select("status"),
-      ]);
-      const totalUmd = (umd.data ?? []).reduce((a: number, r: any) => a + Number(r.total_umd_aprovada || 0), 0);
+     if (!user) return;
+     const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor"]);
+ 
+     (async () => {
+       const baseQuery = supabase.from("ordens_servico").select("id", { count: "exact", head: true });
+       const umdQuery = supabase.from("ordens_servico").select("total_umd_aprovada, total_umd");
+       const statusQuery = supabase.from("ordens_servico").select("status");
+ 
+       if (isCampo) {
+         baseQuery.eq("profissional_id", user.id);
+         umdQuery.eq("profissional_id", user.id);
+         statusQuery.eq("profissional_id", user.id);
+       }
+ 
+       const [obras, obrasExec, osAbertas, osAprov, osPend, umdRes, profs, equipes, statusAgg] = await Promise.all([
+         supabase.from("obras").select("id", { count: "exact", head: true }),
+         supabase.from("obras").select("id", { count: "exact", head: true }).eq("status", "execucao"),
+         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).in("status", ["iniciada","em_andamento"]),
+         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "aprovada"),
+         (isCampo ? supabase.from("ordens_servico").select("id", { count: "exact", head: true }).eq("profissional_id", user.id) : supabase.from("ordens_servico").select("id", { count: "exact", head: true })).eq("status", "aguardando_revisao"),
+         umdQuery,
+         supabase.from("profiles").select("id", { count: "exact", head: true }).eq("ativo", true),
+         supabase.from("equipes").select("id", { count: "exact", head: true }).eq("ativo", true),
+         statusQuery,
+       ]);
+ 
+       const totalUmd = (umdRes.data ?? []).reduce((a: number, r: any) => a + Number(r.total_umd_aprovada || 0), 0);
       const counts: Record<string, number> = {};
       (statusAgg.data ?? []).forEach((r: any) => { counts[r.status] = (counts[r.status] ?? 0) + 1; });
       setByStatus(Object.entries(counts).map(([status, n]) => ({ status: status.replace(/_/g," "), n })));
@@ -58,14 +72,19 @@ export default function Dashboard() {
         title={`Olá, ${profile?.nome?.split(" ")[0] ?? ""}`}
         description="Visão consolidada da operação."
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Obras" value={stats.obras} hint={`${stats.obrasExec} em execução`} />
-        <Stat label="OS abertas" value={stats.osAbertas} hint={`${stats.osPend} aguardando revisão`} />
-        <Stat label="OS aprovadas" value={stats.osAprov} />
-        <Stat label="UMD aprovada" value={stats.umd} hint="Acumulado" />
-        <Stat label="Profissionais" value={stats.profs} />
-        <Stat label="Equipes" value={stats.equipes} />
-      </div>
+       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+         {!hasRole(["campo"]) || hasRole(["admin", "gestor", "supervisor"]) ? (
+           <>
+             <Stat label="Obras" value={stats.obras} hint={`${stats.obrasExec} em execução`} />
+             <Stat label="Profissionais" value={stats.profs} />
+             <Stat label="Equipes" value={stats.equipes} />
+           </>
+         ) : null}
+         <Stat label="Minhas OS" value={stats.osAbertas + stats.osAprov + stats.osPend} hint={`${stats.osAbertas} em andamento`} />
+         <Stat label="OS aprovadas" value={stats.osAprov} />
+         <Stat label="UMD aprovada" value={stats.umd} hint="Acumulado" />
+         {hasRole(["campo"]) && <Stat label="Aguardando Revisão" value={stats.osPend} />}
+       </div>
 
       {hasRole(["admin","gestor","supervisor","financeiro","auditor"]) && byStatus.length > 0 && (
         <Card className="mt-6 rounded-md border-border p-4 shadow-none">

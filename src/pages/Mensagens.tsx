@@ -533,8 +533,8 @@ export default function Mensagens() {
                 })}
                 <div ref={endRef} />
               </div>
-              <div className="border-t border-border p-2 bg-muted/30">
-                {audioBlob ? (
+               <div className="border-t border-border p-3 bg-muted/20">
+                 {audioBlob ? (
                   <div className="flex items-center gap-3 bg-card p-2 rounded-lg border border-primary/20 animate-in fade-in zoom-in duration-200">
                     <div className="p-2 bg-primary/10 rounded-full text-primary">
                       <Mic className="h-4 w-4" />
@@ -570,50 +570,53 @@ export default function Mensagens() {
                       />
                     </div>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
-                    <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
-                    <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar" className="text-muted-foreground hover:text-primary">
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera" className="text-muted-foreground hover:text-primary">
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                    <div className="relative flex-1">
-                      <Input 
-                        value={text} 
-                        onChange={(e) => setText(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
-                        placeholder="Escreva sua mensagem..." 
-                        className="pr-10 bg-card border-border/50 focus:border-primary/50 transition-all"
-                      />
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className={cn(
-                          "absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-primary transition-colors",
-                          isRecording && "text-red-500"
-                        )}
-                        onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
-                        title="Gravar Áudio"
-                      >
-                        <Mic className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Button 
-                      size="icon" 
-                      onClick={() => enviar()} 
-                      disabled={!text.trim()}
-                      className={cn(
-                        "shadow-sm transition-all",
-                        text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
+                 ) : (
+                   <div className="flex items-center gap-2">
+                     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
+                     <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
+                     
+                     <div className="flex items-center">
+                       <Button size="icon" variant="ghost" onClick={() => fileRef.current?.click()} title="Anexar" className="h-9 w-9 text-muted-foreground hover:text-primary rounded-full transition-colors">
+                         <Paperclip className="h-4 w-4" />
+                       </Button>
+                       <Button size="icon" variant="ghost" onClick={() => camRef.current?.click()} title="Câmera" className="h-9 w-9 text-muted-foreground hover:text-primary rounded-full transition-colors hidden sm:flex">
+                         <Camera className="h-4 w-4" />
+                       </Button>
+                     </div>
+
+                     <div className="relative flex-1">
+                       <Input 
+                         value={text} 
+                         onChange={(e) => setText(e.target.value)}
+                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
+                         placeholder="Escreva sua mensagem..." 
+                         className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
+                       />
+                       <button 
+                         className={cn(
+                           "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                           isRecording ? "text-red-500 animate-pulse" : "text-muted-foreground hover:text-primary"
+                         )}
+                         onClick={() => { setIsRecording(true); recorderControls.startRecording(); }}
+                         title="Gravar Áudio"
+                       >
+                         <Mic className="h-4 w-4" />
+                       </button>
+                     </div>
+
+                     <Button 
+                       size="icon" 
+                       onClick={() => enviar()} 
+                       disabled={!text.trim()}
+                       className={cn(
+                         "h-10 w-10 shrink-0 rounded-full shadow-md transition-all active:scale-95",
+                         text.trim() ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground"
+                       )}
+                     >
+                       <Send className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 )}
               </div>
             </>
           )}

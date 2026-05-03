@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import AppShell from "@/components/AppShell";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Obras from "./pages/Obras";
 import ObraDetalhe from "./pages/ObraDetalhe";
@@ -24,6 +25,7 @@ import Relatorios from "./pages/Relatorios";
  import FinanceiroOrdens from "./pages/FinanceiroOrdens";
  import FinanceiroMateriais from "./pages/FinanceiroMateriais";
 import Mensagens from "./pages/Mensagens";
+import AprovacoesUsuarios from "./pages/AprovacoesUsuarios";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Navigate to="/app" replace />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="obras" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><Obras /></ProtectedRoute>} />
@@ -47,6 +50,7 @@ const App = () => (
               <Route path="atividades/importar" element={<ProtectedRoute roles={["admin","gestor"]}><AtividadesImport /></ProtectedRoute>} />
               <Route path="equipes" element={<ProtectedRoute roles={["admin","gestor","supervisor"]}><Equipes /></ProtectedRoute>} />
               <Route path="profissionais" element={<ProtectedRoute roles={["admin","gestor"]}><Profissionais /></ProtectedRoute>} />
+              <Route path="usuarios/aprovacoes" element={<ProtectedRoute roles={["admin"]}><AprovacoesUsuarios /></ProtectedRoute>} />
               <Route path="os" element={<OSList />} />
               <Route path="os/nova" element={<OSNova />} />
               <Route path="os/:id" element={<OSDetalhe />} />

@@ -2,11 +2,12 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
   LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks,
-  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare
+  ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import InstallAppButton from "@/components/InstallAppButton";
 
 type Item = { to: string; label: string; icon: any; roles?: AppRole[] };
 
@@ -15,6 +16,7 @@ const NAV: Item[] = [
   { to: "/app/obras", label: "Obras", icon: Briefcase, roles: ["admin","gestor","supervisor","financeiro","auditor"] },
   { to: "/app/equipes", label: "Equipes", icon: Users, roles: ["admin","gestor","supervisor"] },
   { to: "/app/profissionais", label: "Profissionais", icon: UserCircle, roles: ["admin","gestor"] },
+  { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
   { to: "/app/categorias", label: "Categorias", icon: Tag, roles: ["admin","gestor"] },
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
   { to: "/app/atividades/importar", label: "Importar Excel", icon: Upload, roles: ["admin","gestor"] },
@@ -45,6 +47,7 @@ export default function AppShell() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          <InstallAppButton variant="ghost" size="sm" label="Baixar app" className="hidden sm:inline-flex" />
           <Button variant="ghost" size="icon"><Bell className="h-4 w-4" /></Button>
           <div className="hidden text-right md:block">
             <div className="text-xs font-medium leading-tight">{profile?.nome}</div>

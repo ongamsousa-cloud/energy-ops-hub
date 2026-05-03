@@ -5,8 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
+import InstallAppButton from "@/components/InstallAppButton";
 
 export default function Login() {
   const nav = useNavigate();
@@ -17,6 +19,9 @@ export default function Login() {
    const [nome, setNome] = useState("");
    const [selectedRole, setSelectedRole] = useState("campo");
    const [loading, setLoading] = useState(false);
+   const [forgotOpen, setForgotOpen] = useState(false);
+   const [forgotEmail, setForgotEmail] = useState("");
+   const [forgotLoading, setForgotLoading] = useState(false);
  
    const testAccounts = [
      { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
@@ -36,6 +41,22 @@ export default function Login() {
      } catch (e: any) {
        toast.error(e.message ?? "Erro ao autenticar");
      } finally { setLoading(false); }
+   };
+
+   const sendReset = async () => {
+     if (!forgotEmail) return toast.error("Informe seu email.");
+     setForgotLoading(true);
+     try {
+       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+         redirectTo: `${window.location.origin}/reset-password`,
+       });
+       if (error) throw error;
+       toast.success("Enviamos um link de recuperação para seu email.");
+       setForgotOpen(false);
+       setForgotEmail("");
+     } catch (e: any) {
+       toast.error(e.message ?? "Erro ao enviar email.");
+     } finally { setForgotLoading(false); }
    };
 
   useEffect(() => { if (user) nav("/app", { replace: true }); }, [user, nav]);
@@ -61,7 +82,7 @@ export default function Login() {
            },
          });
         if (error) throw error;
-        toast.success("Conta criada. Verifique seu email para confirmar.");
+        toast.success("Cadastro enviado! Aguarde a aprovação do administrador para acessar o sistema.");
         setMode("login");
       }
     } catch (e: any) {
@@ -125,6 +146,11 @@ export default function Login() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Aguarde…" : mode === "login" ? "Entrar" : "Criar conta"}
           </Button>
+          {mode === "login" && (
+            <button type="button" onClick={() => setForgotOpen(true)} className="block w-full text-center text-xs text-muted-foreground hover:text-foreground">
+              Esqueci minha senha
+            </button>
+          )}
         </form>
          <div className="mt-8 pt-6 border-t border-border">
            <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Contas de Teste</div>
@@ -148,6 +174,27 @@ export default function Login() {
          >
            {mode === "login" ? "Não tem conta? Criar" : "Já tem conta? Entrar"}
          </button>
+
+        <div className="mt-6 flex justify-center">
+          <InstallAppButton />
+        </div>
+
+        <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Recuperar senha</DialogTitle>
+              <DialogDescription>Enviaremos um link para você redefinir sua senha.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              <Label htmlFor="forgot-email">Email</Label>
+              <Input id="forgot-email" type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setForgotOpen(false)}>Cancelar</Button>
+              <Button onClick={sendReset} disabled={forgotLoading}>{forgotLoading ? "Enviando…" : "Enviar link"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ export default function OSDetalhe() {
      setOS(o);
      const { data: it } = await supabase.from("os_atividades").select("*, atividade:atividades(codigo_item,descricao), categoria:categorias(nome)").eq("os_id", id).order("created_at");
      setItems(it ?? []);
-      const { data: ev } = await supabase.from("os_evidences").select("*, profile:profiles(nome)").eq("os_id", id).is("deleted_at", null).order("created_at");
+      const { data: ev } = await supabase.from("os_evidences").select("*, profile:profiles(nome)").eq("os_id", id).is("deleted_at", null).order("created_at", { ascending: false });
       setEvid(ev ?? []);
       const { data: logs } = await supabase.from("os_audit_logs").select("*, profile:profiles(nome)").eq("os_id", id).order("created_at", { ascending: false });
       setAuditLogs(logs ?? []);
@@ -279,20 +279,20 @@ export default function OSDetalhe() {
      load();
    }
 
-   async function deleteEvidence(ev: any) {
-     if (!confirm("Tem certeza que deseja excluir esta evidência? Esta ação não pode ser desfeita.")) return;
-     try {
-       const { error: dbError } = await supabase
-         .from("os_evidences")
-         .update({ deleted_at: new Date().toISOString() })
-         .eq("id", ev.id);
-       if (dbError) throw dbError;
-       toast.success("Evidência removida com sucesso");
-       load();
-     } catch (err: any) {
-       toast.error("Erro ao remover: " + err.message);
-     }
-   }
+  async function deleteEvidence(evId: string) {
+    if (!confirm("Tem certeza que deseja excluir esta evidência?")) return;
+    try {
+      const { error: dbError } = await supabase
+        .from("os_evidences")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", evId);
+      if (dbError) throw dbError;
+      toast.success("Evidência removida com sucesso");
+      load();
+    } catch (err: any) {
+      toast.error("Erro ao remover: " + err.message);
+    }
+  }
 
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 

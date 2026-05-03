@@ -393,9 +393,6 @@ export default function OSDetalhe() {
     open: false, item: null, qty: "1", warehouse_id: ""
   });
 
-    }
-  }, [addMat]);
-
   async function addMaterialToOS() {
     if (!matForm.material_id || !matForm.quantity) return toast.error("Preencha os campos");
     const mat = allMaterials.find(m => m.id === matForm.material_id);

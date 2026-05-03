@@ -276,10 +276,10 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Kpi icon={Package} label="Itens ativos" value={kpis.total} hint={`${kpis.outOfStock} sem saldo`}/>
-        <Kpi icon={TrendingUp} label="Valor em estoque" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo total"/>
-        <Kpi icon={AlertTriangle} label="Estoque crítico" value={kpis.critical} hint={`${kpis.lowStock} abaixo do mínimo`} tone="warn"/>
-        <Kpi icon={Activity} label="Movimentações hoje" value={kpis.movToday} hint={`${kpis.reservedActive} reservas ativas`}/>
+         <Kpi icon={Package} label="Patrimônio Ativo" value={kpis.total} hint={`${kpis.outOfStock} itens sem saldo`}/>
+         <Kpi icon={TrendingUp} label="Valorização Total" value={kpis.totalValue.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})} hint="Custo médio total"/>
+         <Kpi icon={AlertTriangle} label="Status Crítico" value={kpis.critical} hint={`${kpis.lowStock} alertas pendentes`} tone="warn"/>
+         <Kpi icon={Activity} label="Operações (24h)" value={kpis.movToday} hint={`${kpis.reservedActive} reservas vinculadas`}/>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

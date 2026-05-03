@@ -109,26 +109,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        password: "Energia123!",
+        password: "Energy@2026!Ops",
       });
 
-      if (authError) {
-        const { data, error } = await supabase.from("profiles").select("id, nome").eq("email", email).single();
-        if (error || !data) throw new Error("Usuário não encontrado no banco de dados.");
-
-        const mockData = {
-          user: { id: data.id, email, user_metadata: { nome: data.nome } } as any,
-        };
-        localStorage.setItem("lovable_mock_user", JSON.stringify(mockData));
-        setUser(mockData.user);
-        setIsMock(true);
-        await loadUserData(data.id);
-      } else {
-        setUser(authData.user);
-        setIsMock(false);
-        localStorage.removeItem("lovable_mock_user");
-        await loadUserData(authData.user.id);
-      }
+      if (authError) throw authError;
+      setUser(authData.user);
+      setIsMock(false);
+      localStorage.removeItem("lovable_mock_user");
+      await loadUserData(authData.user.id);
     } catch (e: any) {
       console.error(e);
       throw e;

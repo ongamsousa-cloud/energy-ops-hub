@@ -14,7 +14,8 @@ interface GestorDashboardProps {
 
 export default function GestorDashboard({ stats, byStatus }: GestorDashboardProps) {
    const { hasRole } = useAuth();
-   const isSupervisor = hasRole("supervisor") && !hasRole("admin");
+   const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
+   const isGestor = hasRole(["gestor", "admin"]);
 
   const chartConfig = {
     n: {

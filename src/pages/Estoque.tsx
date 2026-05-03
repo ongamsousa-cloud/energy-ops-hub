@@ -14,8 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { cn } from "@/lib/utils";
 import {
    Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-   TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity,
-   Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks
+    TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2,
+    Boxes, AlertCircle, RotateCcw, MinusCircle, Download, ListChecks,
 } from "lucide-react";
 import NewMaterialDialog from "@/components/stock/NewMaterialDialog";
 import StockMovementDialog from "@/components/stock/StockMovementDialog";
@@ -618,8 +618,9 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
               <TableHeader><TableRow>
                 <TableHead>Código</TableHead><TableHead>Material</TableHead><TableHead>Categoria</TableHead>
                 <TableHead className="text-right">Saldo</TableHead><TableHead className="text-right">Mín./Crít.</TableHead>
-                <TableHead className="text-right">Custo</TableHead><TableHead className="text-right">Valor</TableHead>
-                <TableHead>Status</TableHead>
+                 <TableHead className="text-right">Custo</TableHead><TableHead className="text-right">Valor</TableHead>
+                 <TableHead>Status</TableHead>
+                 {canWrite && <TableHead className="text-right">Ações</TableHead>}
               </TableRow></TableHeader>
               <TableBody>
                 {loading ? Array.from({length:5}).map((_,i)=>(<TableRow key={i}><TableCell colSpan={8}><Skeleton className="h-6"/></TableCell></TableRow>))
@@ -635,9 +636,21 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                     <TableCell className="text-right text-xs text-muted-foreground">{m.minimum_stock}/{m.critical_stock}</TableCell>
                     <TableCell className="text-right">{Number(m.cost_price).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</TableCell>
                     <TableCell className="text-right font-medium">{m.total_value.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</TableCell>
-                    <TableCell><Badge variant="outline" className={stColor}>{status}</Badge></TableCell>
-                  </TableRow>);
-                })}
+                     <TableCell><Badge variant="outline" className={stColor}>{status}</Badge></TableCell>
+                     {canWrite && (
+                       <TableCell className="text-right">
+                         <div className="flex justify-end gap-1">
+                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditMaterial(m); setNewMaterialOpen(true); }}>
+                             <Edit2 className="h-3.5 w-3.5" />
+                           </Button>
+                           <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => deleteMaterial(m.id)}>
+                             <Trash2 className="h-3.5 w-3.5" />
+                           </Button>
+                         </div>
+                       </TableCell>
+                     )}
+                   </TableRow>);
+                 })}
                 {!loading && filteredMaterials.length === 0 && (<TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Nenhum material encontrado.</TableCell></TableRow>)}
               </TableBody>
             </Table>

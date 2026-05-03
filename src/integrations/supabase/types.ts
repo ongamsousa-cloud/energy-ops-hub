@@ -414,6 +414,160 @@ export type Database = {
         }
         Relationships: []
       }
+      management_exceptions: {
+        Row: {
+          created_at: string | null
+          decision_reason: string | null
+          exception_type: string
+          id: string
+          impact_description: string | null
+          reason: string
+          requested_at: string | null
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          service_order_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          decision_reason?: string | null
+          exception_type: string
+          id?: string
+          impact_description?: string | null
+          reason: string
+          requested_at?: string | null
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          service_order_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          decision_reason?: string | null
+          exception_type?: string
+          id?: string
+          impact_description?: string | null
+          reason?: string
+          requested_at?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          service_order_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "management_exceptions_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      management_messages: {
+        Row: {
+          created_at: string | null
+          department_id: string | null
+          id: string
+          message: string
+          read_at: string | null
+          receiver_id: string | null
+          sender_id: string
+          service_order_id: string | null
+          updated_at: string | null
+          visibility: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          message: string
+          read_at?: string | null
+          receiver_id?: string | null
+          sender_id: string
+          service_order_id?: string | null
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          receiver_id?: string | null
+          sender_id?: string
+          service_order_id?: string | null
+          updated_at?: string | null
+          visibility?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "management_messages_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_messages_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      managers: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          department_id: string | null
+          id: string
+          manager_type: string
+          permission_level: number | null
+          region_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          manager_type?: string
+          permission_level?: number | null
+          region_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          department_id?: string | null
+          id?: string
+          manager_type?: string
+          permission_level?: number | null
+          region_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "managers_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           anexo_tipo: string | null
@@ -695,6 +849,45 @@ export type Database = {
           },
         ]
       }
+      operational_metrics: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          reference_id: string | null
+          reference_type: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          reference_id?: string | null
+          reference_type: string
+          updated_at?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          period_end?: string
+          period_start?: string
+          reference_id?: string | null
+          reference_type?: string
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       ordens_servico: {
         Row: {
           aprovado_em: string | null
@@ -705,6 +898,7 @@ export type Database = {
           cidade: string | null
           created_at: string
           created_by: string | null
+          criticality_level: string | null
           data_agendada: string | null
           due_at: string | null
           endereco_completo: string | null
@@ -749,6 +943,7 @@ export type Database = {
           cidade?: string | null
           created_at?: string
           created_by?: string | null
+          criticality_level?: string | null
           data_agendada?: string | null
           due_at?: string | null
           endereco_completo?: string | null
@@ -793,6 +988,7 @@ export type Database = {
           cidade?: string | null
           created_at?: string
           created_by?: string | null
+          criticality_level?: string | null
           data_agendada?: string | null
           due_at?: string | null
           endereco_completo?: string | null

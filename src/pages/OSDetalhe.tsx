@@ -26,9 +26,11 @@ export default function OSDetalhe() {
   const [evid, setEvid] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [cats, setCats] = useState<any[]>([]);
-  const [atvs, setAtvs] = useState<any[]>([]);
+   const [newMessage, setNewMessage] = useState("");
+   const [cats, setCats] = useState<any[]>([]);
+   const [atvs, setAtvs] = useState<any[]>([]);
+   const [equipes, setEquipes] = useState<any[]>([]);
+   const [profs, setProfs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
    const [codes, setCodes] = useState<any[]>([]);
    const [form, setForm] = useState<any>({ 
@@ -70,11 +72,13 @@ export default function OSDetalhe() {
       setMessages(msg ?? []);
    }, [id]);
 
-  useEffect(() => {
-    load();
-    supabase.from("categorias").select("*").eq("ativo", true).order("ordem").then(({ data }) => setCats(data ?? []));
+   useEffect(() => {
+     load();
+     supabase.from("categorias").select("*").eq("ativo", true).order("ordem").then(({ data }) => setCats(data ?? []));
      supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
-  }, [load]);
+     supabase.from("equipes").select("*").order("nome").then(({ data }) => setEquipes(data ?? []));
+     supabase.from("profiles").select("id, nome").order("nome").then(({ data }) => setProfs(data ?? []));
+   }, [load]);
 
   useEffect(() => {
     if (!form.categoria_id) { setAtvs([]); return; }
@@ -222,15 +226,67 @@ export default function OSDetalhe() {
     load();
   }
 
-  if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+   async function salvarAtribuicao(equipeId: string | null, profId: string | null) {
+     const { error } = await supabase.from("ordens_servico").update({
+       equipe_id: equipeId || os.equipe_id,
+       profissional_id: profId || os.profissional_id,
+       status: os.status === "pendente" ? "iniciada" : os.status
+     }).eq("id", id);
+     if (error) return toast.error(error.message);
+     toast.success("Atribuição atualizada");
+     load();
+   }
+
+   if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
   return (
     <div>
       <PageHeader
         title={`OS ${os.numero}`}
-        description={`${os.obra?.numero} · ${os.obra?.nome} · ${os.profissional?.nome}`}
-        actions={<StatusBadge status={os.status} />}
+        description={`${os.obra?.numero} · ${os.obra?.nome}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <StatusBadge status={os.status} />
+            {isGestor && (
+              <Dialog>
+                <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Atribuir Ordem de Serviço</DialogTitle></DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Equipe Executora</Label>
+                      <Select defaultValue={os.equipe_id} onValueChange={(v) => salvarAtribuicao(v, null)}>
+                        <SelectTrigger><SelectValue placeholder="Selecione a equipe"/></SelectTrigger>
+                        <SelectContent>
+                          {equipes.map((e) => (
+                            <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Profissional Responsável</Label>
+                      <Select defaultValue={os.profissional_id} onValueChange={(v) => salvarAtribuicao(null, v)}>
+                        <SelectTrigger><SelectValue placeholder="Selecione o profissional"/></SelectTrigger>
+                        <SelectContent>
+                          {profs.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+        }
       />
+
+      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
+        <span><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
+        {os.equipe_id && <span><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="rounded-md border-border p-4 shadow-none">

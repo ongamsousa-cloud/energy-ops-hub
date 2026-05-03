@@ -46,7 +46,11 @@ export default function Estoque() {
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [reservations, setReservations] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
+   const [search, setSearch] = useState("");
+   const [osFilter, setOsFilter] = useState("all");
+   const [equipeFilter, setEquipeFilter] = useState("all");
+   const [allObras, setAllObras] = useState<any[]>([]);
+   const [allEquipes, setAllEquipes] = useState<any[]>([]);
 
   const [newMaterialOpen, setNewMaterialOpen] = useState(false);
   const [movementOpen, setMovementOpen] = useState(false);
@@ -65,11 +69,19 @@ export default function Estoque() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  async function loadAll() {
-    setLoading(true);
-    await Promise.all([loadMaterials(), loadMovements(), loadWarehouses(), loadReservations(), loadAlerts()]);
-    setLoading(false);
-  }
+   async function loadAll() {
+     setLoading(true);
+     await Promise.all([
+       loadMaterials(), 
+       loadMovements(), 
+       loadWarehouses(), 
+       loadReservations(), 
+       loadAlerts(),
+       supabase.from("obras").select("id, numero, nome").eq("ativo", true).then(({data}) => setAllObras(data ?? [])),
+       supabase.from("equipes").select("id, nome").eq("ativo", true).then(({data}) => setAllEquipes(data ?? []))
+     ]);
+     setLoading(false);
+   }
 
   async function loadMaterials() {
     const { data } = await supabase.from("materials")
@@ -170,11 +182,23 @@ export default function Estoque() {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [materials]);
 
-  const filteredMaterials = useMemo(() => {
-    if (!search) return materials;
-    const s = search.toLowerCase();
-    return materials.filter(m => m.name?.toLowerCase().includes(s) || m.code?.toLowerCase().includes(s) || m.material_categories?.name?.toLowerCase().includes(s));
-  }, [materials, search]);
+   const filteredMovements = useMemo(() => {
+     return movements.filter(m => {
+       const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
+       // Como não temos equipe direto no stock_movements, filtramos pela OS que pertence à equipe
+       const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
+       return matchOS && matchEquipe;
+     });
+   }, [movements, osFilter, equipeFilter]);
+ 
+   const filteredMaterials = useMemo(() => {
+     let filtered = materials;
+     if (search) {
+       const s = search.toLowerCase();
+       filtered = filtered.filter(m => m.name?.toLowerCase().includes(s) || m.code?.toLowerCase().includes(s) || m.material_categories?.name?.toLowerCase().includes(s));
+     }
+     return filtered;
+   }, [materials, search]);
 
   function openMovement(type: string) {
     setMovementType(type);
@@ -259,29 +283,47 @@ export default function Estoque() {
                 </PieChart>
               </ResponsiveContainer>
             </Card>
-            <Card className="p-4">
-              <div className="text-sm font-semibold mb-3 flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Atividade ao vivo</div>
-              <div className="space-y-2 max-h-[260px] overflow-y-auto">
-                {movements.slice(0, 10).map(m => (
-                  <div key={m.id} className="flex items-start gap-2 text-xs border-l-2 pl-3 py-1.5" style={{borderColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'}}>
-                    <div className="flex-1">
-                      <div className="font-medium">
-                        <Badge variant="outline" className={TYPE_COLOR[m.type]}>{TYPE_LABEL[m.type]}</Badge>
-                        {" "}{Number(m.quantity)} {m.materials?.unit} de <strong>{m.materials?.name}</strong>
-                      </div>
-                      <div className="text-muted-foreground">
-                        {m.creator?.nome || "—"}
-                        {m.ordens_servico?.numero && <> · OS {m.ordens_servico.numero}</>}
-                        {m.from_wh?.name && <> · de {m.from_wh.name}</>}
-                        {m.to_wh?.name && <> → {m.to_wh.name}</>}
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{format(new Date(m.created_at), "dd/MM HH:mm", {locale: ptBR})}</span>
-                  </div>
-                ))}
-                {movements.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">Sem movimentações ainda.</p>}
-              </div>
-            </Card>
+             <Card className="p-4 flex flex-col h-full">
+               <div className="flex items-center justify-between mb-3">
+                 <div className="text-sm font-semibold flex items-center gap-2"><Activity className="h-4 w-4 text-primary"/>Atividade ao vivo</div>
+                 <div className="flex gap-2">
+                   <Select value={osFilter} onValueChange={setOsFilter}>
+                     <SelectTrigger className="h-7 text-[10px] w-[120px]"><SelectValue placeholder="Obra"/></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="all">Todas Obras</SelectItem>
+                       {allObras.map(o => <SelectItem key={o.id} value={o.id}>{o.numero}</SelectItem>)}
+                     </SelectContent>
+                   </Select>
+                   <Select value={equipeFilter} onValueChange={setEquipeFilter}>
+                     <SelectTrigger className="h-7 text-[10px] w-[120px]"><SelectValue placeholder="Equipe"/></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="all">Todas Equipes</SelectItem>
+                       {allEquipes.map(e => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
+                     </SelectContent>
+                   </Select>
+                 </div>
+               </div>
+               <div className="space-y-2 flex-1 overflow-y-auto max-h-[350px]">
+                 {filteredMovements.slice(0, 15).map(m => (
+                   <div key={m.id} className="flex items-start gap-2 text-xs border-l-2 pl-3 py-1.5" style={{borderColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))'}}>
+                     <div className="flex-1">
+                       <div className="font-medium">
+                         <Badge variant="outline" className={cn("text-[9px] h-4 px-1", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge>
+                         {" "}{Number(m.quantity)} {m.materials?.unit} de <strong>{m.materials?.name}</strong>
+                       </div>
+                       <div className="text-[10px] text-muted-foreground">
+                         {m.creator?.nome || "—"}
+                         {m.ordens_servico?.numero && <> · OS {m.ordens_servico.numero}</>}
+                         {m.from_wh?.name && <> · de {m.from_wh.name}</>}
+                         {m.to_wh?.name && <> → {m.to_wh.name}</>}
+                       </div>
+                     </div>
+                     <span className="text-[10px] text-muted-foreground whitespace-nowrap">{format(new Date(m.created_at), "HH:mm", {locale: ptBR})}</span>
+                   </div>
+                 ))}
+                 {filteredMovements.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">Nenhuma atividade com estes filtros.</p>}
+               </div>
+             </Card>
           </div>
         </TabsContent>
 

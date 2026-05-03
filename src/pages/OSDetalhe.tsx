@@ -613,9 +613,9 @@ export default function OSDetalhe() {
                  </div>
                </div>
              ) : (
-               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
-                 {evid.map((e)=>(<EvImg key={e.id} ev={e}/>))}
-               </div>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
+                  {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
+                </div>
              )}
            </div>
           </TabsContent>

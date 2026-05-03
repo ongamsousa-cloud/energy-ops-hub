@@ -27,8 +27,15 @@ import Relatorios from "./pages/Relatorios";
 import Mensagens from "./pages/Mensagens";
 import AprovacoesUsuarios from "./pages/AprovacoesUsuarios";
 import NotFound from "./pages/NotFound";
+import Configuracoes from "./pages/Configuracoes";
+import { useAppTheme } from "./hooks/useAppTheme";
 
 const queryClient = new QueryClient();
+
+const ThemeBoot = () => {
+  useAppTheme();
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -37,6 +44,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ThemeBoot />
           <Routes>
             <Route path="/" element={<Navigate to="/app" replace />} />
             <Route path="/login" element={<Login />} />
@@ -60,6 +68,7 @@ const App = () => (
               <Route path="financeiro/ordens" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroOrdens /></ProtectedRoute>} />
               <Route path="financeiro/materiais" element={<ProtectedRoute roles={["admin","gestor","financeiro"]}><FinanceiroMateriais /></ProtectedRoute>} />
               <Route path="mensagens" element={<Mensagens />} />
+              <Route path="configuracoes" element={<ProtectedRoute roles={["admin"]}><Configuracoes /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

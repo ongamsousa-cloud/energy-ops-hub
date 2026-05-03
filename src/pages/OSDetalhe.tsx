@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
+import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function OSDetalhe() {
   const { id } = useParams();
@@ -48,6 +50,8 @@ export default function OSDetalhe() {
      uploading: boolean;
      error: string | null;
    }>({ file: null, previewUrl: null, uploading: false, error: null });
+   const [evRules, setEvRules] = useState<EvidenceRules | null>(null);
+   const [evCheck, setEvCheck] = useState<EvidenceCheck>({ ok: false, missing: [] });
 
   const isOwner = os && user && os.profissional_id === user.id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
@@ -85,7 +89,13 @@ export default function OSDetalhe() {
      supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
      supabase.from("equipes").select("*").order("nome").then(({ data }) => setEquipes(data ?? []));
      supabase.from("profiles").select("id, nome").order("nome").then(({ data }) => setProfs(data ?? []));
+     getEvidenceRules().then(setEvRules);
    }, [load]);
+
+  useEffect(() => {
+    if (!evRules) return;
+    setEvCheck(checkEvidenceCompleteness(evid, items, evRules));
+  }, [evid, items, evRules]);
 
   useEffect(() => {
     if (!form.categoria_id) { setAtvs([]); return; }
@@ -161,6 +171,14 @@ export default function OSDetalhe() {
    function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
      const file = e.target.files?.[0];
      if (!file) return;
+     if (evRules) {
+       const err = validateFile(file, evRules);
+       if (err) {
+         toast.error(err);
+         e.target.value = "";
+         return;
+       }
+     }
      
      if (mediaUpload.previewUrl) URL.revokeObjectURL(mediaUpload.previewUrl);
      
@@ -235,8 +253,8 @@ export default function OSDetalhe() {
    }
 
    async function aprovar() {
-     if (evid.length === 0) {
-       return toast.error("É obrigatório ter ao menos uma evidência (foto/vídeo) para aprovar a OS.");
+     if (!evCheck.ok) {
+       return toast.error("Evidências incompletas: " + evCheck.missing.join("; "));
      }
      
      const obs = prompt("Comentário de aprovação (opcional):") || "";
@@ -736,9 +754,27 @@ export default function OSDetalhe() {
          )}
         {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={aprovar} className="gap-1.5 bg-green-600 hover:bg-green-700">
-              <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-success hover:bg-success/90 text-white">
+                      <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!evCheck.ok && (
+                  <TooltipContent>
+                    <div className="text-xs max-w-xs">
+                      <strong>Pendências de evidência:</strong>
+                      <ul className="list-disc pl-4 mt-1">
+                        {evCheck.missing.map((m, i) => <li key={i}>{m}</li>)}
+                      </ul>
+                    </div>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
               <History className="h-3.5 w-3.5" /> Solicitar Correção
             </Button>

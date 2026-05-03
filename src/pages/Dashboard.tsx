@@ -25,8 +25,8 @@
  
      (async () => {
        setLoading(true);
-       const umdQuery = supabase.from("ordens_servico").select("total_umd_aprovada, total_umd");
-       const statusQuery = supabase.from("ordens_servico").select("status");
+        const umdQuery = supabase.from("ordens_servico").select("total_umd_aprovada, total_umd, operational_status, status");
+        const statusQuery = supabase.from("ordens_servico").select("status, operational_status");
  
        if (isCampo) {
          umdQuery.eq("profissional_id", user.id);

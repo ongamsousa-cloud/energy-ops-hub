@@ -31,7 +31,8 @@ export default function Mensagens() {
   const [text, setText] = useState("");
   const [contatos, setContatos] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [openNew, setOpenNew] = useState(false);
+   const [openNew, setOpenNew] = useState(false);
+   const [selectedContact, setSelectedContact] = useState<Profile | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
@@ -223,53 +224,45 @@ export default function Mensagens() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs.length]);
 
-   async function startConversa(other: Profile) {
+   async function getOrCreateConversa(other: Profile) {
      try {
-       // Procura conversa direta existente localmente
        const existing = convs.find((c) => c.outros.length === 1 && c.outros[0].id === other.id);
-       if (existing) { 
-         setActive(existing.id); 
-         setOpenNew(false); 
-         return; 
-       }
+       if (existing) return existing.id;
 
-       // Tenta buscar no banco se já existe uma conversa entre esses dois
        const { data: existingParts, error: searchError } = await (supabase as any)
          .rpc('get_conversation_between_users', { user1: user!.id, user2: other.id });
        
        if (!searchError && Array.isArray(existingParts) && existingParts.length > 0) {
-         setActive(existingParts[0].conversation_id);
-         setOpenNew(false);
-         return;
+         return existingParts[0].conversation_id;
        }
 
-       // Criar nova
        const { data: c, error } = await supabase
          .from("conversations")
          .insert({ tipo: "direct", titulo: null, created_by: user!.id })
          .select("id").single();
          
-       if (error || !c) { 
-         toast.error("Erro ao criar conversa: " + (error?.message || "Erro desconhecido")); 
-         return; 
-       }
+       if (error || !c) throw error;
 
-       const { error: e2 } = await supabase.from("conversation_participants").insert([
+       await supabase.from("conversation_participants").insert([
          { conversation_id: c.id, user_id: user!.id },
          { conversation_id: c.id, user_id: other.id },
        ]);
 
-       if (e2) { 
-         toast.error("Erro ao adicionar participantes: " + e2.message); 
-         return; 
-       }
-
        await loadConvs();
-       setActive(c.id);
-       setOpenNew(false);
+       return c.id;
      } catch (err) {
        console.error(err);
-       toast.error("Erro inesperado ao iniciar conversa.");
+       toast.error("Erro ao preparar conversa.");
+       return null;
+     }
+   }
+
+   async function startConversa(other: Profile) {
+     const convId = await getOrCreateConversa(other);
+     if (convId) {
+       setActive(convId);
+       setOpenNew(false);
+       setSelectedContact(null);
      }
    }
 

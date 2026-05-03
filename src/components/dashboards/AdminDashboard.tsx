@@ -20,8 +20,8 @@ interface AdminDashboardProps {
   umdHistory: any[];
   teamProductivity?: any[];
   weeklySummary?: any[];
-  materialUsage?: any[];
-   weeklyNewOS?: any[];
+    weeklyNewOS?: any[];
+    osRecentes?: any[];
    stockStats?: { totalItems: number; lowStock: number };
 }
 
@@ -31,8 +31,8 @@ export default function AdminDashboard({
   umdHistory, 
   teamProductivity = [], 
   weeklySummary = [], 
-  materialUsage = [], 
    weeklyNewOS = [],
+   osRecentes = [],
    stockStats = { totalItems: 0, lowStock: 0 }
  }: AdminDashboardProps) {
   const [osDialogOpen, setOsDialogOpen] = useState(false);
@@ -138,15 +138,19 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-         <Card className="border-none bg-gradient-to-br from-orange-50 to-white shadow-sm dark:from-orange-950/20 dark:to-background">
-           <CardContent className="p-6">
-             <div className="flex items-center justify-between space-y-0 pb-2">
-               <p className="text-sm font-medium text-muted-foreground">Estoque</p>
-               <Package className="h-4 w-4 text-orange-500" />
-             </div>
-             <div className="text-2xl font-bold">{stockStats.totalItems}</div>
-             <p className="text-xs text-muted-foreground mt-1 text-red-600 font-semibold">{stockStats.lowStock} itens com estoque baixo</p>
-           </CardContent>
+        <Card asChild className="cursor-pointer border-none bg-gradient-to-br from-orange-50 to-white shadow-sm dark:from-orange-950/20 dark:to-background transition-transform hover:scale-[1.02]">
+          <Link to="/app/estoque">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-y-0 pb-2">
+                <p className="text-sm font-medium text-muted-foreground">Status do Estoque</p>
+                <Package className="h-4 w-4 text-orange-500" />
+              </div>
+              <div className="text-2xl font-bold">{stockStats.totalItems}</div>
+              <p className="text-xs text-muted-foreground mt-1 text-orange-600 font-semibold">
+                {stockStats.lowStock > 0 ? `${stockStats.lowStock} alertas críticos` : 'Estoque regularizado'}
+              </p>
+            </CardContent>
+          </Link>
          </Card>
       </div>
 
@@ -242,38 +246,29 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* 4. Materiais em Uso (Donut) */}
+        {/* 4. Últimas O.S. (Lista Rápida) - Substitui o gráfico de materiais no Admin */}
         <Card className="border-none shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <Layers className="h-4 w-4 text-primary" />
-              Materiais em Uso
+              <FileText className="h-4 w-4 text-primary" />
+              Últimas Obras / O.S.
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={materialUsage.length > 0 ? materialUsage : [{ category: 'Vazio', value: 1 }]}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={2}
-                    dataKey="value"
-                    nameKey="category"
-                  >
-                    {(materialUsage.length > 0 ? materialUsage : [{ category: 'Vazio', value: 1 }]).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
-                  />
-                  <Legend iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="space-y-4 pt-2">
+              {osRecentes.slice(0, 4).map((os) => (
+                <Link key={os.id} to={`/app/os/${os.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors group">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold">#{os.numero}</span>
+                    <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{os.obra?.nome}</span>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] uppercase">{os.status?.replace('_', ' ')}</Badge>
+                </Link>
+              ))}
+              {osRecentes.length === 0 && <p className="text-xs text-center py-4 text-muted-foreground">Nenhuma O.S. recente</p>}
+              <Button asChild variant="ghost" size="sm" className="w-full text-[10px] text-primary">
+                <Link to="/app/os">Ver todas as ordens</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

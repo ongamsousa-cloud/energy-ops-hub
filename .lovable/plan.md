@@ -1,105 +1,90 @@
+# Comunicação interna hierárquica + evidências do técnico
 
-# Sistema de Gestão de Serviços de Energia Elétrica
+## Objetivo
+Adicionar um módulo de **Mensagens** dentro do sistema, respeitando a hierarquia:
+- **Administrador / Gestor** → conversam com todos
+- **Supervisor** → conversa com Gestor (acima) e Técnicos da sua equipe (abaixo)
+- **Técnico (campo)** → conversa **apenas** com seu Supervisor
+- **Financeiro / Auditor** → conversam com Admin e Gestor
 
-Plataforma web/PWA completa para controle de obras, ordens de serviço, equipes, atividades técnicas, produtividade por UMD, evidências, aprovações e medição. Construída sobre Lovable Cloud (auth, banco, storage, edge functions).
-
-Aviso de escopo: este é um sistema grande. Vou entregar tudo numa única implementação organizada em fases dentro do mesmo build, mas é natural que ajustes finos venham em iterações. Recomendo testar fase por fase.
-
----
-
-## Identidade visual
-
-- Estilo: minimalista, técnico, sofisticado — sem cara de "template IA". Tipografia Inter, muito espaço em branco, bordas finas, cantos sutis (radius 8px), sem ícones ilustrados/coloridos. Ícones lineares Lucide em peso fino, monocromáticos.
-- Paleta neutra com um único acento:
-  - Fundo `#FAFAF9`, superfícies `#FFFFFF`, borda `#E7E5E4`
-  - Texto `#0A0A0A` / secundário `#57534E`
-  - Acento (ações primárias) `#1E293B` (slate quase preto, premium)
-  - Status: aprovado `#15803D`, pendente `#A16207`, reprovado `#B91C1C`, info `#1D4ED8`
-- Sem gradientes, sem sombras pesadas. Tabelas densas, cards com hairline border. Layout mobile com bottom-tab discreto.
+E reforçar a captura de **foto e vídeo** pelo técnico, anexada à OS, salva no banco de evidências (já existe `os_evidences` + bucket `os-evidences`).
 
 ---
 
-## Fases de implementação
+## 1. Banco de dados (migração)
 
-### Fase 1 — Fundação (Cloud + Auth + RBAC)
-- Ativar Lovable Cloud.
-- Tabelas: `profiles`, `roles` (enum: admin, gestor, supervisor, campo, financeiro, auditor), `user_roles` (separada, com `has_role()` security definer), `audit_logs`, `notifications`, `settings`.
-- Trigger de criação de profile no signup.
-- Tela de login limpa, recuperar senha, página `/reset-password`.
-- Redirecionamento por perfil. Guard de rota e menu dinâmico por role.
-- Seed de 4 usuários de teste (admin, supervisor, campo, financeiro).
+Criar duas tabelas:
 
-### Fase 2 — Cadastros mestres
-- CRUD `obras` (com status, endereço, coordenadas, responsáveis, anexos).
-- CRUD `equipes` + `equipe_membros` + vínculo a obras.
-- CRUD `profissionais` (extensão de profiles + cargo, especialidade, equipe).
-- CRUD `categorias` (seed com as 23 categorias do PRD).
-- Página de detalhes de cada entidade com abas (dados, histórico, indicadores).
+**`conversations`**
+- `id uuid pk`
+- `tipo text` ('direct' | 'grupo_obra')
+- `obra_id uuid null` (para chats vinculados a uma obra)
+- `criada_em timestamptz default now()`
 
-### Fase 3 — Atividades + Importação Excel
-- Tabela `atividades` (categoria, código item, descrição, unidade, UMD unitária, flags de foto/localização obrigatórias).
-- Tela de importação: upload `.xlsx`, parse client-side com SheetJS, mapeamento de colunas (Tipo→categoria, Item→código, Atividades→descrição, Unidade, Quantidade de UMD), prévia, validação, dedupe por código, criação automática de categorias inexistentes, relatório de importação.
-- Busca/filtro/favoritos de atividades.
+**`conversation_participants`**
+- `conversation_id uuid`
+- `user_id uuid`
+- `ultima_leitura timestamptz`
+- PK composta
 
-### Fase 4 — Ordem de Serviço (núcleo)
-- Tabelas `ordens_servico` e `os_atividades` com todos os campos do PRD e enum de status.
-- Fluxo campo: iniciar OS (nome auto-preenchido, número de obra com busca/QR), capturar geo inicial, selecionar categoria → atividade → quantidade, cálculo automático de UMD (qtd × UMD unitária, travado), foto antes/durante/depois, observação, geo do lançamento, salvar item, repetir, finalizar.
-- Validações: campos obrigatórios, fotos exigidas, geo exigida, OS sem item não finaliza.
-- Tela mobile otimizada (cards grandes, poucos cliques, bottom nav).
+**`messages`**
+- `id uuid pk`
+- `conversation_id uuid`
+- `sender_id uuid`
+- `conteudo text`
+- `anexo_url text null` (foto/vídeo opcional)
+- `anexo_tipo text null` ('image' | 'video')
+- `created_at timestamptz default now()`
 
-### Fase 5 — Evidências + Geolocalização
-- Bucket Storage `evidencias` (privado, RLS por OS/role) com compressão de imagem no client.
-- Captura via `<input capture>` ou upload, registro de timestamp e geo no metadata.
-- Galeria por OS, lightbox, links para mapa (Google Maps via lat/lng).
+**Função SQL `can_message(sender uuid, receiver uuid) returns boolean`** que valida a hierarquia consultando `user_roles` e (para supervisor↔técnico) a tabela `equipe_membros` + `equipes.supervisor_id`. Usada nas policies de INSERT.
 
-### Fase 6 — Aprovação / Reprovação / Correção
-- Painel do supervisor: fila de OS aguardando revisão, detalhe com checklist, ações Aprovar / Reprovar (motivo obrigatório) / Solicitar Correção (observação obrigatória).
-- Estados travam edição conforme regras. Notificação interna ao profissional.
+**RLS**:
+- SELECT em `messages` / `conversations`: somente participantes (`exists` em `conversation_participants`).
+- INSERT em `messages`: participante **e** `can_message(sender, qualquer outro participante)` = true.
+- INSERT em `conversation_participants` validado pela mesma regra.
 
-### Fase 7 — Dashboards por perfil
-- Cards de KPI + gráficos (Recharts): UMD por mês, OS por status, ranking equipe/profissional, atividades mais executadas, obras com maior volume.
-- Filtros: período, obra, equipe, profissional, status, categoria.
-- Variantes: Admin, Operacional, Supervisor, Campo (simplificado), Financeiro, Auditor.
+**Realtime**: `ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;`
 
-### Fase 8 — Relatórios + Medição
-- Gerador de relatório com filtros completos (período, obra, OS, equipe, profissional, supervisor, categoria, item, status, unidade).
-- Tipos: diário, por obra, profissional, equipe, categoria, atividade, item, UMD executada/aprovada, OS aprovadas/reprovadas, pendências, evidências, auditoria, medição.
-- Exportar Excel (SheetJS), CSV, PDF (jsPDF + autoTable) com cabeçalho profissional.
-- Módulo de fechamento de medição: `medicoes` + `medicao_itens`, status (aberta/conferência/fechada/exportada), considera apenas OS aprovadas.
+## 2. Storage para anexos de mensagens
+Reusar bucket `os-evidences` (público) com prefixo `chat/{conversation_id}/...` para foto/vídeo enviados no chat. Limite por arquivo (vídeo) tratado no front: até 100 MB no chat (vídeos longos continuam na evidência da OS, com até 1 GB).
 
-### Fase 9 — Auditoria + Notificações
-- `audit_logs` populado por triggers em todas tabelas críticas (login, CRUD obras/profissionais/atividades, ações de OS, importações, exportações).
-- Visualização cronológica filtrável; exportação.
-- Centro de notificações no topbar (sino, badge, lista).
+## 3. Frontend — nova página `/app/mensagens`
 
-### Fase 10 — PWA + Offline
-- Manifest, ícones, instalação, service worker (com guards de iframe/preview, NetworkFirst para HTML, denylist `/~oauth`).
-- Fila offline (IndexedDB via Dexie): salvar OS, lançamentos e fotos localmente; sincronização automática quando online; indicador de status; resolução de conflito por timestamp; impede duplicidade via UUID local.
+- Item no `AppShell` (visível para todos os papéis), com badge de não lidas.
+- Layout duas colunas:
+  - **Esquerda**: lista de conversas + botão "Nova conversa" → abre lista filtrada pelo papel:
+    - Admin/Gestor: todos os usuários ativos
+    - Supervisor: Gestores + técnicos da(s) equipe(s) que ele supervisiona
+    - Técnico: apenas o(s) supervisor(es) da sua equipe
+    - Financeiro/Auditor: Admin + Gestor
+  - **Direita**: mensagens + input com botões 📎 foto / 🎥 vídeo / enviar.
+- Subscrição realtime para inserir novas mensagens ao vivo e marcar como lida.
 
----
+## 4. Captura de foto/vídeo pelo técnico (reforço na OS)
 
-## Modelo de dados (resumo)
+Em `src/pages/OSDetalhe.tsx`, na aba de evidências:
+- Botão **"Tirar foto"** → `<input type="file" accept="image/*" capture="environment">`.
+- Botão **"Gravar vídeo"** → `<input type="file" accept="video/*" capture="environment">`.
+- Captura GPS via `navigator.geolocation` no upload (já existe util `getGeo`).
+- Upload para bucket `os-evidences` em `os/{os_id}/...`, registro em `os_evidences` (campos `tipo`, `url`, `localizacao`, `metadata` com size/mime).
+- Política existente já bloqueia DELETE/UPDATE → evidências imutáveis (atende "não pode ser apagado").
+- Botão **Baixar** por evidência (link direto do bucket público).
 
-`profiles, user_roles, obras, equipes, equipe_membros, profissionais, categorias, atividades, ordens_servico, os_atividades, evidencias, localizacoes, aprovacoes, medicoes, medicao_itens, audit_logs, notifications, anexos, settings`.
+## 5. Notificações
+Quando uma mensagem é inserida, trigger insere em `notificacoes` para cada participante ≠ remetente (título "Nova mensagem de X").
 
-Regras: FKs com restrição, soft-delete (campo `ativo`/`deleted_at`), índices em número da obra, número da OS, código do item, status, datas, profissional, equipe. RLS em todas as tabelas alinhada às permissões por role (campo só vê suas OS, supervisor só vê das equipes vinculadas, admin vê tudo).
-
----
-
-## Stack / detalhes técnicos
-
-- React + Vite + TS + Tailwind + shadcn/ui (já no projeto).
-- Lovable Cloud: Postgres + Auth + Storage + Edge Functions.
-- React Router para áreas Auth / App / Campo.
-- TanStack Query para cache.
-- Recharts para gráficos. SheetJS (xlsx) para Excel. jsPDF + autoTable para PDF. Dexie para offline. react-hook-form + zod para validação.
-- Edge functions: importação Excel em lote, geração de medição, exportação de relatório PDF pesado, recompactação de evidências.
+## 6. Auth/permissões já existentes
+Usaremos `has_role` / `has_any_role` já presentes. Nenhuma mudança em auth.
 
 ---
 
-## O que você precisa providenciar
+## Arquivos a criar/alterar
+- **Migração SQL** (tabelas, função, RLS, realtime, trigger de notificação).
+- **`src/pages/Mensagens.tsx`** (nova).
+- **`src/components/chat/`** (`ConversationList.tsx`, `MessageThread.tsx`, `NewConversationDialog.tsx`).
+- **`src/components/AppShell.tsx`**: adicionar item "Mensagens".
+- **`src/App.tsx`**: rota `/app/mensagens`.
+- **`src/pages/OSDetalhe.tsx`**: botões de captura foto/vídeo + lista com download (refinar UI da aba evidências).
 
-1. Planilha `.xlsx` com as ~553 atividades (anexar no chat após aprovar o plano — importarei no seed).
-2. Confirmar se quer logo customizada agora ou se gero um wordmark tipográfico minimalista temporário.
-
-Pronto para implementar quando você aprovar.
+## Resultado
+Hierarquia de conversas garantida no banco (RLS) e na UI; técnico só fala com supervisor; admin/gestor enxergam todos; técnico continua podendo anexar fotos e vídeos diretamente na OS, com GPS e sem possibilidade de exclusão.

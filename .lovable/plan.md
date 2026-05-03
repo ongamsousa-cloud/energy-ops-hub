@@ -1,81 +1,52 @@
+## Diagnóstico
 
-# Módulo de Estoque — Dashboard dedicado, operacional e rastreável
+Verifiquei o fluxo Obras → Ordens de Serviço e a base de dados. O que encontrei:
 
-Hoje existe a página `MateriaisEstoque` mas ela é genérica, sem fluxo real de operação (não há cadastro de almoxarifado, nem lançamento guiado de entrada/saída/devolução, nem dashboard próprio com indicadores). As tabelas no banco já existem (`materials`, `material_categories`, `warehouses`, `stock_levels`, `stock_movements` com trigger automática `fn_update_stock_level`), mas estão praticamente vazias (1 almoxarifado, 3 materiais, 0 movimentações). Vou transformar o módulo num **centro de estoque completo**.
+1. **A criação da OS funciona** (existem registros recentes em `ordens_servico` com `obra_id` e `numero` corretos).
+2. **A listagem em `/app/os` (OSList.tsx) já busca todas as OS** sem filtro por departamento/obra para admin/gestor/supervisor — então o problema reportado ("não aparece") tem causas combinadas:
+   - **Sem realtime / sem refetch**: a OSList carrega só no `mount`. Depois de criar a OS em "Obras", se a aba já estiver montada em cache (ou aberta em outra guia), não atualiza.
+   - **Sem invalidação de cache** em queries (não usa React Query — cada página tem seu `useEffect` isolado).
+   - **Sem notificação cruzada**: ao criar a OS, nenhum departamento (supervisor, almoxarife, financeiro) é avisado. Não há registro em `notificacoes` nem em filas de aprovação.
+   - **Sem roteamento para os departamentos**: a OS nasce com `assigned_supervisor_id = null`, `equipe_id` opcional e sem vínculo com almoxarifado, então supervisores/almoxarifes não a veem em suas filas filtradas.
+   - **Filtro padrão da OSList** mostra "Todos os Status" ✅, mas o card só renderiza `r.status` (não `operational_status`) — pode dar a sensação de "sumido" em status novos.
+   - **Status inicial inconsistente**: dialog grava `status: 'iniciada'` + `operational_status: 'pendente'`, sem disparar nenhum hook downstream (estoque, financeiro, supervisor).
 
-## O que vou construir
+## Plano de Ação — Comunicação entre todas as seções
 
-### 1. Rota dedicada `/app/estoque` com dashboard próprio
-Substitui o atual `/app/materiais` por um hub completo com 6 abas:
+### 1. Camada de dados unificada (Realtime + cache)
+- Adicionar **Supabase Realtime** em `ordens_servico`, `notificacoes`, `material_reservations`, `stock_movements`.
+- Criar hook `useOrdens()` central (com refetch/subscribe) usado em: OSList, ObraDetalhe, Dashboard admin, Painel Supervisor, Painel Almoxarife, Painel Financeiro.
+- Toda criação/edição de OS dispara `channel.send` para invalidar todos os consumidores.
 
-```text
-┌─ Visão Geral (KPIs) ─ Materiais ─ Almoxarifados ─ Movimentações ─ Reservas/OS ─ Alertas ─┐
-```
+### 2. Roteamento automático ao criar a OS
+No `NewServiceOrderDialog.handleSave`, após inserir a OS:
+- Se `equipe_id` informada → buscar `supervisor_id` da equipe e gravar em `assigned_supervisor_id`.
+- Se nenhuma equipe → marcar `status='aguardando_atribuicao'` e criar alerta para gestores.
+- Inserir em `notificacoes` para: supervisor designado, gestor da obra, almoxarife responsável, financeiro (uma linha por destinatário, com `link='/app/os/{id}'`).
+- Criar reservas em `material_reservations` para os itens que demandam material (a partir de `os_atividades`).
 
-- **KPIs no topo**: itens ativos, valor total em estoque (R$), itens em estoque crítico, itens abaixo do mínimo, reservas abertas, movimentações nas últimas 24h, perdas do mês, devoluções pendentes.
-- **Gráficos**: entradas vs saídas (últimos 30 dias), top 10 materiais mais consumidos, consumo por equipe/profissional, materiais com maior risco de ruptura.
-- **Lista "O que está acontecendo agora"**: feed em tempo real (Supabase Realtime no `stock_movements`) com "fulano retirou 5un do material X para a OS-000123", "ciclano devolveu 2un".
+### 3. Ajustes no banco (migrations)
+- Trigger `fn_os_after_insert` em `ordens_servico` que:
+  - Insere notificações para roles `supervisor`, `gestor`, `estoque`, `financeiro` ligados à obra/região.
+  - Cria registro inicial em `financial_order_records` (status `aguardando_analise`).
+  - Cria registro em `service_order_history` (status `criada`).
+- Verificar/ajustar política RLS de `notificacoes` (insert por trigger SECURITY DEFINER).
 
-### 2. Telas de cadastro e lançamento (que hoje não existem)
+### 4. UI consistente em todos os painéis
+- **OSList** (`/app/os`): mostrar badge duplo (operacional + financeiro), filtro por obra, indicador "Nova" para OS criadas nas últimas 24h.
+- **Dashboard Admin**: card "Últimas OS criadas" com link direto.
+- **Painel Supervisor**: aba "OS recebidas" alimentada por `assigned_supervisor_id = auth.uid()` (já existe RLS).
+- **Painel Almoxarife (Estoque)**: aba "Liberações pendentes" lendo `material_reservations` da OS.
+- **Painel Financeiro**: aba "OS para análise" lendo `financial_order_records.financial_status='aguardando_analise'`.
+- **ObraDetalhe**: após criar OS, refetch + toast com botão "Ver na lista de OS".
 
-- **Almoxarifados**: CRUD completo (nome, localização, responsável, fixo/móvel — ex.: van do técnico).
-- **Materiais**: cadastro com categoria, unidade, custo, preço, estoque mínimo/crítico, foto, controle por número de série (sim/não), código interno.
-- **Entrada de estoque** (compra/recebimento): nota fiscal, fornecedor, almoxarifado destino, lote, custo unitário — gera `stock_movements` tipo `entrada` e atualiza `stock_levels` automaticamente via trigger já existente.
-- **Saída/Retirada para OS**: seleciona OS, profissional, almoxarifado origem, materiais e quantidades. Bloqueia se não houver saldo. Registra quem retirou, quando e para qual OS.
-- **Devolução**: vincula à movimentação de saída original, registra quantidade devolvida, motivo (sobra, defeito, troca) e devolve ao saldo.
-- **Transferência entre almoxarifados**: origem → destino, com aprovação.
-- **Ajuste/Perda**: lançamento de perda, quebra ou ajuste de inventário com justificativa obrigatória e auditoria.
+### 5. Notificação visual global
+- Sino de notificações no `AppShell` (já há tabela `notificacoes`) com contador realtime e dropdown.
+- Toast persistente quando uma OS chega para o usuário (subscribe em `notificacoes` filtrado por `user_id`).
 
-### 3. Integração ponta a ponta com Ordem de Serviço
+### 6. Auditoria & Histórico
+- Registrar em `audit_logs` cada transição de OS (criação, atribuição, liberação de material, validação financeira).
+- Aba "Histórico" dentro de `OSDetalhe` lendo `service_order_history` + `audit_logs`.
 
-- Na tela de **detalhe da OS**, aba "Materiais" passa a permitir **retirar material do estoque** diretamente, criando o `stock_movements` vinculado ao `os_id` e ao `professional_id`.
-- Ao **finalizar a OS**, sistema pergunta se sobrou material e abre fluxo de devolução automática.
-- Na **abertura da OS**, opção de **reservar materiais** (incrementa `reserved_quantity` em `stock_levels`).
-- Notificações automáticas para o gestor quando: estoque atinge mínimo, há perda registrada, devolução pendente há mais de 48h.
-
-### 4. Banco de dados — pequenos ajustes necessários
-
-Migration adicionando o que falta para o fluxo funcionar de verdade:
-
-- Tabela `material_reservations` (os_id, material_id, warehouse_id, quantity, status, created_by).
-- Tabela `stock_entries` (NF, fornecedor, lote, vencimento) ligada a `stock_movements`.
-- Colunas em `stock_movements`: `unit_cost`, `total_cost`, `reason`, `parent_movement_id` (para ligar devolução à saída original), `status` (pendente/confirmado).
-- Tipo enum `stock_movement_type` ampliado para incluir `ajuste` e `perda` (se ainda não existir).
-- View `vw_stock_dashboard` agregando KPIs para o dashboard.
-- RLS: leitura para todos autenticados; escrita para `admin`, `gestor`, `supervisor` (saídas/devoluções também para `campo` quando vinculado à própria OS).
-- Trigger de auditoria registrando todas as movimentações em `audit_logs`.
-
-### 5. Dados de demonstração (seed)
-
-Para você conseguir testar de verdade hoje, vou popular:
-- 3 almoxarifados (Central, Van Equipe A, Van Equipe B).
-- ~25 materiais reais do segmento elétrico (cabo 2,5mm², disjuntor 25A, poste, isolador, conector, etc.) com categorias.
-- Saldos iniciais em cada almoxarifado.
-- ~15 movimentações de exemplo (entradas, saídas para OS existentes, 1 devolução, 1 perda) para o dashboard já aparecer com gráficos preenchidos.
-
-### 6. Credenciais de acesso para teste
-
-Vou criar/garantir um usuário admin de demonstração e te entregar e-mail e senha após a implementação. Confirmação rápida antes:
-
-- **E-mail sugerido**: `admin@demo.energyops.com`
-- **Senha sugerida**: `Admin@2026`
-- **Cargo**: Administrador (acesso total, incluindo o novo módulo de Estoque)
-
-Se preferir outro e-mail/senha, me diga ao aprovar o plano. Caso contrário, sigo com esses.
-
-## Detalhes técnicos
-
-- **Realtime**: `ALTER PUBLICATION supabase_realtime ADD TABLE stock_movements, stock_levels;` para o feed ao vivo.
-- **Validação**: zod em todos os formulários (quantidade > 0, almoxarifado obrigatório, justificativa em perda/ajuste).
-- **Edge function** `stock-consume-os`: transação atômica que valida saldo, cria movimento e atualiza reserva — evita corridas quando dois técnicos retiram ao mesmo tempo.
-- **Componentes novos**: `EstoqueDashboard.tsx`, `WarehousesTab.tsx`, `MaterialsTab.tsx`, `MovementsTab.tsx`, `ReservationsTab.tsx`, `AlertsTab.tsx`, `EntryDialog.tsx`, `WithdrawalDialog.tsx`, `ReturnDialog.tsx`, `TransferDialog.tsx`, `AdjustmentDialog.tsx`, `WarehouseDialog.tsx`.
-- **Sidebar**: novo item "Estoque" com submenu (Dashboard, Materiais, Almoxarifados, Movimentações, Alertas) — separado de "Financeiro › Materiais" (que continua sendo a visão financeira).
-- **Permissões**: admin/gestor veem tudo; supervisor vê seu almoxarifado/equipe; campo só vê o que é da própria OS; auditor/financeiro têm leitura total.
-
-## Entrega ao final
-
-1. Acesso `/app/estoque` funcional com dashboard, gráficos e feed ao vivo.
-2. Todos os fluxos (entrada, saída para OS, devolução, transferência, perda) operando e refletindo em tempo real.
-3. Integração visível na tela da OS (retirar/devolver material direto da OS).
-4. Seed com dados realistas para você ver tudo populado.
-5. E-mail e senha do admin de teste, prontos para login.
+## Entrega
+Após sua aprovação, implemento na ordem: migrations (3) → hook + realtime (1) → roteamento dialog (2) → UI dos painéis (4,5) → histórico/auditoria (6). Todos os módulos passarão a se comunicar via os mesmos canais e tabelas centrais.

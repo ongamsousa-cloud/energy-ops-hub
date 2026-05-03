@@ -144,14 +144,15 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
                 <BarChart data={formattedStatusData} layout="vertical" margin={{ left: 0, right: 20 }}>
                   <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis type="number" hide />
-                  <YAxis 
-                    dataKey="status" 
-                    type="category" 
-                    fontSize={12} 
-                    axisLine={false} 
-                    tickLine={false}
-                    width={120}
-                  />
+                   <YAxis 
+                     dataKey="status" 
+                     type="category" 
+                     fontSize={11} 
+                     axisLine={false} 
+                     tickLine={false}
+                     width={100}
+                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="n" 

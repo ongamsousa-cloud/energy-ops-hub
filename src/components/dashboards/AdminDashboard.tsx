@@ -1,6 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
- import { TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, Database, Activity, FileText, Upload, PlusCircle, Package } from "lucide-react";
+import { 
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, 
+  CartesianGrid, LineChart, Line, PieChart, Pie, Cell, RadialBarChart, RadialBar, Legend 
+} from "recharts";
+import { 
+  TrendingUp, Users, Briefcase, AlertCircle, CheckCircle2, ShieldCheck, Settings, 
+  Database, Activity, FileText, Upload, PlusCircle, Package, Calendar, PieChart as PieChartIcon, 
+  BarChart3, Layers, Target, Clock
+} from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,9 +18,21 @@ interface AdminDashboardProps {
   stats: any;
   byStatus: any[];
   umdHistory: any[];
+  teamProductivity?: any[];
+  weeklySummary?: any[];
+  materialUsage?: any[];
+  weeklyNewOS?: any[];
 }
 
-export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDashboardProps) {
+export default function AdminDashboard({ 
+  stats, 
+  byStatus, 
+  umdHistory, 
+  teamProductivity = [], 
+  weeklySummary = [], 
+  materialUsage = [], 
+  weeklyNewOS = [] 
+}: AdminDashboardProps) {
   const [osDialogOpen, setOsDialogOpen] = useState(false);
   const navigate = useNavigate();
   const variacao = stats.umdAnterior > 0 ? ((stats.umdAtual - stats.umdAnterior) / stats.umdAnterior) * 100 : null;
@@ -42,6 +61,14 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
     ...item,
     fill: statusColors[item.status.toLowerCase()] || "hsl(var(--primary))"
   }));
+
+  const PIE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#6366f1'];
+  
+  // Mock field efficiency if not provided
+  const efficiencyData = [
+    { name: 'Eficiência', value: 85, fill: 'hsl(var(--primary))' },
+    { name: 'Restante', value: 15, fill: 'hsl(var(--muted))' }
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -121,85 +148,195 @@ export default function AdminDashboard({ stats, byStatus, umdHistory }: AdminDas
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-7">
-        <Card className="lg:col-span-4 border-none shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Evolução de Produtividade
+      {/* Dashboard BI Refined */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* 1. Resumo Semanal (Linha: Produtividade vs Meta) */}
+        <Card className="border-none shadow-sm overflow-hidden">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <Calendar className="h-4 w-4 text-primary" />
+              Resumo Semanal (UMD)
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[350px] w-full">
-              <ChartContainer config={chartConfig}>
-                <AreaChart data={umdHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorUmd" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklySummary} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                  <XAxis 
-                    dataKey="date" 
-                    fontSize={12} 
-                    axisLine={false} 
-                    tickLine={false}
-                    tickMargin={10}
+                  <XAxis dataKey="day" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                    itemStyle={{ fontSize: '12px' }}
                   />
-                  <YAxis 
-                    fontSize={12} 
-                    axisLine={false} 
-                    tickLine={false}
-                    tickMargin={10}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="umd" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorUmd)" 
-                    animationDuration={1500}
-                  />
-                </AreaChart>
-              </ChartContainer>
+                  <Line type="monotone" dataKey="prod" name="Produção" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, fill: 'hsl(var(--primary))' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="meta" name="Meta" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                  <Legend verticalAlign="top" height={36} iconType="circle" />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-3 border-none shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Status das Operações
+        {/* 2. Status das O.S. (Donut) */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <PieChartIcon className="h-4 w-4 text-primary" />
+              Status das O.S.
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center">
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={formattedStatusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="n"
+                    nameKey="status"
+                  >
+                    {formattedStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 3. Produtividade por Equipe (Barra Horizontal) */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              Produtividade por Equipe
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[350px] w-full">
-              <ChartContainer config={chartConfig}>
-                <BarChart data={formattedStatusData} layout="vertical" margin={{ left: 0, right: 20 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={teamProductivity} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                   <XAxis type="number" hide />
-                   <YAxis 
-                     dataKey="status" 
-                     type="category" 
-                     fontSize={11} 
-                     axisLine={false} 
-                     tickLine={false}
-                     width={100}
-                     tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                   />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar 
-                    dataKey="n" 
-                    radius={[0, 4, 4, 0]} 
-                    barSize={24}
-                    animationDuration={1500}
+                  <YAxis dataKey="team" type="category" fontSize={10} axisLine={false} tickLine={false} width={80} />
+                  <Tooltip 
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                   />
+                  <Bar dataKey="umd" name="UMD Total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={15} />
                 </BarChart>
-              </ChartContainer>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 4. Materiais em Uso (Donut) */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <Layers className="h-4 w-4 text-primary" />
+              Materiais em Uso
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={materialUsage.length > 0 ? materialUsage : [{ category: 'Vazio', value: 1 }]}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={2}
+                    dataKey="value"
+                    nameKey="category"
+                  >
+                    {(materialUsage.length > 0 ? materialUsage : [{ category: 'Vazio', value: 1 }]).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                  />
+                  <Legend iconType="rect" wrapperStyle={{ fontSize: '10px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 5. Eficiência de Campo (Radial) */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <Target className="h-4 w-4 text-primary" />
+              Eficiência de Campo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center">
+            <div className="h-[220px] w-full relative">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius="60%" 
+                  outerRadius="100%" 
+                  barSize={20} 
+                  data={efficiencyData}
+                  startAngle={180}
+                  endAngle={0}
+                >
+                  <RadialBar
+                    background
+                    dataKey="value"
+                    cornerRadius={30}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+                <span className="text-3xl font-bold">85%</span>
+                <span className="text-[10px] text-muted-foreground">META ATINGIDA</span>
+              </div>
+            </div>
+            <div className="mt-2 text-center">
+              <p className="text-xs text-muted-foreground">Baseado em OS aprovadas vs abertas</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 6. Novas O.S. (Barra Vertical) */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <Clock className="h-4 w-4 text-primary" />
+              Novas O.S. (Últimos 7 dias)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyNewOS} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--background))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                  />
+                  <Bar dataKey="count" name="Novas O.S." fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>

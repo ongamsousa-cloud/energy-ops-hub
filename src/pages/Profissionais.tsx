@@ -2,9 +2,22 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
-import { ROLE_LABEL, AppRole } from "@/lib/auth";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+ import { ROLE_LABEL, AppRole, useAuth } from "@/lib/auth";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+ import { toast } from "sonner";
+ import { Card, CardContent } from "@/components/ui/card";
+ import { Badge } from "@/components/ui/badge";
+ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus } from "lucide-react";
+ import { Button } from "@/components/ui/button";
+ import { Input } from "@/components/ui/input";
+ import { 
+   DropdownMenu, 
+   DropdownMenuContent, 
+   DropdownMenuItem, 
+   DropdownMenuLabel, 
+   DropdownMenuSeparator, 
+   DropdownMenuTrigger 
+ } from "@/components/ui/dropdown-menu";
 
 const ROLES: AppRole[] = ["admin","gestor","supervisor","campo","financeiro","auditor"];
 

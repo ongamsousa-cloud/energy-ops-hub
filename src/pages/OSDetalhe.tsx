@@ -26,7 +26,15 @@ export default function OSDetalhe() {
   const [cats, setCats] = useState<any[]>([]);
   const [atvs, setAtvs] = useState<any[]>([]);
   const [add, setAdd] = useState(false);
-  const [form, setForm] = useState<any>({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "" });
+   const [codes, setCodes] = useState<any[]>([]);
+   const [form, setForm] = useState<any>({ 
+     categoria_id: "", 
+     atividade_id: "", 
+     execution_code_id: "",
+     quantidade: "", 
+     observacao: "" 
+   });
+   const [checklist, setChecklist] = useState<Record<string, any>>({});
 
   const isOwner = os && user && os.profissional_id === user.id;
   const canApprove = hasRole(["admin","gestor","supervisor"]);
@@ -48,12 +56,20 @@ export default function OSDetalhe() {
   useEffect(() => {
     load();
     supabase.from("categorias").select("*").eq("ativo", true).order("ordem").then(({ data }) => setCats(data ?? []));
+     supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
   }, [load]);
 
   useEffect(() => {
     if (!form.categoria_id) { setAtvs([]); return; }
     supabase.from("atividades").select("*").eq("categoria_id", form.categoria_id).eq("ativo", true).order("codigo_item").then(({ data }) => setAtvs(data ?? []));
   }, [form.categoria_id]);
+
+   useEffect(() => {
+     const code = codes.find(c => c.id === form.execution_code_id);
+     if (code?.checklist_template) {
+       setChecklist({}); // Reset checklist on code change
+     }
+   }, [form.execution_code_id, codes]);
 
   const ativSel = atvs.find((a) => a.id === form.atividade_id);
   const umdTotal = ativSel && form.quantidade ? Number(form.quantidade) * Number(ativSel.umd_unitaria) : 0;

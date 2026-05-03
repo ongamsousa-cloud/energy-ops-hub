@@ -42,7 +42,7 @@ export default function AppShell() {
             <Menu className="h-5 w-5" />
           </Button>
           <Link to="/app" className="flex items-center gap-2.5">
-            <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain" />
+            <img src="https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png" alt="Logo" className="h-7 w-auto object-contain" />
             <div className="flex flex-col">
               <span className="text-xs font-bold leading-none tracking-tight">Energia</span>
               <span className="text-[10px] font-medium leading-none text-muted-foreground uppercase tracking-widest">Operações</span>

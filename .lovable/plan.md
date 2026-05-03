@@ -1,98 +1,45 @@
-## Plano revisado — preservar todas as separações por departamento
+## Problema
 
-Mantenho **integralmente** os dashboards e abas existentes (Admin, Gestor, Supervisor, Financeiro, Auditor, Campo, Estoque) e a aba "Estoque" dentro do AdminDashboard. O trabalho fica só em (1) conectar a comunicação entre departamentos e (2) substituir números fictícios por dados reais.
+No pop-up atual de "Nova Mensagem":
+- O usuário precisa **primeiro** clicar em um profissional para só então ver o campo de digitar/gravar.
+- Quando o filtro por departamento (ex: "Gestor Operacional") não retorna ninguém, aparece "Nenhum profissional encontrado" e **não há nenhuma forma de escrever/gravar**.
+- Não é possível enviar para um departamento inteiro (broadcast), o que será necessário quando houver vários supervisores, técnicos, etc.
 
-### Diagnóstico do banco hoje
-- 24 OS no sistema, **0 supervisores atribuídos**, **0 notificações**, **0 reservas de material**, **0 registros financeiros**, **0 histórico**.
-- O trigger `fn_os_after_insert` só age em OS novas → todo o histórico ficou órfão.
-- Faltam triggers para os demais eventos (aprovação, reprovação, mensagem, alerta de estoque).
+## O que será implementado
 
----
+Redesenho do `DialogContent` em `src/pages/Mensagens.tsx`:
 
-### Etapa A — Banco: triggers que faltam + backfill
+### 1. Layout em 2 colunas (mantido)
+- Esquerda: lista de departamentos (Todos, Administrador, Gestor Operacional, Supervisor, Profissional de Campo, Financeiro/Medição, Auditor, Almoxarife/Estoque) — sem alteração.
+- Direita: agora dividida verticalmente em **três áreas sempre visíveis**:
+  - (a) Cabeçalho com chips dos destinatários selecionados.
+  - (b) Lista de contatos do departamento filtrado, com checkbox para seleção múltipla. Botão "Selecionar todos do departamento" no topo.
+  - (c) **Área de composição fixa no rodapé**: campo de texto + botão de microfone (gravar/parar) + preview do áudio gravado + botão Enviar. Sempre visível, mesmo quando a lista está vazia.
 
-**A1. Triggers novos (criados via migration):**
-- `trg_os_status_route` em `ordens_servico` AFTER UPDATE OF status
-  - status `correcao_solicitada`/`reprovada` → notifica `profissional_id`
-  - status `aprovada` → notifica `financeiro` + `auditor` + popula `financial_order_records`
-  - status `aguardando_revisao` → notifica `assigned_supervisor_id`
-- `trg_stock_alert_notify` em `stock_alerts` AFTER INSERT → notifica roles `estoque` + `gestor` + `admin`
-- `trg_os_message_notify` em `os_messages` AFTER INSERT → notifica supervisor/profissional da OS
-- `trg_os_atividade_reserve` em `os_atividades` AFTER INSERT → cria `material_reservations` quando atividade tem materiais previstos (status `reservado`, almoxarife libera depois)
-- Todos gravam linha em `service_order_history` para a timeline.
+### 2. Suporte a múltiplos destinatários
+- Estado `selectedContacts: Profile[]` (array) em vez de `selectedContact` único.
+- Ao enviar, o sistema cria/recupera uma conversa para cada destinatário selecionado e insere a mensagem (texto e/ou áudio) em todas. Reaproveita `getOrCreateConversa`, `enviarDirect` e `enviarAudioDirect` em loop.
+- Quando o usuário clica em um departamento e a lista está vazia, o aviso "Nenhum profissional cadastrado neste departamento ainda" aparece, **mas a área de composição continua disponível** (apenas o botão Enviar fica desabilitado até existir ao menos 1 destinatário).
 
-**A2. Backfill (via insert tool):**
-- Preencher `assigned_supervisor_id` nas 24 OS atuais a partir de `equipes.supervisor_id`.
-- Criar `financial_order_records` para todas OS já aprovadas.
-- Disparar 1 notificação "catch-up" para gestores/supervisores das OS pendentes.
+### 3. Gravação de áudio dentro do pop-up
+- Reutiliza `useAudioRecorder` já presente no arquivo.
+- Botão de microfone alterna entre gravar/parar; áudio gravado aparece como `<audio controls>` com botão de descartar.
+- Campo de texto e gravação podem ser usados em conjunto ou separadamente; Enviar fica habilitado se houver texto **ou** áudio **e** ao menos 1 destinatário.
 
----
+### 4. Pós-envio
+- Limpa texto, áudio e seleção de destinatários.
+- Fecha o pop-up.
+- Se houver apenas 1 destinatário, abre automaticamente a conversa criada (mantém `setActive(convId)`).
+- Toast de confirmação ("Mensagem enviada para N destinatário(s)").
 
-### Etapa B — Frontend: trocar mocks por dados reais (sem remover abas)
+## Detalhes técnicos
 
-Mantém todas as seções; só substitui os números fixos:
+- Arquivo único alterado: `src/pages/Mensagens.tsx`.
+- Substituir `selectedContact` por `selectedContacts: Profile[]`; adicionar helpers `toggleContact`, `selectAllInDept`, `clearSelection`.
+- Nova função `sendBroadcast()` que itera sobre `selectedContacts`, chama `getOrCreateConversa` para cada um e insere a mensagem (texto e/ou áudio). O upload do áudio é feito **uma vez** e o mesmo `publicUrl` é reutilizado em todas as inserções.
+- Sem mudanças de banco de dados nem de RLS — as tabelas `conversations`, `conversation_participants` e `messages` já suportam esse fluxo.
+- Sem novas dependências.
 
-| Arquivo | O que troca |
-|---|---|
-| `Dashboard.tsx` | Remover `weeklyNewOS` hardcoded (datas 27/04→03/05) e calcular a partir de `ordens_servico.created_at` dos últimos 7 dias |
-| `AdminDashboard.tsx` | Eficiência mock 85% → calcular `osAprov/(osAprov+osRejeitadas)` real |
-| `FinanceiroOrdens.tsx` | Card "Margem Média 62%" → calcular de `financial_order_records` (approved_value vs estimated_cost). Coluna `valor_aprovado` (campo inexistente) → usar `financial.approved_value` |
-| `FinanceiroMateriais.tsx` | "Consumo Mensal +12.4%" e "Itens Extras 05" → calcular de `os_materials` + `stock_movements`. Mostrar materiais reais (não atividades) |
-| `FinanceiroDashboard.tsx` | Mantém tudo; só conecta o card "Pendências" ao `financial_order_records` real |
+## Fora do escopo
 
-Nada é apagado; cada dashboard/aba continua existindo com sua identidade.
-
----
-
-### Etapa C — Comunicação cruzada entre departamentos
-
-Sem mover nenhuma página, adiciono os elos:
-
-```text
-┌────────────┐  cria OS   ┌────────────┐ assigned   ┌────────────┐
-│  ADMIN /   │──────────►│ ordens_    │───────────►│ SUPERVISOR │
-│  GESTOR    │            │ servico    │            │ (Aprovações)│
-└────────────┘            └────┬───────┘            └────┬───────┘
-                               │ trg_os_atividade        │ aprova
-                               ▼                          ▼
-                        ┌────────────┐           ┌────────────────┐
-                        │  ESTOQUE   │           │   FINANCEIRO   │
-                        │ (reservas) │           │ (records auto) │
-                        └─────┬──────┘           └────────┬───────┘
-                              │ libera                     │
-                              ▼                            ▼
-                        ┌────────────┐           ┌────────────────┐
-                        │   CAMPO    │           │    AUDITOR     │
-                        │ (executa)  │           │ (revisa pós-OK)│
-                        └────────────┘           └────────────────┘
-```
-
-Cada seta vira uma linha em `notificacoes` com `link` direto para a OS de origem — o `NotificationBell` (já existente) e o realtime já cuidam da exibição instantânea.
-
----
-
-### Etapa D — Menu/AppShell (não-destrutivo)
-
-- Mantém todos os itens do menu.
-- Adiciona **badge de contador realtime** ao lado dos itens "Aprovações", "Estoque", "Financeiro/Ordens" e "Mensagens", lendo `notificacoes` não-lidas filtrando pelo prefixo do `link` (ex.: `/app/aprovacoes`, `/app/estoque`, etc.). Assim cada departamento sabe quando tem coisa nova sem mistura.
-
----
-
-### Etapa E — OSDetalhe como hub (sem reescrever)
-
-Adições, sem remover nada do que já está:
-- Linha do tempo lendo `service_order_history` (Etapa A já popula).
-- Bloco "Reservas de Material" lendo `material_reservations` da OS.
-- Bloco "Status Financeiro" lendo `financial_order_records`.
-
----
-
-### Ordem de execução (uma única passada)
-1. Migration: triggers da Etapa A1.
-2. Inserts/updates de backfill (Etapa A2).
-3. Frontend: substituir mocks (Etapa B).
-4. Frontend: badges no AppShell (Etapa D).
-5. Frontend: blocos novos no OSDetalhe (Etapa E).
-6. Teste end-to-end: criar OS no Admin → conferir notificação no Supervisor, reserva no Estoque, registro no Financeiro, log no Auditor.
-
-Confirma para eu implementar nessa ordem?
+- Criar conversas em grupo reais (uma única conversation com vários participantes). Para manter o histórico individual claro com cada pessoa, seguimos enviando uma cópia para cada destinatário (1‑a‑1). Pode ser evoluído depois caso deseje grupos verdadeiros.

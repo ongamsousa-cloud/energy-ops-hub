@@ -1,5 +1,5 @@
  import ApiService, { ApiRequestOptions } from "./apiService";
- import { supabase } from "@/lib/supabase";
+ import { supabase } from "@/integrations/supabase/client";
  
  export interface CepResponse {
    cep: string;

@@ -266,6 +266,51 @@ export default function Mensagens() {
      }
    }
 
+   async function sendDirectly(contact: Profile) {
+     const convId = await getOrCreateConversa(contact);
+     if (convId) {
+       // Usar temporariamente o 'active' para o envio de áudio ou texto funcionar
+       const prevActive = active;
+       setActive(convId);
+       
+       if (audioBlob) {
+         await enviarAudioDirect(convId);
+       } else if (text.trim()) {
+         await enviarDirect(convId);
+       }
+       
+       setOpenNew(false);
+       setSelectedContact(null);
+       setActive(convId); // Mantém a conversa ativa para o usuário ver o envio
+     }
+   }
+
+   async function enviarDirect(convId: string) {
+     const { error } = await supabase.from("messages").insert({
+       conversation_id: convId,
+       sender_id: user!.id,
+       conteudo: text.trim(),
+     });
+     if (error) toast.error(error.message);
+     setText("");
+   }
+
+   async function enviarAudioDirect(convId: string) {
+     if (!audioBlob) return;
+     const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
+     const path = `chat/${convId}/${file.name}`;
+     const { error } = await supabase.storage.from("os-evidences").upload(path, file);
+     if (error) { toast.error(error.message); return; }
+     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+     await supabase.from("messages").insert({
+       conversation_id: convId,
+       sender_id: user!.id,
+       anexo_url: data.publicUrl,
+       anexo_tipo: "audio"
+     });
+     setAudioBlob(null);
+   }
+
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;
     const finalContent = messageText !== undefined ? messageText : text.trim();

@@ -473,7 +473,20 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
            </div>
          </TabsContent>
 
-        <TabsContent value="entradas" className="mt-4 space-y-4">
+        <TabsContent value="entradas" className="mt-4 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recebido Hoje</div>
+              <div className="text-2xl font-black text-emerald-700">{summary.inToday.length}</div>
+              <div className="text-[10px] text-emerald-600/70">Volumes processados</div>
+            </Card>
+            <Card className="p-4 bg-blue-500/5 border-blue-500/10">
+              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Aguardando NF</div>
+              <div className="text-2xl font-black text-blue-700">{movements.filter(m => m.type === "entrada" && !m.invoice_number).length}</div>
+              <div className="text-[10px] text-blue-600/70">Entradas sem documento</div>
+            </Card>
+          </div>
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowDownToLine className="h-5 w-5 text-emerald-500" />

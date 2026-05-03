@@ -413,48 +413,48 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                   </Card>
                 </div>
 
-               <Card className="p-6 border-none shadow-sm bg-card/50">
-                 <div className="flex items-center justify-between mb-6">
-                   <div>
-                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Valorização por Categoria</h3>
-                     <p className="text-[10px] text-muted-foreground">Concentração de capital</p>
+                 <Card className="p-6 border-none shadow-sm bg-card/50">
+                   <div className="flex items-center justify-between mb-6">
+                     <div>
+                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Distribuição Patrimonial</h3>
+                       <p className="text-[10px] text-muted-foreground">Valor por Categoria</p>
+                     </div>
+                     <TrendingUp className="h-4 w-4 text-primary" />
                    </div>
-                   <TrendingUp className="h-4 w-4 text-primary" />
-                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                   <div className="h-[300px]">
-                     <ResponsiveContainer width="100%" height="100%">
-                       <PieChart>
-                         <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
-                           {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                         </Pie>
-                         <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
-                         <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
-                       </PieChart>
-                     </ResponsiveContainer>
-                   </div>
-                   <div className="space-y-4">
-                     <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                       <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
-                       <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
-                       <div className="mt-2 flex items-center text-[10px] text-destructive">
-                         <AlertCircle className="h-3 w-3 mr-1" />
-                         Refere-se a quebras, extravios e ajustes manuais
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+                     <div className="h-[280px]">
+                       <ResponsiveContainer width="100%" height="100%">
+                         <PieChart>
+                           <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
+                             {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                           </Pie>
+                           <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
+                           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
+                         </PieChart>
+                       </ResponsiveContainer>
+                     </div>
+                     <div className="space-y-4">
+                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
+                         <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
+                         <div className="mt-2 flex items-center text-[10px] text-destructive italic">
+                           <AlertCircle className="h-3 w-3 mr-1" />
+                           Quebras, extravios e ajustes manuais
+                         </div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4">
+                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
+                           <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
+                         </div>
+                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
+                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Depósitos</h4>
+                           <p className="text-lg font-bold text-primary">{warehouses.length}</p>
+                         </div>
                        </div>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
-                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
-                         <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
-                       </div>
-                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Armazéns</h4>
-                         <p className="text-lg font-bold text-primary">{warehouses.length}</p>
-                       </div>
-                     </div>
                    </div>
-                 </div>
-               </Card>
+                 </Card>
              </div>
 
              {/* Sidebar Area: Activity & Status (The "Sides") */}

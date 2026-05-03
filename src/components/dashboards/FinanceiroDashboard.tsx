@@ -11,6 +11,8 @@
  }
  
   export default function FinanceiroDashboard({ stats, umdHistory }: FinanceiroDashboardProps) {
+    const valorUmd = Number(stats.valorUmd || 0);
+    const previsao = valorUmd > 0 ? (stats.umd * valorUmd) : null;
     return (
       <div className="space-y-6 animate-in fade-in duration-700">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-muted/30 p-4 rounded-xl border border-border">
@@ -72,8 +74,8 @@
                 <DollarSign className="h-4 w-4" />
                 <span className="text-[11px] font-bold uppercase tracking-wider">Previsão</span>
               </div>
-              <span className="text-2xl font-bold">R$ {(stats.umd * 12.5).toLocaleString()}</span>
-              <p className="text-[10px] text-muted-foreground mt-1">Valor estimado (UMD=12.50)</p>
+              <span className="text-2xl font-bold">{previsao !== null ? `R$ ${previsao.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—'}</span>
+              <p className="text-[10px] text-muted-foreground mt-1">{valorUmd > 0 ? `UMD = R$ ${valorUmd.toFixed(2)}` : 'Configure regra "umd_unit_value" para previsão'}</p>
             </div>
           </Card>
         </div>
@@ -91,7 +93,7 @@
               </div>
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-sm">Divergências</span>
-                <span className="font-bold text-red-500">0</span>
+                <span className="font-bold text-red-500">{stats.divergencias || 0}</span>
               </div>
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-sm">Faturáveis</span>

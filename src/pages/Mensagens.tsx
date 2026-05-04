@@ -976,7 +976,7 @@ export default function Mensagens() {
                        <ScrollArea className="flex-1">
                          {myRole === 'admin' && (
                            <div className="px-4 py-2 border-b bg-muted/5 flex justify-end">
-                             <Button size="xs" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => { setEditingProfile(null); setOpenProfileCrud(true); }}>
+                             <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => { setEditingProfile(null); setOpenProfileCrud(true); }}>
                                <Plus className="h-3 w-3" /> Novo Profissional
                              </Button>
                            </div>
@@ -1035,9 +1035,37 @@ export default function Mensagens() {
                                             {p.cargo ? `${p.cargo} • ` : ""}{p.department_name || "Sem departamento"}
                                           </p>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
-                                          Conversar
-                                        </Button>
+                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                           {myRole === 'admin' && (
+                                             <>
+                                               <Button 
+                                                 variant="ghost" 
+                                                 size="icon" 
+                                                 className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                 onClick={(e) => { e.stopPropagation(); setEditingProfile(p); setOpenProfileCrud(true); }}
+                                               >
+                                                 <Edit2 className="h-3 w-3" />
+                                               </Button>
+                                               <Button 
+                                                 variant="ghost" 
+                                                 size="icon" 
+                                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                 onClick={async (e) => { 
+                                                   e.stopPropagation(); 
+                                                   if (confirm("Deseja realmente inativar este perfil?")) {
+                                                     await supabase.from("profiles").update({ ativo: false }).eq("id", p.id);
+                                                     window.location.reload();
+                                                   }
+                                                 }}
+                                               >
+                                                 <Trash2 className="h-3 w-3" />
+                                               </Button>
+                                             </>
+                                           )}
+                                           <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
+                                             Conversar
+                                           </Button>
+                                         </div>
                                       </div>
                                     </div>
                                   );

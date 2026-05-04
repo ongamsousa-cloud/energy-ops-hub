@@ -160,13 +160,25 @@ export default function Mensagens() {
     }
   }, [myRole]);
 
-  async function handleArchiveOldMessages() {
-    const { error } = await (supabase as any).rpc('archive_old_messages');
-    if (error) {
-      toast.error("Erro ao arquivar mensagens: " + error.message);
+  async function handleArchiveOldMessages(permanent = false) {
+    if (permanent) {
+      if (!confirm("Isso excluirá PERMANENTEMENTE todas as mensagens com mais de 5 anos. Esta ação não pode ser desfeita. Continuar?")) return;
+      const fiveYearsAgo = new Date();
+      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+      const { error } = await supabase.from("messages").delete().lt("created_at", fiveYearsAgo.toISOString());
+      if (error) toast.error("Erro ao excluir: " + error.message);
+      else {
+        toast.success("Mensagens antigas excluídas permanentemente.");
+        setArchivedCount(0);
+      }
     } else {
-      toast.success("Mensagens com mais de 5 anos foram arquivadas.");
-      setArchivedCount(0);
+      const { error } = await (supabase as any).rpc('archive_old_messages');
+      if (error) {
+        toast.error("Erro ao arquivar mensagens: " + error.message);
+      } else {
+        toast.success("Mensagens com mais de 5 anos foram arquivadas.");
+        setArchivedCount(0);
+      }
     }
   }
 
@@ -782,8 +794,11 @@ export default function Mensagens() {
                </div>
              </div>
              <div className="flex gap-2">
-               <Button variant="outline" size="sm" className="bg-white border-amber-200 text-amber-700 hover:bg-amber-100" onClick={handleArchiveOldMessages}>
+               <Button variant="outline" size="sm" className="bg-white border-amber-200 text-amber-700 hover:bg-amber-100" onClick={() => handleArchiveOldMessages(false)}>
                  Arquivar/Limpar
+               </Button>
+               <Button variant="destructive" size="sm" onClick={() => handleArchiveOldMessages(true)}>
+                 Excluir Permanentemente
                </Button>
              </div>
            </div>

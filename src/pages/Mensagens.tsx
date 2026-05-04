@@ -79,18 +79,23 @@ export default function Mensagens() {
      return `${mins}:${secs.toString().padStart(2, '0')}`;
    };
 
-    const addAudioElement = (blob: Blob) => {
+    const addAudioElement = async (blob: Blob) => {
       console.log("Gravação concluída:", blob.size, "bytes");
-      if (blob.size < 500) {
-        console.warn("Áudio muito pequeno, possível erro de captura ou gravação muito curta");
-        toast.error("Áudio muito curto ou falha na captura. Tente novamente.");
+      if (blob.size < 200) {
+        console.warn("Áudio muito pequeno");
+        toast.error("Áudio muito curto. Tente gravar por mais tempo.");
         setRecordingMode(null);
         return;
       }
+      
       setAudioBlob(blob);
+      const url = URL.createObjectURL(blob);
       if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
-      setAudioPreviewUrl(URL.createObjectURL(blob));
+      setAudioPreviewUrl(url);
       setRecordingMode(null);
+      
+      // Se estivermos enviando direto em uma conversa ativa, podemos oferecer o envio imediato
+      toast.success("Áudio gravado com sucesso!");
     };
  
    useEffect(() => {

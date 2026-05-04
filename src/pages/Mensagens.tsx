@@ -546,27 +546,27 @@ export default function Mensagens() {
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Filtrar por Departamento</p>
                      <div className="space-y-1">
-                       <Button 
-                         variant={!searchTerm ? "secondary" : "ghost"} 
-                         size="sm" 
-                         className="w-full justify-start text-xs font-medium"
-                         onClick={() => setSearchTerm("")}
-                       >
-                         <UsersIcon className="h-3.5 w-3.5 mr-2" />
-                         Todos
-                       </Button>
-                       {Object.keys(ROLE_LABEL).map((role) => (
-                         <Button 
-                           key={role}
-                           variant={searchTerm === ROLE_LABEL[role as AppRole] ? "secondary" : "ghost"} 
-                           size="sm" 
-                           className="w-full justify-start text-xs"
-                           onClick={() => setSearchTerm(ROLE_LABEL[role as AppRole])}
-                         >
-                           <Building2 className="h-3.5 w-3.5 mr-2" />
-                           {ROLE_LABEL[role as AppRole]}
-                         </Button>
-                       ))}
+                        <Button 
+                          variant={!selectedDeptId ? "secondary" : "ghost"} 
+                          size="sm" 
+                          className="w-full justify-start text-xs font-medium"
+                          onClick={() => setSelectedDeptId(null)}
+                        >
+                          <UsersIcon className="h-3.5 w-3.5 mr-2" />
+                          Todos
+                        </Button>
+                        {departments.map((dept) => (
+                          <Button 
+                            key={dept.id}
+                            variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                            size="sm" 
+                            className="w-full justify-start text-xs"
+                            onClick={() => setSelectedDeptId(dept.id)}
+                          >
+                            <Building2 className="h-3.5 w-3.5 mr-2" />
+                            {dept.name}
+                          </Button>
+                        ))}
                      </div>
                    </div>
 
@@ -629,11 +629,11 @@ export default function Mensagens() {
                       {/* Lista de contatos (Scrollable) */}
                       <ScrollArea className="flex-1">
                         <div className="p-4 pt-2 space-y-6">
-                          {Object.entries(contatosPorRole).map(([role, list]) => (
-                            <div key={role} className="space-y-2">
+                          {(Object.entries(contatosPorDept) as [string, Profile[]][]).map(([dept, list]) => (
+                            <div key={dept} className="space-y-2">
                               <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 flex items-center gap-2">
                                 <span className="h-[1px] flex-1 bg-muted" />
-                                {ROLE_LABEL[role as AppRole] || role}
+                                {dept}
                                 <span className="h-[1px] flex-1 bg-muted" />
                               </h4>
                               <div className="grid gap-1">

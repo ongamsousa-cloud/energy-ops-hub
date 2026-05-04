@@ -425,23 +425,7 @@ export default function Mensagens() {
      setText("");
    }
 
-   async function enviarAudioDirect(convId: string) {
-     if (!audioBlob) return;
-     const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-     const path = `chat/${convId}/${file.name}`;
-     const { error } = await supabase.storage.from("os-evidences").upload(path, file);
-     if (error) { toast.error(error.message); return; }
-     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
-     await supabase.from("messages").insert({
-       conversation_id: convId,
-       sender_id: user!.id,
-       anexo_url: data.publicUrl,
-       anexo_tipo: "audio"
-     });
-     setAudioBlob(null);
-   }
-
-    const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;

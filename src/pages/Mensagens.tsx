@@ -26,11 +26,18 @@ import { Badge } from "@/components/ui/badge";
     documento?: string;
     cargo?: string;
   };
- type Conv = { 
-   id: string; 
-   titulo: string | null; 
-   created_at: string; 
-   outros: Profile[]; 
+ type DeptOption = { id: string; name: string };
+ type Recipient =
+   | { kind: 'user'; profile: Profile }
+   | { kind: 'department'; department: DeptOption };
+ type Conv = {
+   id: string;
+   titulo: string | null;
+   created_at: string;
+   tipo?: string;
+   department_id?: string | null;
+   department_name?: string | null;
+   outros: Profile[];
    ultima_msg?: string;
    unread_count?: number;
  };
@@ -44,7 +51,7 @@ export default function Mensagens() {
   const [editingMsg, setEditingMsg] = useState<{ id: string; conteudo: string } | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{ id: string } | null>(null);
   const [contatos, setContatos] = useState<Profile[]>([]);
-  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [departments, setDepartments] = useState<DeptOption[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
    const [searchTerm, setSearchTerm] = useState("");
    const [filterCode, setFilterCode] = useState("");
@@ -52,6 +59,7 @@ export default function Mensagens() {
    const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
+   const [selectedDepartments, setSelectedDepartments] = useState<DeptOption[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
    const [recordingDuration, setRecordingDuration] = useState(0);
    const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -131,45 +139,44 @@ export default function Mensagens() {
 
   const myRole = roles[0];
 
-  // Carrega contatos e departamentos
+  // Carrega contatos e departamentos (consultas separadas para evitar relacionamento inválido)
   useEffect(() => {
     if (!user) return;
     (async () => {
-      // Carrega Departamentos
-      const { data: depts } = await supabase.from("departments").select("id, name").eq("active", true);
+      const [{ data: depts }, profsRes, rolesRes] = await Promise.all([
+        supabase.from("departments").select("id, name").eq("active", true).order("name"),
+        supabase
+          .from("profiles")
+          .select("id, nome, email, department_id, cargo, documento, foto_url")
+          .eq("ativo", true)
+          .neq("id", user.id),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
+
       setDepartments(depts || []);
 
-      // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-        const { data: profs, error: profsError } = await supabase
-          .from("profiles")
-          .select(`
-            id, nome, email, department_id, cargo, documento, foto_url,
-            user_roles(role),
-            departments(name)
-          `)
-         .eq("ativo", true)
-         .neq("id", user.id);
-
-      if (profsError) {
-        console.error("Erro ao carregar perfis:", profsError);
-        toast.error("Erro ao carregar lista de contatos.");
+      if (profsRes.error) {
+        console.error("Erro ao carregar perfis:", profsRes.error);
       }
-      
-       const all: Profile[] = (profs ?? []).map((p: any) => ({
-         id: p.id, 
-         nome: p.nome,
-         email: p.email,
-         department_id: p.department_id,
-         department_name: p.departments?.name,
-         cargo: p.cargo,
-         documento: p.documento,
-         foto_url: p.foto_url,
-         role: (p.user_roles && Array.isArray(p.user_roles) && p.user_roles.length > 0) 
-           ? (p.user_roles[0].role as AppRole) 
-           : (p.role as AppRole | undefined),
-       }));
 
-      // Ordena contatos por nome e remove filtros restritivos
+      const deptMap = new Map((depts || []).map(d => [d.id, d.name] as const));
+      const roleMap = new Map<string, AppRole>();
+      (rolesRes.data || []).forEach((r: any) => {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, r.role as AppRole);
+      });
+
+      const all: Profile[] = (profsRes.data ?? []).map((p: any) => ({
+        id: p.id,
+        nome: p.nome,
+        email: p.email,
+        department_id: p.department_id ?? undefined,
+        department_name: p.department_id ? deptMap.get(p.department_id) : undefined,
+        cargo: p.cargo ?? undefined,
+        documento: p.documento ?? undefined,
+        foto_url: p.foto_url ?? undefined,
+        role: roleMap.get(p.id),
+      }));
+
       setContatos(all.sort((a, b) => a.nome.localeCompare(b.nome)));
     })();
   }, [user]);
@@ -191,13 +198,9 @@ export default function Mensagens() {
 
       const myConvIds = myParticipations?.map(p => p.conversation_id) || [];
       
-      const { data: convData, error } = await supabase
+      const { data: convData, error } = await (supabase as any)
         .from('conversations')
-        .select(`
-          id, 
-          titulo, 
-          created_at
-        `)
+        .select('id, titulo, created_at, tipo, department_id')
         .in('id', myConvIds)
         .order('created_at', { ascending: false });
 
@@ -229,19 +232,32 @@ export default function Mensagens() {
        .in('conversation_id', convIds)
        .order('created_at', { ascending: false });
 
-     const result: Conv[] = convData.map(c => {
+     const deptIds = Array.from(new Set((convData as any[]).map(c => c.department_id).filter(Boolean)));
+     const deptNameMap = new Map<string, string>();
+     if (deptIds.length) {
+       const { data: deptRows } = await supabase
+         .from('departments')
+         .select('id, name')
+         .in('id', deptIds);
+       (deptRows || []).forEach((d: any) => deptNameMap.set(d.id, d.name));
+     }
+
+     const result: Conv[] = (convData as any[]).map((c: any) => {
        const participants = allParticipants?.filter(p => p.conversation_id === c.id) || [];
        const others = participants
          .filter(p => p.user_id !== user.id)
          .map(p => (p.profiles as unknown as Profile))
          .filter(Boolean);
-       
+
        const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
 
        return {
          id: c.id,
          titulo: c.titulo,
          created_at: c.created_at,
+         tipo: c.tipo,
+         department_id: c.department_id,
+         department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,
          outros: others,
          ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
        };
@@ -339,8 +355,8 @@ export default function Mensagens() {
 
     async function sendBroadcast() {
       if (isUploading) return;
-     if (selectedContacts.length === 0) {
-       toast.error("Selecione ao menos um destinatário.");
+     if (selectedContacts.length === 0 && selectedDepartments.length === 0) {
+       toast.error("Selecione ao menos um destinatário (profissional ou departamento).");
        return;
      }
      if (!text.trim() && !audioBlob) {
@@ -375,9 +391,37 @@ export default function Mensagens() {
       }
 
       let okCount = 0;
+      const totalDestinos = selectedContacts.length + selectedDepartments.length;
       try {
         const conteudo = text.trim() || null;
         let lastConvId: string | null = null;
+
+        // Departamentos
+        for (const dept of selectedDepartments) {
+          const { data: convId, error: rpcErr } = await (supabase as any)
+            .rpc('get_or_create_department_conversation', { _department_id: dept.id });
+          if (rpcErr || !convId) {
+            console.error(`Erro ao preparar conversa do depto ${dept.name}:`, rpcErr);
+            toast.error(`Erro ao preparar conversa do departamento ${dept.name}`);
+            continue;
+          }
+          lastConvId = convId as string;
+          const { error } = await supabase.from("messages").insert({
+            conversation_id: convId,
+            sender_id: user!.id,
+            conteudo: conteudo || null,
+            anexo_url: audioUrl || null,
+            anexo_tipo: audioUrl ? "audio" : null,
+          });
+          if (error) {
+            console.error(`Erro ao enviar para depto ${dept.name}:`, error);
+            toast.error(`Erro ao enviar para ${dept.name}`);
+          } else {
+            okCount++;
+          }
+        }
+
+        // Profissionais individuais
         for (const contact of selectedContacts) {
          const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;
@@ -404,9 +448,10 @@ export default function Mensagens() {
        setAudioPreviewUrl(null);
        setPendingAudioUrl(null);
        setSelectedContacts([]);
+       setSelectedDepartments([]);
        setOpenNew(false);
        await loadConvs(); // Carrega tudo uma vez no final
-       if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
+       if (totalDestinos === 1 && lastConvId) setActive(lastConvId);
       } catch (err: any) {
         console.error("Erro fatal no broadcast:", err);
         toast.error("Falha ao processar o envio em massa.");
@@ -421,6 +466,11 @@ export default function Mensagens() {
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
    const toggleContact = (c: Profile) => {
      setSelectedContacts(prev => prev.some(x => x.id === c.id) ? prev.filter(x => x.id !== c.id) : [...prev, c]);
+   };
+
+   const isDeptSelected = (id: string) => selectedDepartments.some(d => d.id === id);
+   const toggleDepartment = (d: DeptOption) => {
+     setSelectedDepartments(prev => prev.some(x => x.id === d.id) ? prev.filter(x => x.id !== d.id) : [...prev, d]);
    };
 
    async function enviarDirect(convId: string) {
@@ -610,7 +660,7 @@ export default function Mensagens() {
                 <Search className="h-3 w-3" />
               </Button>
             </div>
-            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); } }}>
+            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); setSelectedDepartments([]); } }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
@@ -624,7 +674,7 @@ export default function Mensagens() {
                   <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                    {/* Departamentos */}
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Filtrar por Departamento</p>
+                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Departamentos (clique para enviar)</p>
                      <div className="space-y-1">
                         <Button 
                           variant={!selectedDeptId ? "secondary" : "ghost"} 
@@ -633,45 +683,32 @@ export default function Mensagens() {
                           onClick={() => setSelectedDeptId(null)}
                         >
                           <UsersIcon className="h-3.5 w-3.5 mr-2" />
-                          Todos
+                          Todos (filtro)
                         </Button>
                         {departments.map((dept) => {
-                          const deptContacts = contatos.filter(c => c.department_id === dept.id);
-                          const allSelected = deptContacts.length > 0 && deptContacts.every(c => selectedContacts.some(sc => sc.id === c.id));
-                          
+                          const deptSelected = isDeptSelected(dept.id);
                           return (
                             <div key={dept.id} className="group relative">
                               <Button 
-                                variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                                variant={deptSelected ? "default" : (selectedDeptId === dept.id ? "secondary" : "ghost")} 
                                 size="sm" 
                                 className="w-full justify-start text-xs pr-8"
-                                onClick={() => setSelectedDeptId(dept.id)}
+                                onClick={() => {
+                                  // Clique no departamento: alterna como destinatário
+                                  toggleDepartment(dept);
+                                  setSelectedDeptId(dept.id);
+                                }}
+                                title={deptSelected ? "Departamento selecionado como destinatário" : "Enviar para o departamento inteiro"}
                               >
                                 <Building2 className="h-3.5 w-3.5 mr-2 shrink-0" />
                                 <span className="truncate">{dept.name}</span>
                               </Button>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (allSelected) {
-                                    setSelectedContacts(prev => prev.filter(p => p.department_id !== dept.id));
-                                  } else {
-                                    setSelectedContacts(prev => {
-                                      const newContacts = [...prev];
-                                      deptContacts.forEach(c => {
-                                        if (!newContacts.some(nc => nc.id === c.id)) newContacts.push(c);
-                                      });
-                                      return newContacts;
-                                    });
-                                  }
-                                }}
-                                className={cn(
-                                  "absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors",
-                                  allSelected ? "text-primary" : "text-muted-foreground opacity-0 group-hover:opacity-100"
-                                )}
-                                title={allSelected ? "Desmarcar todos" : "Selecionar todos do departamento"}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedDeptId(dept.id); }}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors text-muted-foreground opacity-0 group-hover:opacity-100"
+                                title="Apenas filtrar profissionais deste departamento"
                               >
-                                <UsersIcon className="h-3 w-3" />
+                                <Search className="h-3 w-3" />
                               </button>
                             </div>
                           );
@@ -682,9 +719,18 @@ export default function Mensagens() {
                     {/* Contatos */}
                     <div className="flex-1 flex flex-col overflow-hidden bg-card">
                       {/* Destinatários selecionados (Badges) */}
-                      {selectedContacts.length > 0 && (
+                      {(selectedContacts.length > 0 || selectedDepartments.length > 0) && (
                         <div className="px-4 py-3 border-b bg-muted/30 flex flex-wrap gap-2 items-center">
                           <span className="text-[10px] font-bold uppercase text-muted-foreground">Para:</span>
+                          {selectedDepartments.map(d => (
+                            <Badge key={`d-${d.id}`} variant="default" className="pl-2 pr-1 py-1 gap-1">
+                              <Building2 className="h-3 w-3" />
+                              <span className="max-w-[140px] truncate">{d.name}</span>
+                              <button onClick={() => toggleDepartment(d)} className="ml-1 rounded-full hover:bg-muted/40 p-0.5">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
                           {selectedContacts.map(c => (
                             <Badge key={c.id} variant="secondary" className="pl-2 pr-1 py-1 gap-1">
                               <span className="max-w-[120px] truncate">{c.nome}</span>
@@ -693,7 +739,7 @@ export default function Mensagens() {
                               </button>
                             </Badge>
                           ))}
-                          <Button variant="link" onClick={() => setSelectedContacts([])} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-destructive ml-auto">
+                          <Button variant="link" onClick={() => { setSelectedContacts([]); setSelectedDepartments([]); }} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-destructive ml-auto">
                             Limpar Tudo
                           </Button>
                         </div>
@@ -830,9 +876,9 @@ export default function Mensagens() {
                           {filteredContatos.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                               <User className="h-16 w-16 opacity-5 mb-4" />
-                              <p className="text-sm font-bold">Nenhum profissional</p>
-                              <p className="text-[11px] opacity-60 text-center max-w-[200px] mt-2">
-                                Tente buscar com outros termos ou selecione um departamento ao lado.
+                              <p className="text-sm font-bold">Nenhum profissional cadastrado</p>
+                              <p className="text-[11px] opacity-70 text-center max-w-[260px] mt-2">
+                                Você ainda pode enviar a mensagem clicando em um <span className="font-semibold">departamento</span> na lista ao lado — ele será o destinatário.
                               </p>
                             </div>
                           )}
@@ -879,15 +925,15 @@ export default function Mensagens() {
 
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
-                        <Input
-                          placeholder={selectedContacts.length === 0 
-                            ? "Selecione destinatários para habilitar o envio..." 
-                            : `Mensagem para ${selectedContacts.length} profissional(is)...`}
+                       <Input
+                          placeholder={(selectedContacts.length === 0 && selectedDepartments.length === 0)
+                            ? "Selecione destinatários para habilitar o envio..."
+                            : `Mensagem para ${selectedDepartments.length} departamento(s) e ${selectedContacts.length} profissional(is)...`}
                           className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
                           value={text}
                           onChange={(e) => setText(e.target.value)}
                           onKeyDown={(e) => { 
-                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
+                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && (selectedContacts.length > 0 || selectedDepartments.length > 0)) {
                               e.preventDefault(); 
                               sendBroadcast(); 
                             } 
@@ -898,10 +944,10 @@ export default function Mensagens() {
                             className={cn(
                               "absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all", 
                               "text-muted-foreground hover:text-primary hover:bg-primary/5",
-                              selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
+                              (selectedContacts.length === 0 && selectedDepartments.length === 0) && "opacity-50 cursor-not-allowed"
                             )}
                              onClick={async () => { 
-                               if (selectedContacts.length === 0) return;
+                               if (selectedContacts.length === 0 && selectedDepartments.length === 0) return;
                                try {
                                  setRecordingMode('broadcast');
                                  await recorderControls.startRecording();
@@ -928,13 +974,13 @@ export default function Mensagens() {
                     </div>
                     
                     <div className="mt-3 flex items-center justify-center gap-2">
-                      {selectedContacts.length > 0 ? (
+                      {(selectedContacts.length > 0 || selectedDepartments.length > 0) ? (
                         <p className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border">
-                          Enviando individualmente para <span className="text-primary font-bold">{selectedContacts.length}</span> profissional(is).
+                          Enviando para <span className="text-primary font-bold">{selectedDepartments.length}</span> departamento(s) e <span className="text-primary font-bold">{selectedContacts.length}</span> profissional(is).
                         </p>
                       ) : (
                         <p className="text-[10px] text-muted-foreground italic">
-                          Selecione os destinatários na lista acima para começar a escrever.
+                          Clique em um departamento à esquerda ou em um profissional para escolher o destinatário.
                         </p>
                       )}
                     </div>
@@ -949,7 +995,14 @@ export default function Mensagens() {
                    <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
                    Nenhuma conversa ativa. Clique em "Nova" para começar.
                  </div>
-               ) : convs.map((c) => (
+                ) : convs.map((c) => {
+                  const isDept = c.tipo === 'department' || !!c.department_id;
+                  const displayName = isDept
+                    ? (c.department_name || c.titulo || 'Departamento')
+                    : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
+                  const avatarUrl = !isDept ? c.outros[0]?.foto_url : undefined;
+                  const initial = isDept ? '#' : (c.outros[0]?.nome?.charAt(0) || 'C');
+                  return (
                  <button 
                    key={c.id} 
                    onClick={() => setActive(c.id)}
@@ -958,21 +1011,17 @@ export default function Mensagens() {
                      active === c.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent border-l-4 border-transparent"
                    )}
                  >
-                    {c.outros[0]?.foto_url ? (
-                      <img 
-                        src={c.outros[0].foto_url} 
-                        alt={c.outros[0].nome} 
-                        className="h-10 w-10 rounded-full object-cover shrink-0 border border-border"
-                      />
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover shrink-0 border border-border" />
                     ) : (
                       <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                        {c.outros[0]?.nome?.charAt(0) || "C"}
+                        {isDept ? <Building2 className="h-4 w-4" /> : initial}
                       </div>
                     )}
                    <div className="flex-1 min-w-0">
                      <div className="flex items-center justify-between mb-0.5">
                        <div className={cn("text-sm font-bold truncate", active === c.id ? "text-primary" : "text-foreground")}>
-                         {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
+                         {displayName}
                        </div>
                        <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
                          {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
@@ -983,7 +1032,8 @@ export default function Mensagens() {
                      </div>
                    </div>
                  </button>
-               ))}
+                  );
+                })}
              </div>
            </ScrollArea>
         </div>
@@ -1012,33 +1062,40 @@ export default function Mensagens() {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-3 flex-1">
-                  {activeConv?.outros[0]?.foto_url ? (
-                    <img 
-                      src={activeConv.outros[0].foto_url} 
-                      alt={activeConv.outros[0].nome} 
-                      className="h-8 w-8 rounded-full object-cover border border-border"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                      {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
-                    </div>
-                  )}
-                  <div className="flex flex-col min-w-0">
-                    <div className="text-sm font-bold truncate">
-                      {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
-                      <span>{activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Profissional"}</span>
-                      {activeConv?.outros[0]?.department_name && (
-                        <>
-                          <span>•</span>
-                          <span>{activeConv.outros[0].department_name}</span>
-                        </>
+                {(() => {
+                  const isDept = activeConv?.tipo === 'department' || !!activeConv?.department_id;
+                  const headerName = isDept
+                    ? (activeConv?.department_name || activeConv?.titulo || 'Departamento')
+                    : (activeConv?.outros.map((o) => o.nome).join(", ") || 'Conversa');
+                  const headerSub = isDept
+                    ? `Conversa do departamento • ${activeConv?.outros.length ?? 0} participantes`
+                    : (activeConv?.outros[0]?.role
+                        ? ROLE_LABEL[activeConv.outros[0].role as AppRole]
+                        : 'Profissional');
+                  return (
+                    <div className="flex items-center gap-3 flex-1">
+                      {!isDept && activeConv?.outros[0]?.foto_url ? (
+                        <img src={activeConv.outros[0].foto_url} alt={headerName} className="h-8 w-8 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                          {isDept ? <Building2 className="h-4 w-4" /> : (activeConv?.outros[0]?.nome?.charAt(0) || 'C')}
+                        </div>
                       )}
+                      <div className="flex flex-col min-w-0">
+                        <div className="text-sm font-bold truncate">{headerName}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                          <span>{headerSub}</span>
+                          {!isDept && activeConv?.outros[0]?.department_name && (
+                            <>
+                              <span>•</span>
+                              <span>{activeConv.outros[0].department_name}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
               <div className="flex-1 overflow-auto p-4 space-y-2">
                 {msgs.map((m) => {

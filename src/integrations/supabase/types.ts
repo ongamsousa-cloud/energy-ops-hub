@@ -597,6 +597,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          department_id: string | null
           id: string
           obra_id: string | null
           tipo: string
@@ -605,6 +606,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          department_id?: string | null
           id?: string
           obra_id?: string | null
           tipo?: string
@@ -613,12 +615,21 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          department_id?: string | null
           id?: string
           obra_id?: string | null
           tipo?: string
           titulo?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "conversations_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       departments: {
         Row: {
@@ -1478,6 +1489,7 @@ export type Database = {
           created_at: string
           id: string
           sender_id: string
+          updated_at: string
         }
         Insert: {
           anexo_tipo?: string | null
@@ -1487,6 +1499,7 @@ export type Database = {
           created_at?: string
           id?: string
           sender_id: string
+          updated_at?: string
         }
         Update: {
           anexo_tipo?: string | null
@@ -1496,6 +1509,7 @@ export type Database = {
           created_at?: string
           id?: string
           sender_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -3360,6 +3374,10 @@ export type Database = {
         Returns: {
           conversation_id: string
         }[]
+      }
+      get_or_create_department_conversation: {
+        Args: { _department_id: string }
+        Returns: string
       }
       has_any_role: {
         Args: {

@@ -485,15 +485,15 @@ export default function Mensagens() {
         audioUrl = pendingAudioUrl;
         if (audioBlob && !audioUrl) {
           const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-          const path = `chat/broadcast/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+          const path = `broadcast/${user!.id}/${crypto.randomUUID()}-${file.name}`;
+          const { error: upErr } = await supabase.storage.from("message-attachments").upload(path, file);
           if (upErr) { 
             console.error("Erro no upload do broadcast:", upErr);
             toast.error("Erro no upload do áudio: " + upErr.message); 
             setIsUploading(false);
             return; 
           }
-          audioUrl = supabase.storage.from("audio-messages").getPublicUrl(path).data.publicUrl;
+          audioUrl = supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
         }
       } catch (e: any) {
         console.error("Exceção no upload:", e);
@@ -628,10 +628,10 @@ export default function Mensagens() {
        setIsUploading(true);
        try {
          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-         const path = `chat/${active}/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+         const path = `${active}/${user!.id}/${crypto.randomUUID()}-${file.name}`;
+          const { error: upErr } = await supabase.storage.from("message-attachments").upload(path, file);
           if (upErr) throw upErr;
-          const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
+          const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
          finalAnexo = { url: data.publicUrl, tipo: "audio" };
        } catch (err: any) {
          toast.error("Erro ao enviar áudio: " + err.message);
@@ -691,16 +691,38 @@ export default function Mensagens() {
     }
   }
 
-  async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f || !active) return;
-    const tipo = f.type.startsWith("video/") ? "video" : "image";
-    const path = `chat/${active}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("audio-messages").upload(path, f, { contentType: f.type });
-    if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
-    await enviar({ url: data.publicUrl, tipo });
-    e.target.value = "";
-  }
+   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
+     const f = e.target.files?.[0]; 
+     if (!f || !active) return;
+     
+     const isImage = f.type.startsWith("image/");
+     const isVideo = f.type.startsWith("video/");
+     const isAudio = f.type.startsWith("audio/");
+     const tipo = isVideo ? "video" : isImage ? "image" : isAudio ? "audio" : "file";
+     
+     const toastId = toast.loading(`Enviando ${tipo === 'file' ? 'arquivo' : tipo}...`);
+     setIsUploading(true);
+ 
+     try {
+       const path = `${active}/${user!.id}/${crypto.randomUUID()}-${f.name}`;
+       const { error } = await supabase.storage.from("message-attachments").upload(path, f, { 
+         contentType: f.type,
+         upsert: false
+       });
+       
+       if (error) throw error;
+       
+       const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
+       await enviar({ url: data.publicUrl, tipo });
+       toast.success("Arquivo enviado com sucesso!", { id: toastId });
+     } catch (err: any) {
+       console.error("Erro no upload:", err);
+       toast.error("Erro ao enviar arquivo: " + (err.message || "Tente novamente"), { id: toastId });
+     } finally {
+       setIsUploading(false);
+       e.target.value = "";
+     }
+   }
 
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
@@ -1352,9 +1374,20 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "video" && (
                           <video src={m.anexo_url} controls className="mb-1 max-h-64 rounded" />
                         )}
-                        {m.anexo_url && m.anexo_tipo === "audio" && (
-                          <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
-                        )}
+                         {m.anexo_url && m.anexo_tipo === "audio" && (
+                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
+                         )}
+                         {m.anexo_url && m.anexo_tipo === "file" && (
+                           <a 
+                             href={m.anexo_url} 
+                             target="_blank" 
+                             rel="noopener noreferrer" 
+                             className="mb-1 flex items-center gap-2 p-2 rounded bg-background/50 border border-border hover:bg-background/80 transition-colors"
+                           >
+                             <Paperclip className="h-4 w-4 shrink-0" />
+                             <span className="text-[11px] truncate flex-1">Ver anexo</span>
+                           </a>
+                         )}
                         {m.status === 'sending' && (
                           <div className="flex items-center gap-2 text-[10px] opacity-70 italic mb-1">
                             <RefreshCw className="h-3 w-3 animate-spin" /> Enviando...
@@ -1460,7 +1493,7 @@ export default function Mensagens() {
                   </div>
                  ) : (
                    <div className="flex items-center gap-2">
-                     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
+                      <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip" hidden onChange={uploadAnexo} />
                      <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
                      
                      <div className="flex items-center">

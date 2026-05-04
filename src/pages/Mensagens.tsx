@@ -114,25 +114,9 @@ export default function Mensagens() {
      };
    }, [audioPreviewUrl]);
 
-  async function enviarAudio() {
-    if (!audioBlob || !active) return;
-    const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-    const path = `chat/${active}/${file.name}`;
-    
-    const { error } = await supabase.storage
-      .from("os-evidences")
-      .upload(path, file);
-      
-    if (error) {
-      toast.error("Erro ao enviar áudio: " + error.message);
-      return;
-    }
-    
-    const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
-    await enviar({ url: data.publicUrl, tipo: "audio" });
-    setAudioBlob(null);
-    setAudioPreviewUrl(null);
-  }
+   async function enviarAudio() {
+     await enviar();
+   }
 
   const myRole = roles[0];
 
@@ -169,8 +153,8 @@ export default function Mensagens() {
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      // Removendo filtros restritivos para permitir comunicação entre departamentos como solicitado
-      setContatos(all);
+      // Ordena contatos por nome e remove filtros restritivos
+      setContatos(all.sort((a, b) => a.nome.localeCompare(b.nome)));
     })();
   }, [user]);
 
@@ -459,7 +443,10 @@ export default function Mensagens() {
        anexo_url: finalAnexo?.url ?? null,
        anexo_tipo: finalAnexo?.tipo ?? null,
     });
-    if (error) return toast.error(error.message);
+     if (error) {
+       console.error("Erro ao enviar mensagem:", error);
+       return toast.error("Falha ao enviar: " + error.message);
+     }
      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);

@@ -1507,6 +1507,81 @@ export default function Mensagens() {
             </>
           )}
         </div>
+
+        {/* Modals de CRUD */}
+        <Dialog open={openDeptCrud} onOpenChange={setOpenDeptCrud}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingDept ? "Editar Departamento" : "Novo Departamento"}</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase">Nome do Departamento</label>
+                <Input 
+                  defaultValue={editingDept?.name || ""} 
+                  placeholder="Ex: Operacional, Financeiro..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveDepartment(e.currentTarget.value);
+                  }}
+                  id="dept-name-input"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpenDeptCrud(false)}>Cancelar</Button>
+              <Button onClick={() => {
+                const input = document.getElementById('dept-name-input') as HTMLInputElement;
+                saveDepartment(input.value);
+              }}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={openProfileCrud} onOpenChange={setOpenProfileCrud}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{editingProfile ? "Editar Profissional" : "Novo Profissional"}</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-1 col-span-2">
+                <label className="text-[10px] font-bold uppercase">Nome Completo</label>
+                <Input id="prof-nome" defaultValue={editingProfile?.nome || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">E-mail</label>
+                <Input id="prof-email" defaultValue={editingProfile?.email || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Código/Documento</label>
+                <Input id="prof-doc" defaultValue={editingProfile?.documento || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Cargo</label>
+                <Input id="prof-cargo" defaultValue={editingProfile?.cargo || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Departamento</label>
+                <select id="prof-dept" className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm" defaultValue={editingProfile?.department_id || ""}>
+                  <option value="">Nenhum</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpenProfileCrud(false)}>Cancelar</Button>
+              <Button onClick={() => {
+                const data = {
+                  nome: (document.getElementById('prof-nome') as HTMLInputElement).value,
+                  email: (document.getElementById('prof-email') as HTMLInputElement).value,
+                  documento: (document.getElementById('prof-doc') as HTMLInputElement).value,
+                  cargo: (document.getElementById('prof-cargo') as HTMLInputElement).value,
+                  department_id: (document.getElementById('prof-dept') as HTMLSelectElement).value || undefined,
+                };
+                saveProfile(data);
+              }}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

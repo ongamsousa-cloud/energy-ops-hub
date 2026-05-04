@@ -89,9 +89,14 @@ export default function OSDetalhe() {
          `)
          .eq("id", id).maybeSingle();
 
-      if (!o && !osError) {
-        toast.error("Você não possui permissão para acessar esta ordem de serviço.");
-        nav("/app/os");
+      if (!o) {
+        if (osError) {
+          console.error("Erro ao carregar OS:", osError);
+          toast.error("Erro ao carregar dados da OS");
+        } else {
+          toast.error("Você não possui permissão para acessar esta ordem de serviço.");
+          nav("/app/os");
+        }
         return;
       }
      setOS(o);
@@ -215,10 +220,26 @@ export default function OSDetalhe() {
 
   async function sendMessage() {
     if (!newMessage.trim()) return;
-    const { error } = await supabase.from("os_messages").insert({ os_id: id, sender_id: user!.id, content: newMessage });
-    if (error) return toast.error(error.message);
-    setNewMessage("");
-    load();
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("os_messages").insert({ 
+        os_id: id, 
+        sender_id: user!.id, 
+        content: newMessage 
+      });
+      if (error) throw error;
+      setNewMessage("");
+      // Update local state immediately for better UX
+      const { data: msg } = await supabase.from("os_messages")
+        .select("*, sender:profiles(nome)")
+        .eq("os_id", id)
+        .order("created_at", { ascending: true });
+      setMessages(msg ?? []);
+    } catch (err: any) {
+      toast.error("Erro ao enviar mensagem: " + err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
    function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {

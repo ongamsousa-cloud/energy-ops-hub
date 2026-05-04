@@ -816,7 +816,14 @@ export default function Mensagens() {
                   <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                    {/* Departamentos */}
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
-                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Departamentos (clique para enviar)</p>
+                        <div className="flex items-center justify-between px-1 mb-3">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground">Departamentos</p>
+                          {myRole === 'admin' && (
+                            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => { setEditingDept(null); setOpenDeptCrud(true); }}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                      <div className="space-y-1">
                         <Button 
                           variant={!selectedDeptId ? "secondary" : "ghost"} 
@@ -850,8 +857,24 @@ export default function Mensagens() {
                                 className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors text-muted-foreground opacity-0 group-hover:opacity-100"
                                 title="Apenas filtrar profissionais deste departamento"
                               >
-                                <Search className="h-3 w-3" />
-                              </button>
+                                 <Search className="h-2.5 w-2.5" />
+                               </button>
+                               {myRole === 'admin' && (
+                                 <div className="absolute right-7 top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setOpenDeptCrud(true); }}
+                                     className="p-1 hover:text-primary"
+                                   >
+                                     <Edit2 className="h-2.5 w-2.5" />
+                                   </button>
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }}
+                                     className="p-1 hover:text-destructive"
+                                   >
+                                     <Trash2 className="h-2.5 w-2.5" />
+                                   </button>
+                                 </div>
+                               )}
                             </div>
                           );
                         })}

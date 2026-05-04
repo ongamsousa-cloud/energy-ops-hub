@@ -149,7 +149,7 @@ export default function OSList() {
           </div>
         </div>
  
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 items-end bg-muted/20 p-4 rounded-lg border">
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-end bg-muted/20 p-4 rounded-lg border">
           <div className="space-y-1.5 lg:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
             <div className="relative">
@@ -198,6 +198,32 @@ export default function OSList() {
               )}
             </div>
           </div>
+           <div className="space-y-1.5">
+             <label className="text-xs font-medium text-muted-foreground">Status Financeiro</label>
+             <Select value={filters.financial_status} onValueChange={(v) => setFilters(f => ({ ...f, financial_status: v }))}>
+               <SelectTrigger><SelectValue placeholder="Financeiro" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="all">Todos</SelectItem>
+                 <SelectItem value="pendente">Pendente</SelectItem>
+                 <SelectItem value="faturavel">Faturável</SelectItem>
+                 <SelectItem value="faturado">Faturado</SelectItem>
+               </SelectContent>
+             </Select>
+           </div>
+
+           <div className="space-y-1.5">
+             <label className="text-xs font-medium text-muted-foreground">Status Auditoria</label>
+             <Select value={filters.audit_status} onValueChange={(v) => setFilters(f => ({ ...f, audit_status: v }))}>
+               <SelectTrigger><SelectValue placeholder="Auditoria" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="all">Todos</SelectItem>
+                 <SelectItem value="pendente_auditoria">Pendente</SelectItem>
+                 <SelectItem value="aprovada_na_auditoria">Aprovada</SelectItem>
+                 <SelectItem value="reprovada_na_auditoria">Reprovada</SelectItem>
+               </SelectContent>
+             </Select>
+           </div>
+
            <div className="space-y-1.5">
              <label className="text-xs font-medium text-muted-foreground">Status Operacional</label>
              <Select value={filters.operational_status} onValueChange={(v) => setFilters(f => ({ ...f, operational_status: v }))}>

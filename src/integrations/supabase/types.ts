@@ -1864,6 +1864,7 @@ export type Database = {
           aprovado_em: string | null
           aprovado_por: string | null
           archived_at: string | null
+          arquivada: boolean | null
           assigned_manager_id: string | null
           assigned_supervisor_id: string | null
           audit_status: Database["public"]["Enums"]["os_audit_status"] | null
@@ -1932,6 +1933,7 @@ export type Database = {
           aprovado_em?: string | null
           aprovado_por?: string | null
           archived_at?: string | null
+          arquivada?: boolean | null
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
@@ -2000,6 +2002,7 @@ export type Database = {
           aprovado_em?: string | null
           aprovado_por?: string | null
           archived_at?: string | null
+          arquivada?: boolean | null
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null

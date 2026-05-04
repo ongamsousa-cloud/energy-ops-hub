@@ -1374,9 +1374,20 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "video" && (
                           <video src={m.anexo_url} controls className="mb-1 max-h-64 rounded" />
                         )}
-                        {m.anexo_url && m.anexo_tipo === "audio" && (
-                          <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
-                        )}
+                         {m.anexo_url && m.anexo_tipo === "audio" && (
+                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
+                         )}
+                         {m.anexo_url && m.anexo_tipo === "file" && (
+                           <a 
+                             href={m.anexo_url} 
+                             target="_blank" 
+                             rel="noopener noreferrer" 
+                             className="mb-1 flex items-center gap-2 p-2 rounded bg-background/50 border border-border hover:bg-background/80 transition-colors"
+                           >
+                             <Paperclip className="h-4 w-4 shrink-0" />
+                             <span className="text-[11px] truncate flex-1">Ver anexo</span>
+                           </a>
+                         )}
                         {m.status === 'sending' && (
                           <div className="flex items-center gap-2 text-[10px] opacity-70 italic mb-1">
                             <RefreshCw className="h-3 w-3 animate-spin" /> Enviando...

@@ -56,10 +56,9 @@
        });
      }
  
-     // 2. Perfis sem role (usando select com filter)
-     const { data: profilesWithRoles } = await supabase.from('profiles').select('id, user_roles(role)');
-     const usersNoRole = profilesWithRoles?.filter(p => !p.user_roles || p.user_roles.length === 0) || [];
-     if (usersNoRole.length) {
+     // 2. Perfis sem role (usando a nova RPC do banco)
+     const { data: usersNoRole } = await supabase.rpc('get_users_without_roles');
+     if (usersNoRole && usersNoRole.length) {
        issues.push({ id: "no-role", title: "Usuários sem perfil de acesso", count: usersNoRole.length, severity: "high" });
      }
  

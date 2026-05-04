@@ -972,8 +972,15 @@ export default function Mensagens() {
                         )}
                       </div>
 
-                      {/* Lista de contatos (Scrollable) */}
-                      <ScrollArea className="flex-1">
+                       {/* Lista de contatos (Scrollable) */}
+                       <ScrollArea className="flex-1">
+                         {myRole === 'admin' && (
+                           <div className="px-4 py-2 border-b bg-muted/5 flex justify-end">
+                             <Button size="xs" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => { setEditingProfile(null); setOpenProfileCrud(true); }}>
+                               <Plus className="h-3 w-3" /> Novo Profissional
+                             </Button>
+                           </div>
+                         )}
                         <div className="p-4 pt-2 space-y-6">
                           {(Object.entries(contatosPorDept) as [string, Profile[]][]).map(([dept, list]) => (
                             <div key={dept} className="space-y-2">

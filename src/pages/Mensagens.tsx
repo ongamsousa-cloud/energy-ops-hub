@@ -60,6 +60,8 @@ export default function Mensagens() {
   const [departments, setDepartments] = useState<DeptOption[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
    const [searchTerm, setSearchTerm] = useState("");
+   const [searchConvTerm, setSearchConvTerm] = useState("");
+   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
    const [filterCode, setFilterCode] = useState("");
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");

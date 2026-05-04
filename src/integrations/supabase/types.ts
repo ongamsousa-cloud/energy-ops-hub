@@ -3815,6 +3815,7 @@ export type Database = {
         | "Aguardando exceção"
         | "Exceção aprovada"
         | "Exceção negada"
+        | "Iniciada"
       os_audit_status:
         | "nao_auditada"
         | "pendente_auditoria"
@@ -4076,6 +4077,7 @@ export const Constants = {
         "Aguardando exceção",
         "Exceção aprovada",
         "Exceção negada",
+        "Iniciada",
       ],
       os_audit_status: [
         "nao_auditada",

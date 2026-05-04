@@ -1,0 +1,1 @@
+ALTER TYPE public.operational_status ADD VALUE IF NOT EXISTS 'Iniciada';

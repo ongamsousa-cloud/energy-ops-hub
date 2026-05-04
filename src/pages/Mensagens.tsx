@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
    id: string;
    titulo: string | null;
    created_at: string;
+    ultima_data?: string | null;
    tipo?: string;
    department_id?: string | null;
    department_name?: string | null;
@@ -361,6 +362,7 @@ export default function Mensagens() {
          id: c.id,
          titulo: c.titulo,
          created_at: c.created_at,
+          ultima_data: lastMsg?.created_at || c.created_at,
          tipo: c.tipo,
          department_id: c.department_id,
          department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,

@@ -1020,7 +1020,7 @@ export default function OSDetalhe() {
           {((os.operational_status || os.status) === "Pendente" || (os.operational_status || os.status) === "pendente") && isOwner && (
             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
               await supabase.from("ordens_servico").update({ 
-                operational_status: "Iniciada",
+                operational_status: "Iniciada" as any,
                 status: "iniciada"
               }).eq("id", id);
               await registrarAuditoria("Iniciada", "Profissional deu o aceite na Ordem de Serviço");

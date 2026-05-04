@@ -218,6 +218,20 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             </div>
 
             <div className="space-y-2">
+              <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
+              <Select value={formData.departmentId} onValueChange={(v) => setFormData({...formData, departmentId: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o setor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departamentos.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label>Prioridade</Label>
               <Select value={formData.prioridade} onValueChange={(v) => setFormData({...formData, prioridade: v})}>
                 <SelectTrigger>

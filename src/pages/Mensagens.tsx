@@ -355,8 +355,8 @@ export default function Mensagens() {
 
     async function sendBroadcast() {
       if (isUploading) return;
-     if (selectedContacts.length === 0) {
-       toast.error("Selecione ao menos um destinatário.");
+     if (selectedContacts.length === 0 && selectedDepartments.length === 0) {
+       toast.error("Selecione ao menos um destinatário (profissional ou departamento).");
        return;
      }
      if (!text.trim() && !audioBlob) {
@@ -391,9 +391,37 @@ export default function Mensagens() {
       }
 
       let okCount = 0;
+      const totalDestinos = selectedContacts.length + selectedDepartments.length;
       try {
         const conteudo = text.trim() || null;
         let lastConvId: string | null = null;
+
+        // Departamentos
+        for (const dept of selectedDepartments) {
+          const { data: convId, error: rpcErr } = await (supabase as any)
+            .rpc('get_or_create_department_conversation', { _department_id: dept.id });
+          if (rpcErr || !convId) {
+            console.error(`Erro ao preparar conversa do depto ${dept.name}:`, rpcErr);
+            toast.error(`Erro ao preparar conversa do departamento ${dept.name}`);
+            continue;
+          }
+          lastConvId = convId as string;
+          const { error } = await supabase.from("messages").insert({
+            conversation_id: convId,
+            sender_id: user!.id,
+            conteudo: conteudo || null,
+            anexo_url: audioUrl || null,
+            anexo_tipo: audioUrl ? "audio" : null,
+          });
+          if (error) {
+            console.error(`Erro ao enviar para depto ${dept.name}:`, error);
+            toast.error(`Erro ao enviar para ${dept.name}`);
+          } else {
+            okCount++;
+          }
+        }
+
+        // Profissionais individuais
         for (const contact of selectedContacts) {
          const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;
@@ -420,9 +448,10 @@ export default function Mensagens() {
        setAudioPreviewUrl(null);
        setPendingAudioUrl(null);
        setSelectedContacts([]);
+       setSelectedDepartments([]);
        setOpenNew(false);
        await loadConvs(); // Carrega tudo uma vez no final
-       if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
+       if (totalDestinos === 1 && lastConvId) setActive(lastConvId);
       } catch (err: any) {
         console.error("Erro fatal no broadcast:", err);
         toast.error("Falha ao processar o envio em massa.");
@@ -437,6 +466,11 @@ export default function Mensagens() {
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
    const toggleContact = (c: Profile) => {
      setSelectedContacts(prev => prev.some(x => x.id === c.id) ? prev.filter(x => x.id !== c.id) : [...prev, c]);
+   };
+
+   const isDeptSelected = (id: string) => selectedDepartments.some(d => d.id === id);
+   const toggleDepartment = (d: DeptOption) => {
+     setSelectedDepartments(prev => prev.some(x => x.id === d.id) ? prev.filter(x => x.id !== d.id) : [...prev, d]);
    };
 
    async function enviarDirect(convId: string) {

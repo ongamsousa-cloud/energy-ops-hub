@@ -485,15 +485,15 @@ export default function Mensagens() {
         audioUrl = pendingAudioUrl;
         if (audioBlob && !audioUrl) {
           const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-          const path = `chat/broadcast/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+          const path = `broadcast/${user!.id}/${crypto.randomUUID()}-${file.name}`;
+          const { error: upErr } = await supabase.storage.from("message-attachments").upload(path, file);
           if (upErr) { 
             console.error("Erro no upload do broadcast:", upErr);
             toast.error("Erro no upload do áudio: " + upErr.message); 
             setIsUploading(false);
             return; 
           }
-          audioUrl = supabase.storage.from("audio-messages").getPublicUrl(path).data.publicUrl;
+          audioUrl = supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
         }
       } catch (e: any) {
         console.error("Exceção no upload:", e);
@@ -628,10 +628,10 @@ export default function Mensagens() {
        setIsUploading(true);
        try {
          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-         const path = `chat/${active}/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+         const path = `${active}/${user!.id}/${crypto.randomUUID()}-${file.name}`;
+          const { error: upErr } = await supabase.storage.from("message-attachments").upload(path, file);
           if (upErr) throw upErr;
-          const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
+          const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
          finalAnexo = { url: data.publicUrl, tipo: "audio" };
        } catch (err: any) {
          toast.error("Erro ao enviar áudio: " + err.message);
@@ -694,10 +694,10 @@ export default function Mensagens() {
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f || !active) return;
     const tipo = f.type.startsWith("video/") ? "video" : "image";
-    const path = `chat/${active}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("audio-messages").upload(path, f, { contentType: f.type });
+    const path = `${active}/${user!.id}/${crypto.randomUUID()}-${f.name}`;
+    const { error } = await supabase.storage.from("message-attachments").upload(path, f, { contentType: f.type });
     if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
+    const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo });
     e.target.value = "";
   }

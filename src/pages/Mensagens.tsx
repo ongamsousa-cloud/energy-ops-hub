@@ -660,7 +660,7 @@ export default function Mensagens() {
                 <Search className="h-3 w-3" />
               </Button>
             </div>
-            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); } }}>
+            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); setSelectedDepartments([]); } }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
@@ -674,7 +674,7 @@ export default function Mensagens() {
                   <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                    {/* Departamentos */}
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
-                      <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Filtrar por Departamento</p>
+                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Departamentos (clique para enviar)</p>
                      <div className="space-y-1">
                         <Button 
                           variant={!selectedDeptId ? "secondary" : "ghost"} 
@@ -683,45 +683,32 @@ export default function Mensagens() {
                           onClick={() => setSelectedDeptId(null)}
                         >
                           <UsersIcon className="h-3.5 w-3.5 mr-2" />
-                          Todos
+                          Todos (filtro)
                         </Button>
                         {departments.map((dept) => {
-                          const deptContacts = contatos.filter(c => c.department_id === dept.id);
-                          const allSelected = deptContacts.length > 0 && deptContacts.every(c => selectedContacts.some(sc => sc.id === c.id));
-                          
+                          const deptSelected = isDeptSelected(dept.id);
                           return (
                             <div key={dept.id} className="group relative">
                               <Button 
-                                variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                                variant={deptSelected ? "default" : (selectedDeptId === dept.id ? "secondary" : "ghost")} 
                                 size="sm" 
                                 className="w-full justify-start text-xs pr-8"
-                                onClick={() => setSelectedDeptId(dept.id)}
+                                onClick={() => {
+                                  // Clique no departamento: alterna como destinatário
+                                  toggleDepartment(dept);
+                                  setSelectedDeptId(dept.id);
+                                }}
+                                title={deptSelected ? "Departamento selecionado como destinatário" : "Enviar para o departamento inteiro"}
                               >
                                 <Building2 className="h-3.5 w-3.5 mr-2 shrink-0" />
                                 <span className="truncate">{dept.name}</span>
                               </Button>
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (allSelected) {
-                                    setSelectedContacts(prev => prev.filter(p => p.department_id !== dept.id));
-                                  } else {
-                                    setSelectedContacts(prev => {
-                                      const newContacts = [...prev];
-                                      deptContacts.forEach(c => {
-                                        if (!newContacts.some(nc => nc.id === c.id)) newContacts.push(c);
-                                      });
-                                      return newContacts;
-                                    });
-                                  }
-                                }}
-                                className={cn(
-                                  "absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors",
-                                  allSelected ? "text-primary" : "text-muted-foreground opacity-0 group-hover:opacity-100"
-                                )}
-                                title={allSelected ? "Desmarcar todos" : "Selecionar todos do departamento"}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setSelectedDeptId(dept.id); }}
+                                className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors text-muted-foreground opacity-0 group-hover:opacity-100"
+                                title="Apenas filtrar profissionais deste departamento"
                               >
-                                <UsersIcon className="h-3 w-3" />
+                                <Search className="h-3 w-3" />
                               </button>
                             </div>
                           );
@@ -732,9 +719,18 @@ export default function Mensagens() {
                     {/* Contatos */}
                     <div className="flex-1 flex flex-col overflow-hidden bg-card">
                       {/* Destinatários selecionados (Badges) */}
-                      {selectedContacts.length > 0 && (
+                      {(selectedContacts.length > 0 || selectedDepartments.length > 0) && (
                         <div className="px-4 py-3 border-b bg-muted/30 flex flex-wrap gap-2 items-center">
                           <span className="text-[10px] font-bold uppercase text-muted-foreground">Para:</span>
+                          {selectedDepartments.map(d => (
+                            <Badge key={`d-${d.id}`} variant="default" className="pl-2 pr-1 py-1 gap-1">
+                              <Building2 className="h-3 w-3" />
+                              <span className="max-w-[140px] truncate">{d.name}</span>
+                              <button onClick={() => toggleDepartment(d)} className="ml-1 rounded-full hover:bg-muted/40 p-0.5">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          ))}
                           {selectedContacts.map(c => (
                             <Badge key={c.id} variant="secondary" className="pl-2 pr-1 py-1 gap-1">
                               <span className="max-w-[120px] truncate">{c.nome}</span>
@@ -743,7 +739,7 @@ export default function Mensagens() {
                               </button>
                             </Badge>
                           ))}
-                          <Button variant="link" onClick={() => setSelectedContacts([])} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-destructive ml-auto">
+                          <Button variant="link" onClick={() => { setSelectedContacts([]); setSelectedDepartments([]); }} className="h-auto p-0 text-[10px] text-muted-foreground hover:text-destructive ml-auto">
                             Limpar Tudo
                           </Button>
                         </div>

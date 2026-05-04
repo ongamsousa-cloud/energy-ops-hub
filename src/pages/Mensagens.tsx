@@ -595,18 +595,47 @@ export default function Mensagens() {
                           <UsersIcon className="h-3.5 w-3.5 mr-2" />
                           Todos
                         </Button>
-                        {departments.map((dept) => (
-                          <Button 
-                            key={dept.id}
-                            variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
-                            size="sm" 
-                            className="w-full justify-start text-xs"
-                            onClick={() => setSelectedDeptId(dept.id)}
-                          >
-                            <Building2 className="h-3.5 w-3.5 mr-2" />
-                            {dept.name}
-                          </Button>
-                        ))}
+                        {departments.map((dept) => {
+                          const deptContacts = contatos.filter(c => c.department_id === dept.id);
+                          const allSelected = deptContacts.length > 0 && deptContacts.every(c => selectedContacts.some(sc => sc.id === c.id));
+                          
+                          return (
+                            <div key={dept.id} className="group relative">
+                              <Button 
+                                variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                                size="sm" 
+                                className="w-full justify-start text-xs pr-8"
+                                onClick={() => setSelectedDeptId(dept.id)}
+                              >
+                                <Building2 className="h-3.5 w-3.5 mr-2 shrink-0" />
+                                <span className="truncate">{dept.name}</span>
+                              </Button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (allSelected) {
+                                    setSelectedContacts(prev => prev.filter(p => p.department_id !== dept.id));
+                                  } else {
+                                    setSelectedContacts(prev => {
+                                      const newContacts = [...prev];
+                                      deptContacts.forEach(c => {
+                                        if (!newContacts.some(nc => nc.id === c.id)) newContacts.push(c);
+                                      });
+                                      return newContacts;
+                                    });
+                                  }
+                                }}
+                                className={cn(
+                                  "absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors",
+                                  allSelected ? "text-primary" : "text-muted-foreground opacity-0 group-hover:opacity-100"
+                                )}
+                                title={allSelected ? "Desmarcar todos" : "Selecionar todos do departamento"}
+                              >
+                                <UsersIcon className="h-3 w-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
                      </div>
                    </div>
 

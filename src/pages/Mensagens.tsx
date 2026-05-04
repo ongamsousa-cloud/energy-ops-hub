@@ -14,7 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
- type Profile = { id: string; nome: string; email: string; role?: AppRole; foto_url?: string };
+  type Profile = { 
+    id: string; 
+    nome: string; 
+    email: string; 
+    role?: AppRole; 
+    foto_url?: string;
+    department_id?: string;
+    department_name?: string;
+  };
  type Conv = { 
    id: string; 
    titulo: string | null; 
@@ -31,6 +39,8 @@ export default function Mensagens() {
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [contatos, setContatos] = useState<Profile[]>([]);
+  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
@@ -126,56 +136,38 @@ export default function Mensagens() {
 
   const myRole = roles[0];
 
-  // Carrega contatos permitidos pela hierarquia
+  // Carrega contatos e departamentos
   useEffect(() => {
     if (!user) return;
     (async () => {
+      // Carrega Departamentos
+      const { data: depts } = await supabase.from("departments").select("id, name").eq("active", true);
+      setDepartments(depts || []);
+
+      // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
       const { data: profs } = await supabase
         .from("profiles")
-        .select("id, nome, email, user_roles(role)")
+        .select(`
+          id, nome, email, department_id,
+          user_roles(role),
+          departments(name)
+        `)
         .eq("ativo", true)
         .neq("id", user.id);
+      
       const all: Profile[] = (profs ?? []).map((p: any) => ({
-        id: p.id, nome: p.nome, email: p.email,
+        id: p.id, 
+        nome: p.nome, 
+        email: p.email,
+        department_id: p.department_id,
+        department_name: p.departments?.name,
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      let filtered: Profile[] = [];
-      const isAdminGestor = roles.some((r) => r === "admin" || r === "gestor");
-      
-      if (isAdminGestor) {
-        filtered = all;
-      } else if (roles.includes("supervisor")) {
-        // gestores/admin + técnicos das equipes que ele supervisiona
-        const { data: eqs } = await supabase.from("equipes").select("id").eq("supervisor_id", user.id);
-        const eqIds = (eqs ?? []).map((e: any) => e.id);
-        let tecIds: string[] = [];
-        if (eqIds.length) {
-          const { data: mems } = await supabase.from("equipe_membros").select("profissional_id").in("equipe_id", eqIds);
-          tecIds = (mems ?? []).map((m: any) => m.profissional_id);
-        }
-        filtered = all.filter((p) =>
-          p.role === "admin" || p.role === "gestor" || p.role === "supervisor" || (p.role === "campo" && tecIds.includes(p.id))
-        );
-      } else if (roles.includes("campo")) {
-        // só supervisores das equipes em que o técnico participa + gestores/admin
-        const { data: mems } = await supabase.from("equipe_membros").select("equipe_id").eq("profissional_id", user.id);
-        const eqIds = (mems ?? []).map((m: any) => m.equipe_id);
-        let supIds: string[] = [];
-        if (eqIds.length) {
-          const { data: eqs } = await supabase.from("equipes").select("supervisor_id").in("id", eqIds);
-          supIds = (eqs ?? []).map((e: any) => e.supervisor_id).filter(Boolean);
-        }
-        filtered = all.filter((p) => supIds.includes(p.id) || p.role === "admin" || p.role === "gestor");
-      } else if (roles.includes("financeiro") || roles.includes("auditor")) {
-        filtered = all.filter((p) => p.role === "admin" || p.role === "gestor");
-      } else {
-        filtered = all.filter(p => p.role === "admin" || p.role === "gestor");
-      }
-      
-      setContatos(filtered);
+      // Removendo filtros restritivos para permitir comunicação entre departamentos como solicitado
+      setContatos(all);
     })();
-  }, [user, roles]);
+  }, [user]);
 
   // Carrega conversas
    async function loadConvs() {
@@ -369,36 +361,29 @@ export default function Mensagens() {
         return;
       }
 
-     const conteudo = text.trim() || null;
-     let lastConvId: string | null = null;
-     let okCount = 0;
-
-       for (const contact of selectedContacts) {
+      let okCount = 0;
+      try {
+        const conteudo = text.trim() || null;
+        let lastConvId: string | null = null;
+        for (const contact of selectedContacts) {
          const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;
         lastConvId = convId;
 
-        try {
-          const { error } = await supabase.from("messages").insert({
-            conversation_id: convId,
-            sender_id: user!.id,
-            conteudo: conteudo || null,
-            anexo_url: audioUrl || null,
-            anexo_tipo: audioUrl ? "audio" : null,
-          });
+        const { error } = await supabase.from("messages").insert({
+          conversation_id: convId,
+          sender_id: user!.id,
+          conteudo: conteudo || null,
+          anexo_url: audioUrl || null,
+          anexo_tipo: audioUrl ? "audio" : null,
+        });
 
-          if (error) {
-            console.error(`Erro ao inserir mensagem para ${contact.nome}:`, error);
-            toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
-            continue;
-          }
+        if (error) {
+          console.error(`Erro ao enviar para ${contact.nome}:`, error);
+          toast.error(`Erro ao enviar para ${contact.nome}`);
+        } else {
           okCount++;
-        } catch (innerErr: any) {
-          console.error(`Exceção ao enviar para ${contact.nome}:`, innerErr);
-          toast.error(`Falha inesperada ao enviar para ${contact.nome}`);
-          continue;
         }
-        okCount++;
       }
 
        setText("");
@@ -409,9 +394,16 @@ export default function Mensagens() {
        setOpenNew(false);
        await loadConvs(); // Carrega tudo uma vez no final
        if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
-      setIsUploading(false);
-      toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
-   }
+      } catch (err: any) {
+        console.error("Erro fatal no broadcast:", err);
+        toast.error("Falha ao processar o envio em massa.");
+      } finally {
+        setIsUploading(false);
+        if (okCount > 0) {
+          toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
+        }
+      }
+    }
 
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
    const toggleContact = (c: Profile) => {
@@ -498,19 +490,26 @@ export default function Mensagens() {
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
   const filteredContatos = useMemo(() => {
-    if (!searchTerm) return contatos;
-    const low = searchTerm.toLowerCase();
-    return contatos.filter(c => 
-      c.nome.toLowerCase().includes(low) || 
-      c.email.toLowerCase().includes(low) ||
-      (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low))
-    );
-  }, [contatos, searchTerm]);
+    let result = contatos;
+    if (selectedDeptId) {
+      result = result.filter(c => c.department_id === selectedDeptId);
+    }
+    if (searchTerm) {
+      const low = searchTerm.toLowerCase();
+      result = result.filter(c => 
+        c.nome.toLowerCase().includes(low) || 
+        c.email.toLowerCase().includes(low) ||
+        (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low)) ||
+        (c.department_name && c.department_name.toLowerCase().includes(low))
+      );
+    }
+    return result;
+  }, [contatos, searchTerm, selectedDeptId]);
 
-  const contatosPorRole = useMemo(() => {
+  const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
     filteredContatos.forEach(c => {
-      const r = c.role || 'outros';
+      const r = c.department_name || 'Geral';
       if (!groups[r]) groups[r] = [];
       groups[r].push(c);
     });
@@ -554,27 +553,27 @@ export default function Mensagens() {
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Filtrar por Departamento</p>
                      <div className="space-y-1">
-                       <Button 
-                         variant={!searchTerm ? "secondary" : "ghost"} 
-                         size="sm" 
-                         className="w-full justify-start text-xs font-medium"
-                         onClick={() => setSearchTerm("")}
-                       >
-                         <UsersIcon className="h-3.5 w-3.5 mr-2" />
-                         Todos
-                       </Button>
-                       {Object.keys(ROLE_LABEL).map((role) => (
-                         <Button 
-                           key={role}
-                           variant={searchTerm === ROLE_LABEL[role as AppRole] ? "secondary" : "ghost"} 
-                           size="sm" 
-                           className="w-full justify-start text-xs"
-                           onClick={() => setSearchTerm(ROLE_LABEL[role as AppRole])}
-                         >
-                           <Building2 className="h-3.5 w-3.5 mr-2" />
-                           {ROLE_LABEL[role as AppRole]}
-                         </Button>
-                       ))}
+                        <Button 
+                          variant={!selectedDeptId ? "secondary" : "ghost"} 
+                          size="sm" 
+                          className="w-full justify-start text-xs font-medium"
+                          onClick={() => setSelectedDeptId(null)}
+                        >
+                          <UsersIcon className="h-3.5 w-3.5 mr-2" />
+                          Todos
+                        </Button>
+                        {departments.map((dept) => (
+                          <Button 
+                            key={dept.id}
+                            variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                            size="sm" 
+                            className="w-full justify-start text-xs"
+                            onClick={() => setSelectedDeptId(dept.id)}
+                          >
+                            <Building2 className="h-3.5 w-3.5 mr-2" />
+                            {dept.name}
+                          </Button>
+                        ))}
                      </div>
                    </div>
 
@@ -637,11 +636,11 @@ export default function Mensagens() {
                       {/* Lista de contatos (Scrollable) */}
                       <ScrollArea className="flex-1">
                         <div className="p-4 pt-2 space-y-6">
-                          {Object.entries(contatosPorRole).map(([role, list]) => (
-                            <div key={role} className="space-y-2">
+                          {(Object.entries(contatosPorDept) as [string, Profile[]][]).map(([dept, list]) => (
+                            <div key={dept} className="space-y-2">
                               <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 flex items-center gap-2">
                                 <span className="h-[1px] flex-1 bg-muted" />
-                                {ROLE_LABEL[role as AppRole] || role}
+                                {dept}
                                 <span className="h-[1px] flex-1 bg-muted" />
                               </h4>
                               <div className="grid gap-1">
@@ -863,8 +862,14 @@ export default function Mensagens() {
                     <div className="text-sm font-bold truncate">
                       {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                      {activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Online"}
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                      <span>{activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Profissional"}</span>
+                      {activeConv?.outros[0]?.department_name && (
+                        <>
+                          <span>•</span>
+                          <span>{activeConv.outros[0].department_name}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

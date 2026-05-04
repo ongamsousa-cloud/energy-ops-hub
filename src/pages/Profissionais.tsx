@@ -19,7 +19,7 @@ import EmptyState from "@/components/EmptyState";
    DropdownMenuTrigger 
  } from "@/components/ui/dropdown-menu";
 
-const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque"];
+ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque", "developer"];
 
 export default function Profissionais() {
   const [rows, setRows] = useState<any[]>([]);

@@ -15,9 +15,10 @@ const ROLE_TO_DEPT: Record<AppRole, string> = {
   supervisor: "Operação",
   campo: "Operação",
   financeiro: "Financeiro",
-  auditor: "Auditoria",
-  estoque: "Almoxarifado / Estoque",
-};
+   auditor: "Auditoria",
+   estoque: "Almoxarifado / Estoque",
+   developer: "Sistemas",
+ };
 
 export default function AprovacoesUsuarios() {
   const [rows, setRows] = useState<any[]>([]);

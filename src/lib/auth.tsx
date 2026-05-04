@@ -146,5 +146,5 @@ export const useAuth = () => {
    financeiro: "Financeiro / Medição",
    auditor: "Auditor",
    estoque: "Almoxarife / Estoque",
-   developer: "Desenvolvedor",
+   developer: "Engenharia de Software",
  };

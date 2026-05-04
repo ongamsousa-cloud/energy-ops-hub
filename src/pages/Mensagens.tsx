@@ -1105,7 +1105,14 @@ export default function Mensagens() {
                           isUploading && "cursor-wait"
                         )}
                       >
-                        {isUploading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
+                        {isUploading ? (
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="text-[6px] mt-0.5 text-white uppercase font-bold">Subindo</span>
+                          </div>
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
                       </Button>
                    </div>
                  )}

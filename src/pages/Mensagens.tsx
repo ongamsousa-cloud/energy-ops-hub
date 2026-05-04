@@ -644,13 +644,23 @@ export default function Mensagens() {
        error = insertError;
      }
 
-     if (error) {
-       console.error("Erro ao enviar mensagem:", error);
-       return toast.error("Falha ao enviar: " + error.message);
-     }
-     if (messageText === undefined) setText("");
+      if (error) {
+        console.error("Erro ao enviar mensagem:", error);
+        setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, status: 'error' } : m));
+        toast.error("Falha ao enviar: " + error.message);
+        return;
+      }
+
+      // Se for sucesso, o realtime vai cuidar do INSERT oficial, mas podemos atualizar o temp
+      setMsgs(prev => prev.filter(m => m.id !== tempId));
+
+      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);
+   }
+
+   async function retryMessage(m: any) {
+     await enviar(m.anexo_url ? { url: m.anexo_url, tipo: m.anexo_tipo } : undefined, m.conteudo, m.id);
   }
 
   async function deleteMessage(id: string) {

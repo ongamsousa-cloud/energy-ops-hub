@@ -1132,19 +1132,32 @@ export default function Mensagens() {
                      </div>
 
                       <div className="relative flex-1">
-                        <Input 
-                          autoFocus
-                          value={text} 
-                          onChange={(e) => setText(e.target.value)}
-                          onKeyDown={(e) => { 
-                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
-                              e.preventDefault(); 
-                              enviar(); 
-                            } 
-                          }}
-                          placeholder="Escreva sua mensagem..." 
-                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
-                        />
+                        <div className="relative flex flex-col w-full">
+                          {editingMsg && (
+                            <div className="absolute -top-10 left-0 right-0 bg-primary/10 px-3 py-1 rounded-t-lg flex items-center justify-between border-x border-t border-primary/20">
+                              <span className="text-[10px] font-bold text-primary uppercase">Editando mensagem</span>
+                              <button onClick={() => { setEditingMsg(null); setText(""); }} className="text-muted-foreground hover:text-primary">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                          <Input 
+                             autoFocus
+                             value={text} 
+                             onChange={(e) => setText(e.target.value)}
+                             onKeyDown={(e) => { 
+                               if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
+                                 e.preventDefault(); 
+                                 enviar(); 
+                               } 
+                             }}
+                             placeholder={editingMsg ? "Altere sua mensagem..." : "Escreva sua mensagem..."} 
+                             className={cn(
+                               "pr-10 bg-card border-border focus-visible:ring-primary h-10 shadow-inner",
+                               editingMsg ? "rounded-b-xl rounded-t-none border-t-0" : "rounded-full"
+                             )}
+                           />
+                        </div>
                          {!isRecording && !audioBlob && (
                            <button 
                              className={cn(

@@ -370,27 +370,20 @@ export default function Mensagens() {
         if (!convId) continue;
         lastConvId = convId;
 
-        try {
-          const { error } = await supabase.from("messages").insert({
-            conversation_id: convId,
-            sender_id: user!.id,
-            conteudo: conteudo || null,
-            anexo_url: audioUrl || null,
-            anexo_tipo: audioUrl ? "audio" : null,
-          });
+        const { error } = await supabase.from("messages").insert({
+          conversation_id: convId,
+          sender_id: user!.id,
+          conteudo: conteudo || null,
+          anexo_url: audioUrl || null,
+          anexo_tipo: audioUrl ? "audio" : null,
+        });
 
-          if (error) {
-            console.error(`Erro ao inserir mensagem para ${contact.nome}:`, error);
-            toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
-            continue;
-          }
+        if (error) {
+          console.error(`Erro ao enviar para ${contact.nome}:`, error);
+          toast.error(`Erro ao enviar para ${contact.nome}`);
+        } else {
           okCount++;
-        } catch (innerErr: any) {
-          console.error(`Exceção ao enviar para ${contact.nome}:`, innerErr);
-          toast.error(`Falha inesperada ao enviar para ${contact.nome}`);
-          continue;
         }
-        okCount++;
       }
 
        setText("");
@@ -490,19 +483,26 @@ export default function Mensagens() {
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
   const filteredContatos = useMemo(() => {
-    if (!searchTerm) return contatos;
-    const low = searchTerm.toLowerCase();
-    return contatos.filter(c => 
-      c.nome.toLowerCase().includes(low) || 
-      c.email.toLowerCase().includes(low) ||
-      (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low))
-    );
-  }, [contatos, searchTerm]);
+    let result = contatos;
+    if (selectedDeptId) {
+      result = result.filter(c => c.department_id === selectedDeptId);
+    }
+    if (searchTerm) {
+      const low = searchTerm.toLowerCase();
+      result = result.filter(c => 
+        c.nome.toLowerCase().includes(low) || 
+        c.email.toLowerCase().includes(low) ||
+        (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low)) ||
+        (c.department_name && c.department_name.toLowerCase().includes(low))
+      );
+    }
+    return result;
+  }, [contatos, searchTerm, selectedDeptId]);
 
-  const contatosPorRole = useMemo(() => {
+  const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
     filteredContatos.forEach(c => {
-      const r = c.role || 'outros';
+      const r = c.department_name || 'Geral';
       if (!groups[r]) groups[r] = [];
       groups[r].push(c);
     });

@@ -1418,6 +1418,11 @@ export default function Mensagens() {
                        {c.ultima_msg}
                      </div>
                    </div>
+                    {unreadCount > 0 && (
+                      <Badge className="ml-2 h-4 w-4 flex items-center justify-center p-0 text-[10px]" variant="destructive">
+                        {unreadCount}
+                      </Badge>
+                    )}
                  </button>
                   );
                 })}

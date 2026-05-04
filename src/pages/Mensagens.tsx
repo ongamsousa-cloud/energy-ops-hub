@@ -1325,10 +1325,23 @@ export default function Mensagens() {
               <div className="flex-1 overflow-auto p-4 space-y-2">
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
+                  const senderName = m.sender?.nome || "Usuário";
+                  const recipientName = activeConv?.tipo === 'department' 
+                    ? (activeConv.department_name || 'Departamento')
+                    : (activeConv?.outros.map((o: any) => o.nome).join(", ") || 'Destinatário');
+
                   return (
                    <div key={m.id} className={cn("flex group", mine ? "justify-end" : "justify-start")}>
                       <div className={cn("max-w-[75%] rounded-lg px-3 py-2 text-sm",
                         mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                        <div className={cn("text-[9px] mb-1 opacity-70 font-bold uppercase tracking-tight flex items-center gap-1", mine ? "justify-end" : "justify-start")}>
+                          {mine ? (
+                            <><span>Para:</span> <span className="underline decoration-primary-foreground/30">{recipientName}</span></>
+                          ) : (
+                            <><span>De:</span> <span className="underline decoration-primary/10">{senderName}</span></>
+                          )}
+                        </div>
+
                         {m.anexo_url && m.anexo_tipo === "image" && (
                           <img src={m.anexo_url} className="mb-1 max-h-64 rounded" />
                         )}
@@ -1376,9 +1389,13 @@ export default function Mensagens() {
                              </DropdownMenu>
                            )}
                          </div>
-                         <div className={cn("mt-1 text-[10px] opacity-70 flex items-center gap-1", mine ? "justify-end" : "")}>
+                          <div className={cn("mt-1 text-[10px] opacity-70 flex flex-wrap items-center gap-x-2 gap-y-0.5", mine ? "justify-end" : "")}>
                            {m.updated_at !== m.created_at && <span>(editada)</span>}
-                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            <span>
+                              {new Date(m.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              {" - "}
+                              {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
                          </div>
                        </div>
                      </div>

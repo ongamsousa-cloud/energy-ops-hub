@@ -69,9 +69,9 @@ export default function OSList() {
         if (!filters.showArchived && r.arquivada) return false;
         if (filters.showArchived && !r.arquivada) return false;
 
-        const matchOp = filters.operational_status === "all" || (r.operational_status || r.status) === filters.operational_status;
+        const matchOp = filters.operational_status === "all" || (r.operational_status || r.status)?.toLowerCase() === filters.operational_status.toLowerCase();
         const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
-        const matchAudit = filters.audit_status === "all" || r.audit_status === filters.audit_status;
+        const matchAudit = filters.audit_status === "all" || r.audit_status?.toLowerCase() === filters.audit_status.toLowerCase();
         const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
         const matchDep = filters.department === "all" || r.department_id === filters.department;
         const searchLower = filters.search.toLowerCase();

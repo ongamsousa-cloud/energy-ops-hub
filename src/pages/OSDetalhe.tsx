@@ -307,14 +307,27 @@ export default function OSDetalhe() {
    }
 
   async function finalizar() {
-    if (!items.length) return toast.error("OS sem atividades");
-    const geo = await getGeo();
-    await supabase.from("ordens_servico").update({
-      status: "aguardando_revisao", fim_em: new Date().toISOString(),
-      fim_lat: geo.lat, fim_lng: geo.lng,
-    }).eq("id", id);
-    toast.success("OS enviada para revisão");
-    load();
+    if (!items.length) return toast.error("OS sem atividades. Lance pelo menos uma atividade antes de finalizar.");
+    setBusy(true);
+    try {
+      const geo = await getGeo();
+      const { error } = await supabase.from("ordens_servico").update({
+        status: "aguardando_revisao", 
+        fim_em: new Date().toISOString(),
+        fim_lat: geo.lat, 
+        fim_lng: geo.lng,
+      }).eq("id", id);
+      
+      if (error) throw error;
+      
+      await registrarAuditoria("aguardando_revisao", "OS finalizada pelo profissional e enviada para revisão.");
+      toast.success("OS enviada para revisão com sucesso!");
+      load();
+    } catch (err: any) {
+      toast.error("Erro ao finalizar OS: " + err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
     async function registrarAuditoria(statusNovo: string, comentario: string = "") {

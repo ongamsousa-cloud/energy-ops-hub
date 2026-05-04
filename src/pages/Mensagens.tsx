@@ -332,11 +332,7 @@ export default function Mensagens() {
      // Buscar participantes de todas essas conversas
      const { data: allParticipants } = await supabase
        .from('conversation_participants')
-       .select(`
-         conversation_id,
-         user_id,
-         profiles:profiles(id, nome, email, role, foto_url)
-       `)
+        .select(`conversation_id, user_id, last_read_at, profiles:profiles(id, nome, email, role, foto_url)`)
        .in('conversation_id', convIds);
 
      // Buscar última mensagem de cada conversa

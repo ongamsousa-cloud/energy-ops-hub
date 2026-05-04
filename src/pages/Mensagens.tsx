@@ -176,16 +176,28 @@ export default function Mensagens() {
    async function loadConvs() {
      if (!user) return;
      
-     const { data: convData, error } = await supabase
-       .from('conversations')
-       .select(`
-         id, 
-         titulo, 
-         created_at,
-         conversation_participants!inner(user_id)
-       `)
-       .eq('conversation_participants.user_id', user.id)
-       .order('created_at', { ascending: false });
+      // Simplificando a query para evitar problemas com junções complexas
+      const { data: myParticipations, error: partError } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+
+      if (partError) {
+        console.error("Erro ao buscar participações:", partError);
+        return;
+      }
+
+      const myConvIds = myParticipations?.map(p => p.conversation_id) || [];
+      
+      const { data: convData, error } = await supabase
+        .from('conversations')
+        .select(`
+          id, 
+          titulo, 
+          created_at
+        `)
+        .in('id', myConvIds)
+        .order('created_at', { ascending: false });
 
      if (error) {
        console.error("Erro ao carregar conversas:", error);

@@ -15,13 +15,13 @@ type Item = { to: string; label: string; icon: any; roles?: AppRole[] };
 
 const NAV: Item[] = [
   { to: "/app", label: "Visão geral", icon: LayoutDashboard },
+  { to: "/app/os", label: "Ordens de Serviço", icon: ClipboardList },
   { to: "/app/obras", label: "Obras", icon: Briefcase, roles: ["admin","gestor","supervisor","financeiro","auditor"] },
   { to: "/app/equipes", label: "Equipes", icon: Users, roles: ["admin","gestor","supervisor"] },
   { to: "/app/profissionais", label: "Profissionais", icon: UserCircle, roles: ["admin","gestor"] },
-   { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
-   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
- { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo"] },
-  { to: "/app/os", label: "Ordens de Serviço", icon: ClipboardList },
+  { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
+  { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
+  { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo"] },
   { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
   { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
   { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },

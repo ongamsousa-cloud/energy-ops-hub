@@ -422,7 +422,11 @@ export default function Mensagens() {
   const [isUploading, setIsUploading] = useState(false);
 
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
-    if (!active) return;
+    if (!active) {
+      console.warn("Nenhuma conversa ativa selecionada");
+      return;
+    }
+    console.log("Iniciando envio de mensagem para conversa:", active);
     const finalContent = messageText !== undefined ? messageText : text.trim();
      
      // Se temos um áudio pendente e nenhum anexo foi passado explicitamente

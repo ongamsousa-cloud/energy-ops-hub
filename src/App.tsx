@@ -13,7 +13,6 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Obras from "./pages/Obras";
 import ObraDetalhe from "./pages/ObraDetalhe";
-import Categorias from "./pages/Categorias";
 import Atividades from "./pages/Atividades";
 import Equipes from "./pages/Equipes";
 import Profissionais from "./pages/Profissionais";
@@ -67,7 +66,6 @@ const App = () => (
               <Route index element={<Dashboard />} />
               <Route path="obras" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor"]}><Obras /></ProtectedRoute>} />
               <Route path="obras/:id" element={<ObraDetalhe />} />
-              <Route path="categorias" element={<ProtectedRoute roles={["admin","gestor"]}><Categorias /></ProtectedRoute>} />
               <Route path="atividades" element={<ProtectedRoute roles={["admin","gestor"]}><Atividades /></ProtectedRoute>} />
               <Route path="equipes" element={<ProtectedRoute roles={["admin","gestor","supervisor"]}><Equipes /></ProtectedRoute>} />
               <Route path="profissionais" element={<ProtectedRoute roles={["admin","gestor"]}><Profissionais /></ProtectedRoute>} />

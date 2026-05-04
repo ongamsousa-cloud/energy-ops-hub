@@ -111,17 +111,8 @@ import { useState } from "react";
            </div>
          </div>
  
-         <TabsContent value="geral" className="space-y-6 animate-in fade-in duration-500">
-           <div className="grid gap-3 sm:flex flex-wrap mb-2">
-             <Button asChild variant="outline" size="sm" className="bg-white dark:bg-background shadow-sm border-border hover:bg-muted/50 h-8 text-[10px] uppercase font-bold tracking-wider">
-               <Link to="/app/atividades/importar" className="flex items-center">
-                 <Upload className="mr-2 h-3.5 w-3.5 text-primary" />
-                 Importar Excel
-               </Link>
-             </Button>
-           </div>
- 
-           <NewServiceOrderDialog 
+          <TabsContent value="geral" className="space-y-6 animate-in fade-in duration-500">
+            <NewServiceOrderDialog 
              open={osDialogOpen} 
              onOpenChange={setOsDialogOpen} 
              onSuccess={(id) => navigate(`/app/os/${id}`)}

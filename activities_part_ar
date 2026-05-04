@@ -1,200 +1,200 @@
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636084', 'Inst Regulador Plataf ou Auto-Booster HE', 'Unidade', 4.159 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632014', 'Inst. Estrut. N2 B2 M2 T2 – Cruz. Mad/Aço HE', 'conjunto', 0.97 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '636085', 'Ret Regulador Plataf. ouAuto-Booster HE', 'Unidade', 3.119 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632015', 'Ret. Estrut. N2 B2 M2 T2 – Cruz. Mad/Aço HE', 'conjunto', 0.388 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639212', 'Retirar  Placas e faixas inst em postes', 'Unidade', 0.06 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632031', 'Inst. Estrut. N3,B3,M3,T3,TP3 – Cruz. Mad/Aço', 'conjunto', 0.6 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639215', 'Ret.  Placas e faixas inst em postes HE', 'Unidade', 0.083 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632032', 'Ret. Estrut. N3, B3, M3, T3,TP3 – Cruz. Mad/Aço.', 'conjunto', 0.24 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639221', 'Instalar Disjuntor de AT', 'Unidade', 1.4 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632034', 'Inst. Estrut N3,B3,M3,T3,TP3 – Cruz. Mad/Aço HE', 'conjunto', 0.832 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639222', 'Retirar  Disjuntor de AT', 'Unidade', 0.6 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632035', 'Ret. Estrut. N3 B3 M3 T3,TP3 – Cruz. Mad/Aço. HE', 'conjunto', 0.333 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639224', 'Instalar Disjuntor de AT HE', 'Unidade', 1.941 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632051', 'Inst. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço.', 'conjunto', 1 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639225', 'Retirar  Disjuntor de AT HE', 'Unidade', 0.832 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632052', 'Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço.', 'conjunto', 0.4 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639231', 'Instalar Disjuntor de AT – Operação', 'Unidade', 0.2 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632054', 'Inst. Estrut N4,B4,M4,T4,TP4 – Cruz. Mad/Aço. HE', 'conjunto', 1.386 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639234', 'Instalar Disjuntor de AT – Operação HE', 'Unidade', 0.277 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632055', 'Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Mad/Aço. HE', 'conjunto', 0.554 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639241', 'Reaperto/regul. chavesectrip em cabine', 'Unidade', 0.7 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632091', 'Inst. Estrut. N1,B1,M1,T1 – Cruz. Con.', 'conjunto', 0.54 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639244', 'Reaperto/regulchave sec trip cabine HE', 'Unidade', 0.97 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632092', 'Ret. Estrut. N1,B1,M1,T1 – Cruz. Con.', 'conjunto', 0.216 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639253', 'Comutar TAP de transformador', 'Unidade', 0.55 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632094', 'Inst. Estrut N1,B1,M1,T1 – Cruz. Con. HE', 'conjunto', 0.749 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639256', 'Comutar TAP de transformador HE', 'Unidade', 0.762 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632095', 'Ret. Estrut. N1,B1,M1,T1 – Cruz. Con. HE', 'conjunto', 0.299 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639261', 'Inst Cabo isol AT (15 e 25 kV) subter.', 'Metro', 0.18 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632101', 'Inst. Estrut N2,B2,M2,T2 – Cruz. Con.', 'conjunto', 0.946 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639262', 'Ret  Caboisol. AT (15 e 25 kV) subter.', 'Metro', 0.04 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632102', 'Ret.  Estrut. N2,B2,M2,T2 – Cruz. Con.', 'conjunto', 0.378 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639264', 'Inst Cabo isol AT (15 e 25 kV) subter HE', 'Metro', 0.252 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632104', 'Inst. Estrut N2,B2,M2,T2 – Cruz. Con. HE', 'conjunto', 1.311 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639265', 'Ret  Cabo isol AT (15 e 25 kV) subter HE', 'Metro', 0.056 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632105', 'Ret  Estrut. N2,B2,M2,T2 – Cruz. Con. HE', 'conjunto', 0.524 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639271', 'Inst Cabo isol.BT(1kV)bit até 50mm² subt', 'Metro', 0.04 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632121', 'Inst. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con.', 'conjunto', 0.81 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639272', 'Ret Cabo isol.BT(1kV)bit até 50mm² subt', 'Metro', 0.03 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632122', 'Ret. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con.', 'conjunto', 0.324 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639274', 'Inst Cabo isol.BT(1kV)bit <50mm² subt HE', 'Metro', 0.056 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632124', 'Inst. Estrut N3,B3,M3,T3,TP3 – Cruz. Con. HE', 'conjunto', 1.123 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639275', 'Ret Cabo isol.BT(1kV)bit < 50mm² subt HE', 'Metro', 0.042 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632125', 'Ret. Estrut. N3,B3,M3,T3,TP3 – Cruz. Con. HE', 'conjunto', 0.449 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639281', 'InstCabisol BT(1kV)acima de 50mm² subt', 'Metro', 0.06 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632141', 'Inst. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con.', 'conjunto', 1.35 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639282', 'Ret Cab isol BT(1kV)bit acima 50mm² subt', 'Metro', 0.04 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632142', 'Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con.', 'conjunto', 0.54 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639284', 'Inst Cab isol BT(1kV)> de 50mm² subt HE', 'Metro', 0.084 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632144', 'Inst Estrut. N4,B4,M4,T4,TP4 – Cruz. Con. HE', 'conjunto', 1.871 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639285', 'Ret Cab isol BT(1kV)bit > 50mm² subt HE', 'Metro', 0.056 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '632145', 'Ret. Estrut. N4,B4,M4,T4,TP4 – Cruz. Con. HE', 'conjunto', 0.749 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639311', 'Instalar Disjuntor monofásico', 'Unidade', 0.08 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '653471', 'Instalar Estrutura P1, P2, TP1, TP2', 'conjunto', 0.28 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639312', 'Retirar  Disjuntor monofásico', 'Unidade', 0.08 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
     umd_unitaria = EXCLUDED.umd_unitaria;
 INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
-    SELECT id, '653472', 'Retirar Estrutura P1, P2, TP1, TP2', 'conjunto', 0.112 
-    FROM public.categorias WHERE nome = 'ESTRUTURA DE ALTA TRIFÁSICA'
+    SELECT id, '639314', 'Instalar Disjuntor monofásico HE', 'Unidade', 0.111 
+    FROM public.categorias WHERE nome = 'OUTROS'
     ON CONFLICT (codigo_item) DO UPDATE SET 
-    descricao = EXCLUDED.descricao,
-    unidade = EXCLUDED.unidade,
-    umd_unitaria = EXCLUDED.umd_unitaria;

@@ -10,7 +10,7 @@
  import { Badge } from "@/components/ui/badge";
  import { 
    Activity, Database, Palette, Terminal, AlertTriangle, CheckCircle2, 
-   RefreshCcw, Save, Trash2, ShieldAlert, Zap, Search, Clock
+   RefreshCcw, Save, Trash2, ShieldAlert, Zap, Search, Clock, Building2
  } from "lucide-react";
  import { toast } from "sonner";
  import { saveThemePrimary } from "@/hooks/useAppTheme";

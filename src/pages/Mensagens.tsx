@@ -160,7 +160,9 @@ export default function Mensagens() {
          department_name: p.departments?.name,
          cargo: p.cargo,
          documento: p.documento,
-         role: p.user_roles?.[0]?.role as AppRole | undefined,
+         role: (p.user_roles && Array.isArray(p.user_roles) && p.user_roles.length > 0) 
+           ? (p.user_roles[0].role as AppRole) 
+           : (p.role as AppRole | undefined),
        }));
 
       // Ordena contatos por nome e remove filtros restritivos

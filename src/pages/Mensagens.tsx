@@ -876,9 +876,9 @@ export default function Mensagens() {
                           {filteredContatos.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
                               <User className="h-16 w-16 opacity-5 mb-4" />
-                              <p className="text-sm font-bold">Nenhum profissional</p>
-                              <p className="text-[11px] opacity-60 text-center max-w-[200px] mt-2">
-                                Tente buscar com outros termos ou selecione um departamento ao lado.
+                              <p className="text-sm font-bold">Nenhum profissional cadastrado</p>
+                              <p className="text-[11px] opacity-70 text-center max-w-[260px] mt-2">
+                                Você ainda pode enviar a mensagem clicando em um <span className="font-semibold">departamento</span> na lista ao lado — ele será o destinatário.
                               </p>
                             </div>
                           )}
@@ -925,15 +925,15 @@ export default function Mensagens() {
 
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
-                        <Input
-                          placeholder={selectedContacts.length === 0 
-                            ? "Selecione destinatários para habilitar o envio..." 
-                            : `Mensagem para ${selectedContacts.length} profissional(is)...`}
+                       <Input
+                          placeholder={(selectedContacts.length === 0 && selectedDepartments.length === 0)
+                            ? "Selecione destinatários para habilitar o envio..."
+                            : `Mensagem para ${selectedDepartments.length} departamento(s) e ${selectedContacts.length} profissional(is)...`}
                           className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
                           value={text}
                           onChange={(e) => setText(e.target.value)}
                           onKeyDown={(e) => { 
-                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
+                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && (selectedContacts.length > 0 || selectedDepartments.length > 0)) {
                               e.preventDefault(); 
                               sendBroadcast(); 
                             } 
@@ -944,10 +944,10 @@ export default function Mensagens() {
                             className={cn(
                               "absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-xl transition-all", 
                               "text-muted-foreground hover:text-primary hover:bg-primary/5",
-                              selectedContacts.length === 0 && "opacity-50 cursor-not-allowed"
+                              (selectedContacts.length === 0 && selectedDepartments.length === 0) && "opacity-50 cursor-not-allowed"
                             )}
                              onClick={async () => { 
-                               if (selectedContacts.length === 0) return;
+                               if (selectedContacts.length === 0 && selectedDepartments.length === 0) return;
                                try {
                                  setRecordingMode('broadcast');
                                  await recorderControls.startRecording();
@@ -974,13 +974,13 @@ export default function Mensagens() {
                     </div>
                     
                     <div className="mt-3 flex items-center justify-center gap-2">
-                      {selectedContacts.length > 0 ? (
+                      {(selectedContacts.length > 0 || selectedDepartments.length > 0) ? (
                         <p className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border">
-                          Enviando individualmente para <span className="text-primary font-bold">{selectedContacts.length}</span> profissional(is).
+                          Enviando para <span className="text-primary font-bold">{selectedDepartments.length}</span> departamento(s) e <span className="text-primary font-bold">{selectedContacts.length}</span> profissional(is).
                         </p>
                       ) : (
                         <p className="text-[10px] text-muted-foreground italic">
-                          Selecione os destinatários na lista acima para começar a escrever.
+                          Clique em um departamento à esquerda ou em um profissional para escolher o destinatário.
                         </p>
                       )}
                     </div>

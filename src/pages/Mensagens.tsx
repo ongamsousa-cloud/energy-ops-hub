@@ -4,8 +4,9 @@ import { useAuth, AppRole, ROLE_LABEL } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft } from "lucide-react";
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+ import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2 } from "lucide-react";
+ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -40,6 +41,8 @@ export default function Mensagens() {
   const [active, setActive] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
+  const [editingMsg, setEditingMsg] = useState<{ id: string; conteudo: string } | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{ id: string } | null>(null);
   const [contatos, setContatos] = useState<Profile[]>([]);
   const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
@@ -273,11 +276,19 @@ export default function Mensagens() {
         .update({ ultima_leitura: new Date().toISOString() })
         .eq("conversation_id", active).eq("user_id", user!.id);
     })();
-    const ch = supabase
-      .channel(`msg-${active}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
-        (payload) => setMsgs((prev) => [...prev, payload.new]))
-      .subscribe();
+     const ch = supabase
+       .channel(`msg-${active}`)
+       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
+         (payload) => {
+           if (payload.eventType === "INSERT") {
+             setMsgs((prev) => [...prev, payload.new]);
+           } else if (payload.eventType === "UPDATE") {
+             setMsgs((prev) => prev.map(m => m.id === payload.new.id ? payload.new : m));
+           } else if (payload.eventType === "DELETE") {
+             setMsgs((prev) => prev.filter(m => m.id !== payload.old.id));
+           }
+         })
+       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [active, user]);
 
@@ -452,13 +463,25 @@ export default function Mensagens() {
 
      if (!finalContent && !finalAnexo) return;
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: active,
-      sender_id: user!.id,
-      conteudo: finalContent || null,
-       anexo_url: finalAnexo?.url ?? null,
-       anexo_tipo: finalAnexo?.tipo ?? null,
-    });
+     let error;
+     if (editingMsg) {
+       const { error: editError } = await supabase
+         .from("messages")
+         .update({ conteudo: finalContent })
+         .eq("id", editingMsg.id);
+       error = editError;
+       setEditingMsg(null);
+     } else {
+       const { error: insertError } = await supabase.from("messages").insert({
+         conversation_id: active,
+         sender_id: user!.id,
+         conteudo: finalContent || null,
+         anexo_url: finalAnexo?.url ?? null,
+         anexo_tipo: finalAnexo?.tipo ?? null,
+       });
+       error = insertError;
+     }
+
      if (error) {
        console.error("Erro ao enviar mensagem:", error);
        return toast.error("Falha ao enviar: " + error.message);
@@ -466,6 +489,16 @@ export default function Mensagens() {
      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);
+  }
+
+  async function deleteMessage(id: string) {
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir mensagem.");
+    } else {
+      setMsgs(prev => prev.filter(m => m.id !== id));
+      setDeleteConfirmOpen(null);
+    }
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
@@ -986,7 +1019,7 @@ export default function Mensagens() {
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
                   return (
-                    <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                   <div key={m.id} className={cn("flex group", mine ? "justify-end" : "justify-start")}>
                       <div className={cn("max-w-[75%] rounded-lg px-3 py-2 text-sm",
                         mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
                         {m.anexo_url && m.anexo_tipo === "image" && (
@@ -998,15 +1031,55 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "audio" && (
                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
                         )}
-                        {m.conteudo && <div className="whitespace-pre-wrap break-words">{m.conteudo}</div>}
-                        <div className={cn("mt-1 text-[10px] opacity-70", mine ? "text-right" : "")}>
-                          {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </div>
-                    </div>
+                         <div className="flex justify-between items-start gap-2">
+                           {m.conteudo && <div className="whitespace-pre-wrap break-words flex-1">{m.conteudo}</div>}
+                           {mine && (
+                             <DropdownMenu>
+                               <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <MoreVertical className="h-3 w-3" />
+                                 </Button>
+                               </DropdownMenuTrigger>
+                               <DropdownMenuContent align="end">
+                                 {m.conteudo && (
+                                   <DropdownMenuItem onClick={() => {
+                                     setEditingMsg({ id: m.id, conteudo: m.conteudo });
+                                     setText(m.conteudo);
+                                   }}>
+                                     <Edit2 className="h-3 w-3 mr-2" /> Editar
+                                   </DropdownMenuItem>
+                                 )}
+                                 <DropdownMenuItem className="text-destructive" onClick={() => setDeleteConfirmOpen({ id: m.id })}>
+                                   <Trash2 className="h-3 w-3 mr-2" /> Excluir
+                                 </DropdownMenuItem>
+                               </DropdownMenuContent>
+                             </DropdownMenu>
+                           )}
+                         </div>
+                         <div className={cn("mt-1 text-[10px] opacity-70 flex items-center gap-1", mine ? "justify-end" : "")}>
+                           {m.updated_at !== m.created_at && <span>(editada)</span>}
+                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                         </div>
+                       </div>
+                     </div>
                   );
                 })}
-                <div ref={endRef} />
+               <div ref={endRef} />
+               
+               <Dialog open={!!deleteConfirmOpen} onOpenChange={(val) => !val && setDeleteConfirmOpen(null)}>
+                 <DialogContent className="sm:max-w-[425px]">
+                   <DialogHeader>
+                     <DialogTitle>Excluir Mensagem</DialogTitle>
+                     <DialogDescription>
+                       Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
+                     </DialogDescription>
+                   </DialogHeader>
+                   <DialogFooter className="flex gap-2 sm:gap-0">
+                     <Button variant="ghost" onClick={() => setDeleteConfirmOpen(null)}>Cancelar</Button>
+                     <Button variant="destructive" onClick={() => deleteConfirmOpen && deleteMessage(deleteConfirmOpen.id)}>Excluir</Button>
+                   </DialogFooter>
+                 </DialogContent>
+               </Dialog>
               </div>
                <div className="border-t border-border p-3 bg-muted/20">
                  {audioBlob ? (
@@ -1059,19 +1132,32 @@ export default function Mensagens() {
                      </div>
 
                       <div className="relative flex-1">
-                        <Input 
-                          autoFocus
-                          value={text} 
-                          onChange={(e) => setText(e.target.value)}
-                          onKeyDown={(e) => { 
-                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
-                              e.preventDefault(); 
-                              enviar(); 
-                            } 
-                          }}
-                          placeholder="Escreva sua mensagem..." 
-                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
-                        />
+                        <div className="relative flex flex-col w-full">
+                          {editingMsg && (
+                            <div className="absolute -top-10 left-0 right-0 bg-primary/10 px-3 py-1 rounded-t-lg flex items-center justify-between border-x border-t border-primary/20">
+                              <span className="text-[10px] font-bold text-primary uppercase">Editando mensagem</span>
+                              <button onClick={() => { setEditingMsg(null); setText(""); }} className="text-muted-foreground hover:text-primary">
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                          <Input 
+                             autoFocus
+                             value={text} 
+                             onChange={(e) => setText(e.target.value)}
+                             onKeyDown={(e) => { 
+                               if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
+                                 e.preventDefault(); 
+                                 enviar(); 
+                               } 
+                             }}
+                             placeholder={editingMsg ? "Altere sua mensagem..." : "Escreva sua mensagem..."} 
+                             className={cn(
+                               "pr-10 bg-card border-border focus-visible:ring-primary h-10 shadow-inner",
+                               editingMsg ? "rounded-b-xl rounded-t-none border-t-0" : "rounded-full"
+                             )}
+                           />
+                        </div>
                          {!isRecording && !audioBlob && (
                            <button 
                              className={cn(

@@ -8,7 +8,7 @@ interface AuthCtx {
   user: User | null;
   session: Session | null;
   roles: AppRole[];
-  profile: { id: string; nome: string; email: string; cargo?: string } | null;
+  profile: { id: string; nome: string; email: string; cargo?: string; department_id?: string } | null;
   isEstoqueDept: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadUserData(uid: string) {
     const [{ data: r }, { data: p }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", uid),
-      supabase.from("profiles").select("id,nome,email,ativo,cargo").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("id,nome,email,ativo,cargo,department_id").eq("id", uid).maybeSingle(),
     ]);
     if (p && (p as any).ativo === false) {
       await supabase.auth.signOut();

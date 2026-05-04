@@ -1503,7 +1503,6 @@ export default function Mensagens() {
                         </DropdownMenu>
                       </div>
                     </div>
-                    </div>
                   );
                 })()}
               </div>

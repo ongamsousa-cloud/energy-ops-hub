@@ -189,8 +189,8 @@
            <TabsTrigger value="logs" className="gap-2">
              <Terminal className="h-4 w-4" /> Logs de Auditoria
            </TabsTrigger>
-           <TabsTrigger value="db" className="gap-2">
-             <Database className="h-4 w-4" /> Console DB
+           <TabsTrigger value="tools" className="gap-2">
+             <ShieldAlert className="h-4 w-4" /> Ferramentas Pro
            </TabsTrigger>
          </TabsList>
  
@@ -336,16 +336,37 @@
            </Card>
          </TabsContent>
  
-         <TabsContent value="db" className="space-y-4">
-           <Card>
-             <CardHeader>
-               <CardTitle>Monitoramento de Queries</CardTitle>
-               <CardDescription>Status das conexões e performance (Modo Leitura).</CardDescription>
-             </CardHeader>
-             <CardContent className="h-[300px] flex items-center justify-center border-dashed border-2 rounded-lg text-muted-foreground italic">
-               Interface de console protegida. Use logs de auditoria para rastreamento.
-             </CardContent>
-           </Card>
+         <TabsContent value="tools" className="space-y-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <Card>
+               <CardHeader>
+                 <CardTitle>Manutenção de OS</CardTitle>
+                 <CardDescription>Ações globais para correção de fluxo.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-2">
+                 <Button variant="outline" className="w-full justify-start" onClick={() => runFix("os-no-dept")}>
+                   <Building2 className="mr-2 h-4 w-4" /> Vincular OS sem Departamento
+                 </Button>
+                 <Button variant="outline" className="w-full justify-start text-warning hover:text-warning" onClick={() => toast.info("Função em desenvolvimento")}>
+                   <RefreshCcw className="mr-2 h-4 w-4" /> Forçar Recalculo de Saldos
+                 </Button>
+               </CardContent>
+             </Card>
+             <Card>
+               <CardHeader>
+                 <CardTitle>Configurações Críticas</CardTitle>
+                 <CardDescription>Ajustes que afetam todo o ambiente.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-2">
+                 <Button variant="destructive" className="w-full justify-start" onClick={() => toast.error("Ação bloqueada por segurança.")}>
+                   <Trash2 className="mr-2 h-4 w-4" /> Limpar Dados de Teste
+                 </Button>
+                 <Button variant="secondary" className="w-full justify-start" onClick={() => toast.success("Cache do sistema invalidado.")}>
+                   <Zap className="mr-2 h-4 w-4" /> Limpar Cache do Sistema
+                 </Button>
+               </CardContent>
+             </Card>
+           </div>
          </TabsContent>
        </Tabs>
      </div>

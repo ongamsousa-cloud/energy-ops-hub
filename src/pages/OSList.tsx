@@ -20,6 +20,7 @@ export default function OSList() {
      financial_status: "all",
      audit_status: "all",
      priority: "all",
+     department: "all",
      search: ""
    });
 
@@ -33,7 +34,8 @@ export default function OSList() {
     const fetchRows = () => {
       let query = supabase.from("ordens_servico")
        .select(`
-         *, 
+          *,
+          department:departments(name),
          obra:obras(numero, nome, endereco, cidade, estado), 
          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
        `);
@@ -57,6 +59,7 @@ export default function OSList() {
         const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
         const matchAudit = filters.audit_status === "all" || r.audit_status === filters.audit_status;
         const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
+       const matchDep = filters.department === "all" || r.department_id === filters.department;
         const searchLower = filters.search.toLowerCase();
         const matchSearch = !filters.search || 
           r.numero?.toLowerCase().includes(searchLower) ||
@@ -64,7 +67,7 @@ export default function OSList() {
           r.cidade?.toLowerCase().includes(searchLower) ||
           r.bairro?.toLowerCase().includes(searchLower);
         
-        return matchOp && matchFin && matchAudit && matchPriority && matchSearch;
+        return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch;
       });
     }, [rows, filters]);
 

@@ -169,8 +169,8 @@ export default function Mensagens() {
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      // Removendo filtros restritivos para permitir comunicação entre departamentos como solicitado
-      setContatos(all);
+      // Ordena contatos por nome e remove filtros restritivos
+      setContatos(all.sort((a, b) => a.nome.localeCompare(b.nome)));
     })();
   }, [user]);
 

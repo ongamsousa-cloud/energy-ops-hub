@@ -56,9 +56,10 @@
        });
      }
  
-     // 2. Perfis sem role
-     const { data: usersNoRole } = await supabase.rpc('get_users_without_roles');
-     if (usersNoRole?.length) {
+     // 2. Perfis sem role (usando select com filter)
+     const { data: profilesWithRoles } = await supabase.from('profiles').select('id, user_roles(role)');
+     const usersNoRole = profilesWithRoles?.filter(p => !p.user_roles || p.user_roles.length === 0) || [];
+     if (usersNoRole.length) {
        issues.push({ id: "no-role", title: "Usuários sem perfil de acesso", count: usersNoRole.length, severity: "high" });
      }
  
@@ -68,9 +69,9 @@
        issues.push({ id: "orphan-mats", title: "Materiais sem vínculo de OS", count: orphanMats.length, severity: "medium" });
      }
  
-     // 4. Inconsistência de Estoque (movimentos negativos sem saldo)
-     const { data: stockIncons } = await supabase.from("stock_movements").select("id").eq("type", "out").lt("quantity", 0);
-     if (stockIncons?.length) {
+     // 4. Inconsistência de Estoque (movimentos de saída com quantidade negativa - deveria ser positiva)
+     const { data: stockIncons } = await supabase.from("stock_movements").select("id").eq("type", "saida").lt("quantity", 0);
+     if (stockIncons && stockIncons.length > 0) {
        issues.push({ id: "stock-incon", title: "Inconsistência de quantidades no estoque", count: stockIncons.length, severity: "high" });
      }
  

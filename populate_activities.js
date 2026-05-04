@@ -17,7 +17,6 @@ for (const row of json) {
         continue;
     }
     
-    // Check if it's the header row to skip
     if (row['__EMPTY'] === 'tipo de atividade') continue;
 
     const codigo = row['4.    TABELA DE ATIVIDADES:'];
@@ -41,20 +40,19 @@ for (const row of json) {
     }
 }
 
-// Generate SQL for categories
-console.log('-- Categorias');
+let sql = '-- Categorias\n';
 for (const cat of categories) {
-    console.log(`INSERT INTO public.categorias (nome) VALUES ('${cat.replace(/'/g, "''")}') ON CONFLICT (nome) DO NOTHING;`);
+    sql += `INSERT INTO public.categorias (nome) VALUES ('${cat.replace(/'/g, "''")}') ON CONFLICT (nome) DO NOTHING;\n`;
 }
 
-// Generate SQL for activities
-console.log('\n-- Atividades');
+sql += '\n-- Atividades\n';
 for (const act of activities) {
-    console.log(`INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    sql += `INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
     SELECT id, '${act.codigo_item}', '${act.descricao.replace(/'/g, "''")}', '${act.unidade}', ${act.umd_unitaria} 
     FROM public.categorias WHERE nome = '${act.categoria_nome.replace(/'/g, "''")}'
     ON CONFLICT (codigo_item) DO UPDATE SET 
     descricao = EXCLUDED.descricao,
     unidade = EXCLUDED.unidade,
-    umd_unitaria = EXCLUDED.umd_unitaria;`);
+    umd_unitaria = EXCLUDED.umd_unitaria;\n`;
 }
+fs.writeFileSync('final_activities.sql', sql);

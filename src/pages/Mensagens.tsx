@@ -14,14 +14,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-  type Profile = { 
-    id: string; 
-    nome: string; 
-    email: string; 
-    role?: AppRole; 
+  type Profile = {
+    id: string;
+    nome: string;
+    email: string;
+    role?: AppRole;
     foto_url?: string;
     department_id?: string;
     department_name?: string;
+    documento?: string;
+    cargo?: string;
   };
  type Conv = { 
    id: string; 

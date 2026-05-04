@@ -1152,6 +1152,40 @@ export default function OSDetalhe() {
           <strong>Correção solicitada:</strong> {os.observacao_supervisor}
         </div>
       )}
+
+      <Dialog open={reviewDialog.open} onOpenChange={(open) => setReviewDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{reviewDialog.type === 'reprovar' ? 'Reprovar Ordem de Serviço' : 'Solicitar Correção'}</DialogTitle>
+            <DialogDescription>
+              {reviewDialog.type === 'reprovar' 
+                ? 'A OS será marcada como reprovada. O motivo é obrigatório.' 
+                : 'Informe o que precisa ser ajustado pelo profissional.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Comentário / Motivo</Label>
+              <Textarea 
+                placeholder="Escreva aqui..." 
+                value={reviewDialog.comment} 
+                onChange={(e) => setReviewDialog(prev => ({ ...prev, comment: e.target.value }))}
+                className="min-h-[100px]"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setReviewDialog(prev => ({ ...prev, open: false }))}>Cancelar</Button>
+              <Button 
+                variant={reviewDialog.type === 'reprovar' ? 'destructive' : 'default'}
+                onClick={handleReview}
+                disabled={busy || (reviewDialog.type === 'reprovar' && !reviewDialog.comment.trim())}
+              >
+                Confirmar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

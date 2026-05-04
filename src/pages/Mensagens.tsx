@@ -276,11 +276,19 @@ export default function Mensagens() {
         .update({ ultima_leitura: new Date().toISOString() })
         .eq("conversation_id", active).eq("user_id", user!.id);
     })();
-    const ch = supabase
-      .channel(`msg-${active}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
-        (payload) => setMsgs((prev) => [...prev, payload.new]))
-      .subscribe();
+     const ch = supabase
+       .channel(`msg-${active}`)
+       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
+         (payload) => {
+           if (payload.eventType === "INSERT") {
+             setMsgs((prev) => [...prev, payload.new]);
+           } else if (payload.eventType === "UPDATE") {
+             setMsgs((prev) => prev.map(m => m.id === payload.new.id ? payload.new : m));
+           } else if (payload.eventType === "DELETE") {
+             setMsgs((prev) => prev.filter(m => m.id !== payload.old.id));
+           }
+         })
+       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [active, user]);
 

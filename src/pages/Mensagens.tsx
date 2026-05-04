@@ -371,7 +371,8 @@ export default function Mensagens() {
          department_id: c.department_id,
          department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,
          outros: others,
-         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
+         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens"),
+         last_read_at: (myParticipation as any)?.last_read_at
        };
      });
 

@@ -98,19 +98,18 @@ export default function OSList() {
            const end = filters.dateRange.to ? endOfDay(filters.dateRange.to) : endOfDay(filters.dateRange.from);
            matchPeriod = isWithinInterval(createdAt, { start, end });
          }
-   const stats = useMemo(() => {
-     return {
-       total: filteredRows.length,
-       pendentes: filteredRows.filter(r => (r.operational_status || r.status) === 'Pendente').length,
-       emExecucao: filteredRows.filter(r => (r.operational_status || r.status) === 'Em execução' || (r.operational_status || r.status) === 'Iniciada').length,
-       concluidas: filteredRows.filter(r => (r.operational_status || r.status) === 'Concluída').length,
-     };
-   }, [filteredRows]);
+         return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch && matchPeriod;
+       });
+     }, [rows, filters]);
  
-        
-        return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch && matchPeriod;
-      });
-    }, [rows, filters]);
+    const stats = useMemo(() => {
+      return {
+        total: filteredRows.length,
+        pendentes: filteredRows.filter(r => (r.operational_status || r.status) === 'Pendente').length,
+        emExecucao: filteredRows.filter(r => (r.operational_status || r.status) === 'Em execução' || (r.operational_status || r.status) === 'Iniciada').length,
+        concluidas: filteredRows.filter(r => (r.operational_status || r.status) === 'Concluída').length,
+      };
+    }, [filteredRows]);
 
   return (
      <div className="flex flex-col gap-6">

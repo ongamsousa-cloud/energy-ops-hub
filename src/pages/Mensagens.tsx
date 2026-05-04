@@ -495,10 +495,20 @@ export default function Mensagens() {
     return result;
   }, [contatos, searchTerm, selectedDeptId]);
 
+  const ROLE_TO_DEPT: Record<string, string> = {
+    admin: 'Administração',
+    gestor: 'Operação',
+    supervisor: 'Operação',
+    campo: 'Operação',
+    financeiro: 'Financeiro',
+    auditor: 'Auditoria',
+    estoque: 'Almoxarifado / Estoque',
+  };
   const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
     filteredContatos.forEach(c => {
-      const r = c.department_name || 'Geral';
+      const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
+      const r = c.department_name || fallback || 'Sem departamento';
       if (!groups[r]) groups[r] = [];
       groups[r].push(c);
     });

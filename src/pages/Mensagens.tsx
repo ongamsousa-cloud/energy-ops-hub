@@ -935,9 +935,49 @@ export default function Mensagens() {
           <div className="flex items-center justify-between border-b border-border p-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => loadConvs()}>
-                <Search className="h-3 w-3" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Search className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64 p-3 space-y-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Busca</span>
+                    <Input 
+                      placeholder="Nome ou Depto..." 
+                      className="h-8 text-xs"
+                      value={searchConvTerm}
+                      onChange={(e) => setSearchConvTerm(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Período</span>
+                    <div className="flex flex-col gap-1">
+                      <Input 
+                        type="date" 
+                        className="h-8 text-xs" 
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                      />
+                      <Input 
+                        type="date" 
+                        className="h-8 text-xs" 
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full h-7 text-[10px]"
+                    onClick={() => { setSearchConvTerm(""); setDateRange({ start: "", end: "" }); }}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); setSelectedDepartments([]); } }}>
               <DialogTrigger asChild>

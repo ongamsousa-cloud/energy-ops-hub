@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+ import Papa from "papaparse";
+ import jsPDF from "jspdf";
+ import "jspdf-autotable";
 
   type Profile = {
     id: string;

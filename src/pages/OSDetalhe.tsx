@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
- import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter } from "lucide-react";
+  import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter, Archive } from "lucide-react";
  import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1019,19 +1019,19 @@ export default function OSDetalhe() {
           {(os.status === "iniciada" || os.operational_status === "pendente") && isOwner && (
             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
               await supabase.from("ordens_servico").update({ 
-                operational_status: "aceito",
+                operational_status: "em_deslocamento",
                 status: "em_andamento"
               }).eq("id", id);
-              await registrarAuditoria("em_andamento", "Profissional aceitou a Ordem de Serviço");
+              await registrarAuditoria("em_andamento", "Profissional aceitou a Ordem de Serviço (Em deslocamento)");
               toast.success("Ordem de Serviço Aceita");
               load();
             }}>
-              <CheckCircle2 className="mr-2 h-5 w-5" />
+              <CheckCircle className="mr-2 h-5 w-5" />
               Dar o Aceite na OS
             </Button>
           )}
 
-          {os.operational_status === "aceito" && isOwner && (
+          {os.operational_status === "em_deslocamento" && isOwner && (
             <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
               const geo = await getGeo();
               await supabase.from("ordens_servico").update({ 

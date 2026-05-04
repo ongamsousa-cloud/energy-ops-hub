@@ -359,6 +359,7 @@ export default function Mensagens() {
          .map(p => (p.profiles as unknown as Profile))
          .filter(Boolean);
 
+       const myParticipation = participants.find(p => p.user_id === user.id);
        const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
 
        return {

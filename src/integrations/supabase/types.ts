@@ -1488,7 +1488,9 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          is_archived: boolean | null
           sender_id: string
+          status: string | null
           updated_at: string
         }
         Insert: {
@@ -1498,7 +1500,9 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          is_archived?: boolean | null
           sender_id: string
+          status?: string | null
           updated_at?: string
         }
         Update: {
@@ -1508,7 +1512,9 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          is_archived?: boolean | null
           sender_id?: string
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -3365,6 +3371,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_old_messages: { Args: never; Returns: undefined }
       can_message: {
         Args: { _receiver: string; _sender: string }
         Returns: boolean

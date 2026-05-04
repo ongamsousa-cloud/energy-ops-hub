@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
- import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2 } from "lucide-react";
+ import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive } from "lucide-react";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,6 +58,12 @@ export default function Mensagens() {
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);
+  const [openDeptCrud, setOpenDeptCrud] = useState(false);
+  const [openProfileCrud, setOpenProfileCrud] = useState(false);
+  const [editingDept, setEditingDept] = useState<DeptOption | null>(null);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [pendingMessages, setPendingMessages] = useState<any[]>([]);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
    const [selectedDepartments, setSelectedDepartments] = useState<DeptOption[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
@@ -66,7 +72,8 @@ export default function Mensagens() {
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
    const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
+   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
+   const myRole = roles[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -137,7 +144,106 @@ export default function Mensagens() {
      await enviar();
    }
 
-  const myRole = roles[0];
+  // Efeito para checar mensagens arquivadas (5 anos)
+  useEffect(() => {
+    if (myRole === 'admin') {
+      (async () => {
+        const fiveYearsAgo = new Date();
+        fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+        const { count } = await supabase
+          .from("messages")
+          .select("*", { count: 'exact', head: true })
+          .lt("created_at", fiveYearsAgo.toISOString())
+          .eq("is_archived", false);
+        setArchivedCount(count || 0);
+      })();
+    }
+  }, [myRole]);
+
+  async function handleArchiveOldMessages(permanent = false) {
+    if (permanent) {
+      if (!confirm("Isso excluirá PERMANENTEMENTE todas as mensagens com mais de 5 anos. Esta ação não pode ser desfeita. Continuar?")) return;
+      const fiveYearsAgo = new Date();
+      fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+      const { error } = await supabase.from("messages").delete().lt("created_at", fiveYearsAgo.toISOString());
+      if (error) toast.error("Erro ao excluir: " + error.message);
+      else {
+        toast.success("Mensagens antigas excluídas permanentemente.");
+        setArchivedCount(0);
+      }
+    } else {
+      const { error } = await (supabase as any).rpc('archive_old_messages');
+      if (error) {
+        toast.error("Erro ao arquivar mensagens: " + error.message);
+      } else {
+        toast.success("Mensagens com mais de 5 anos foram arquivadas.");
+        setArchivedCount(0);
+      }
+    }
+  }
+
+  async function saveDepartment(name: string) {
+    try {
+      if (editingDept) {
+        await supabase.from("departments").update({ name }).eq("id", editingDept.id);
+        toast.success("Departamento atualizado.");
+      } else {
+        await supabase.from("departments").insert({ name, active: true });
+        toast.success("Departamento criado.");
+      }
+      setOpenDeptCrud(false);
+      setEditingDept(null);
+      // Recarregar departamentos
+      const { data } = await supabase.from("departments").select("id, name").eq("active", true).order("name");
+      setDepartments(data || []);
+    } catch (err: any) {
+      toast.error("Erro ao salvar departamento: " + err.message);
+    }
+  }
+
+  async function deleteDept(id: string) {
+    if (!confirm("Deseja realmente excluir este departamento?")) return;
+    const { error } = await supabase.from("departments").update({ active: false }).eq("id", id);
+    if (error) toast.error("Erro ao excluir.");
+    else {
+      toast.success("Excluído com sucesso.");
+      setDepartments(prev => prev.filter(d => d.id !== id));
+    }
+  }
+
+  async function saveProfile(data: Partial<Profile>) {
+    try {
+      if (editingProfile) {
+        const { error } = await (supabase as any).from("profiles").update({
+          nome: data.nome,
+          email: data.email,
+          department_id: data.department_id,
+          cargo: data.cargo,
+          documento: data.documento
+        }).eq("id", editingProfile.id);
+        if (error) throw error;
+        toast.success("Perfil atualizado.");
+      } else {
+        const { error } = await (supabase as any).from("profiles").insert({
+          id: crypto.randomUUID(),
+          nome: data.nome,
+          email: data.email,
+          department_id: data.department_id,
+          cargo: data.cargo,
+          documento: data.documento,
+          ativo: true
+        });
+        if (error) throw error;
+        toast.success("Perfil criado.");
+      }
+      setOpenProfileCrud(false);
+      setEditingProfile(null);
+      // Recarregar contatos (reaproveitando lógica existente ou forçando refresh)
+      window.location.reload(); // Simplificado para garantir todos os joins
+    } catch (err: any) {
+      toast.error("Erro ao salvar perfil: " + err.message);
+    }
+  }
 
   // Carrega contatos e departamentos (consultas separadas para evitar relacionamento inválido)
   useEffect(() => {
@@ -485,13 +591,30 @@ export default function Mensagens() {
 
   const [isUploading, setIsUploading] = useState(false);
 
-  async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
+   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string, retryId?: string) {
     if (!active) {
       console.warn("Nenhuma conversa ativa selecionada");
       return;
     }
-    console.log("Iniciando envio de mensagem para conversa:", active);
     const finalContent = messageText !== undefined ? messageText : text.trim();
+    
+    const tempId = retryId || crypto.randomUUID();
+    const tempMsg = {
+      id: tempId,
+      conversation_id: active,
+      sender_id: user!.id,
+      conteudo: finalContent,
+      anexo_url: anexo?.url,
+      anexo_tipo: anexo?.tipo,
+      created_at: new Date().toISOString(),
+      status: 'sending'
+    };
+
+    if (!retryId) {
+      setMsgs(prev => [...prev, tempMsg]);
+    } else {
+      setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, status: 'sending' } : m));
+    }
      
      // Se temos um áudio pendente e nenhum anexo foi passado explicitamente
      let finalAnexo = anexo;
@@ -533,13 +656,23 @@ export default function Mensagens() {
        error = insertError;
      }
 
-     if (error) {
-       console.error("Erro ao enviar mensagem:", error);
-       return toast.error("Falha ao enviar: " + error.message);
-     }
-     if (messageText === undefined) setText("");
+      if (error) {
+        console.error("Erro ao enviar mensagem:", error);
+        setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, status: 'error' } : m));
+        toast.error("Falha ao enviar: " + error.message);
+        return;
+      }
+
+      // Se for sucesso, o realtime vai cuidar do INSERT oficial, mas podemos atualizar o temp
+      setMsgs(prev => prev.filter(m => m.id !== tempId));
+
+      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);
+   }
+
+   async function retryMessage(m: any) {
+     await enviar(m.anexo_url ? { url: m.anexo_url, tipo: m.anexo_tipo } : undefined, m.conteudo, m.id);
   }
 
   async function deleteMessage(id: string) {
@@ -646,7 +779,31 @@ export default function Mensagens() {
           )}
        </div>
  
-      <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
+       <div className="flex flex-col gap-2">
+         <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
+         
+         {archivedCount > 0 && myRole === 'admin' && (
+           <div className="mx-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4">
+             <div className="flex items-center gap-3">
+               <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                 <Archive className="h-5 w-5" />
+               </div>
+               <div>
+                 <p className="text-sm font-bold text-amber-900">Mensagens Arquivadas</p>
+                 <p className="text-xs text-amber-700">Existem {archivedCount} mensagens com mais de 5 anos arquivadas. Deseja excluí-las permanentemente?</p>
+               </div>
+             </div>
+             <div className="flex gap-2">
+               <Button variant="outline" size="sm" className="bg-white border-amber-200 text-amber-700 hover:bg-amber-100" onClick={() => handleArchiveOldMessages(false)}>
+                 Arquivar/Limpar
+               </Button>
+               <Button variant="destructive" size="sm" onClick={() => handleArchiveOldMessages(true)}>
+                 Excluir Permanentemente
+               </Button>
+             </div>
+           </div>
+         )}
+       </div>
       <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}
         <div className={cn(
@@ -674,7 +831,14 @@ export default function Mensagens() {
                   <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                    {/* Departamentos */}
                     <div className="w-full md:w-1/3 border-r bg-muted/20 p-3 overflow-y-auto shrink-0">
-                       <p className="text-[10px] font-bold uppercase text-muted-foreground px-1 mb-3">Departamentos (clique para enviar)</p>
+                        <div className="flex items-center justify-between px-1 mb-3">
+                          <p className="text-[10px] font-bold uppercase text-muted-foreground">Departamentos</p>
+                          {myRole === 'admin' && (
+                            <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => { setEditingDept(null); setOpenDeptCrud(true); }}>
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                      <div className="space-y-1">
                         <Button 
                           variant={!selectedDeptId ? "secondary" : "ghost"} 
@@ -708,8 +872,24 @@ export default function Mensagens() {
                                 className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors text-muted-foreground opacity-0 group-hover:opacity-100"
                                 title="Apenas filtrar profissionais deste departamento"
                               >
-                                <Search className="h-3 w-3" />
-                              </button>
+                                 <Search className="h-2.5 w-2.5" />
+                               </button>
+                               {myRole === 'admin' && (
+                                 <div className="absolute right-7 top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); setEditingDept(dept); setOpenDeptCrud(true); }}
+                                     className="p-1 hover:text-primary"
+                                   >
+                                     <Edit2 className="h-2.5 w-2.5" />
+                                   </button>
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); deleteDept(dept.id); }}
+                                     className="p-1 hover:text-destructive"
+                                   >
+                                     <Trash2 className="h-2.5 w-2.5" />
+                                   </button>
+                                 </div>
+                               )}
                             </div>
                           );
                         })}
@@ -807,8 +987,15 @@ export default function Mensagens() {
                         )}
                       </div>
 
-                      {/* Lista de contatos (Scrollable) */}
-                      <ScrollArea className="flex-1">
+                       {/* Lista de contatos (Scrollable) */}
+                       <ScrollArea className="flex-1">
+                         {myRole === 'admin' && (
+                           <div className="px-4 py-2 border-b bg-muted/5 flex justify-end">
+                             <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => { setEditingProfile(null); setOpenProfileCrud(true); }}>
+                               <Plus className="h-3 w-3" /> Novo Profissional
+                             </Button>
+                           </div>
+                         )}
                         <div className="p-4 pt-2 space-y-6">
                           {(Object.entries(contatosPorDept) as [string, Profile[]][]).map(([dept, list]) => (
                             <div key={dept} className="space-y-2">
@@ -863,9 +1050,37 @@ export default function Mensagens() {
                                             {p.cargo ? `${p.cargo} • ` : ""}{p.department_name || "Sem departamento"}
                                           </p>
                                         </div>
-                                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
-                                          Conversar
-                                        </Button>
+                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                           {myRole === 'admin' && (
+                                             <>
+                                               <Button 
+                                                 variant="ghost" 
+                                                 size="icon" 
+                                                 className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                 onClick={(e) => { e.stopPropagation(); setEditingProfile(p); setOpenProfileCrud(true); }}
+                                               >
+                                                 <Edit2 className="h-3 w-3" />
+                                               </Button>
+                                               <Button 
+                                                 variant="ghost" 
+                                                 size="icon" 
+                                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                                 onClick={async (e) => { 
+                                                   e.stopPropagation(); 
+                                                   if (confirm("Deseja realmente inativar este perfil?")) {
+                                                     await supabase.from("profiles").update({ ativo: false }).eq("id", p.id);
+                                                     window.location.reload();
+                                                   }
+                                                 }}
+                                               >
+                                                 <Trash2 className="h-3 w-3" />
+                                               </Button>
+                                             </>
+                                           )}
+                                           <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
+                                             Conversar
+                                           </Button>
+                                         </div>
                                       </div>
                                     </div>
                                   );
@@ -874,12 +1089,18 @@ export default function Mensagens() {
                             </div>
                           ))}
                           {filteredContatos.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                              <User className="h-16 w-16 opacity-5 mb-4" />
-                              <p className="text-sm font-bold">Nenhum profissional cadastrado</p>
-                              <p className="text-[11px] opacity-70 text-center max-w-[260px] mt-2">
-                                Você ainda pode enviar a mensagem clicando em um <span className="font-semibold">departamento</span> na lista ao lado — ele será o destinatário.
+                            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/5 rounded-2xl border border-dashed mx-4">
+                              <Building2 className="h-12 w-12 opacity-10 mb-3 text-primary" />
+                              <p className="text-sm font-bold text-foreground">Utilize os Departamentos</p>
+                              <p className="text-[11px] opacity-70 text-center max-w-[240px] mt-2 px-4 leading-relaxed">
+                                Não foram encontrados profissionais com estes filtros. <br/>
+                                <strong>Selecione um departamento</strong> na barra lateral esquerda para enviar uma mensagem setorial.
                               </p>
+                              {myRole === 'admin' && (
+                                <Button variant="outline" size="sm" className="mt-4 h-8 text-[10px]" onClick={() => setOpenProfileCrud(true)}>
+                                  Cadastrar Profissional
+                                </Button>
+                              )}
                             </div>
                           )}
                         </div>
@@ -1113,6 +1334,19 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "audio" && (
                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
                         )}
+                        {m.status === 'sending' && (
+                          <div className="flex items-center gap-2 text-[10px] opacity-70 italic mb-1">
+                            <RefreshCw className="h-3 w-3 animate-spin" /> Enviando...
+                          </div>
+                        )}
+                        {m.status === 'error' && (
+                          <div className="flex items-center gap-2 text-[10px] text-destructive-foreground font-bold mb-1 bg-destructive/20 p-1 rounded">
+                            <AlertCircle className="h-3 w-3" /> Falha no envio
+                            <Button variant="link" size="sm" className="h-auto p-0 text-[10px] text-white underline" onClick={() => retryMessage(m)}>
+                              Reenviar
+                            </Button>
+                          </div>
+                        )}
                          <div className="flex justify-between items-start gap-2">
                            {m.conteudo && <div className="whitespace-pre-wrap break-words flex-1">{m.conteudo}</div>}
                            {mine && (
@@ -1288,6 +1522,81 @@ export default function Mensagens() {
             </>
           )}
         </div>
+
+        {/* Modals de CRUD */}
+        <Dialog open={openDeptCrud} onOpenChange={setOpenDeptCrud}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editingDept ? "Editar Departamento" : "Novo Departamento"}</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase">Nome do Departamento</label>
+                <Input 
+                  defaultValue={editingDept?.name || ""} 
+                  placeholder="Ex: Operacional, Financeiro..."
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveDepartment(e.currentTarget.value);
+                  }}
+                  id="dept-name-input"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpenDeptCrud(false)}>Cancelar</Button>
+              <Button onClick={() => {
+                const input = document.getElementById('dept-name-input') as HTMLInputElement;
+                saveDepartment(input.value);
+              }}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={openProfileCrud} onOpenChange={setOpenProfileCrud}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>{editingProfile ? "Editar Profissional" : "Novo Profissional"}</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="space-y-1 col-span-2">
+                <label className="text-[10px] font-bold uppercase">Nome Completo</label>
+                <Input id="prof-nome" defaultValue={editingProfile?.nome || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">E-mail</label>
+                <Input id="prof-email" defaultValue={editingProfile?.email || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Código/Documento</label>
+                <Input id="prof-doc" defaultValue={editingProfile?.documento || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Cargo</label>
+                <Input id="prof-cargo" defaultValue={editingProfile?.cargo || ""} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold uppercase">Departamento</label>
+                <select id="prof-dept" className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm" defaultValue={editingProfile?.department_id || ""}>
+                  <option value="">Nenhum</option>
+                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpenProfileCrud(false)}>Cancelar</Button>
+              <Button onClick={() => {
+                const data = {
+                  nome: (document.getElementById('prof-nome') as HTMLInputElement).value,
+                  email: (document.getElementById('prof-email') as HTMLInputElement).value,
+                  documento: (document.getElementById('prof-doc') as HTMLInputElement).value,
+                  cargo: (document.getElementById('prof-cargo') as HTMLInputElement).value,
+                  department_id: (document.getElementById('prof-dept') as HTMLSelectElement).value || undefined,
+                };
+                saveProfile(data);
+              }}>Salvar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

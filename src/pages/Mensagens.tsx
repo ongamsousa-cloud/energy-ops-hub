@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
- import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive } from "lucide-react";
+  import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive, Download, FileJson, FileText, Check, CheckCheck, Calendar } from "lucide-react";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+ import Papa from "papaparse";
+ import jsPDF from "jspdf";
+ import "jspdf-autotable";
 
   type Profile = {
     id: string;
@@ -41,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
    outros: Profile[];
    ultima_msg?: string;
    unread_count?: number;
+   last_read_at?: string | null;
  };
 
 export default function Mensagens() {
@@ -48,6 +52,7 @@ export default function Mensagens() {
   const [convs, setConvs] = useState<Conv[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<any[]>([]);
+  const [readStatuses, setReadStatuses] = useState<Record<string, any[]>>({});
   const [text, setText] = useState("");
   const [editingMsg, setEditingMsg] = useState<{ id: string; conteudo: string } | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{ id: string } | null>(null);
@@ -55,9 +60,72 @@ export default function Mensagens() {
   const [departments, setDepartments] = useState<DeptOption[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
    const [searchTerm, setSearchTerm] = useState("");
+   const [searchConvTerm, setSearchConvTerm] = useState("");
+   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
    const [filterCode, setFilterCode] = useState("");
+
+  const exportCSV = () => {
+    if (!activeConv || msgs.length === 0) return;
+    const data = msgs.map(m => ({
+      Data: new Date(m.created_at).toLocaleString('pt-BR'),
+      Remetente: m.sender?.nome || (m.sender_id === user?.id ? 'Você' : 'Sistema'),
+      Conteudo: m.conteudo || (m.anexo_url ? '[Anexo]' : ''),
+      Anexo: m.anexo_url || ''
+    }));
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `conversa-${activeConv.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV exportado com sucesso!");
+  };
+
+  const exportPDF = () => {
+    if (!activeConv || msgs.length === 0) return;
+    const doc = new jsPDF();
+    doc.text(`Conversa: ${activeConv.titulo || activeConv.id}`, 10, 10);
+    doc.text(`Exportado em: ${new Date().toLocaleString('pt-BR')}`, 10, 16);
+    
+    const tableData = msgs.map(m => [
+      new Date(m.created_at).toLocaleString('pt-BR'),
+      m.sender?.nome || (m.sender_id === user?.id ? 'Você' : 'Sistema'),
+      m.conteudo || (m.anexo_url ? '[Anexo]' : '')
+    ]);
+
+    (doc as any).autoTable({
+      head: [['Data/Hora', 'Remetente', 'Mensagem']],
+      body: tableData,
+      startY: 25
+    });
+
+    doc.save(`conversa-${activeConv.id}.pdf`);
+    toast.success("PDF exportado com sucesso!");
+  };
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");
+
+  const filteredConvs = useMemo(() => {
+    return convs.filter(c => {
+      const isDept = c.tipo === 'department' || !!c.department_id;
+      const displayName = isDept
+        ? (c.department_name || c.titulo || 'Departamento')
+        : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
+      
+      const matchesSearch = displayName.toLowerCase().includes(searchConvTerm.toLowerCase()) ||
+                          (c.department_name && c.department_name.toLowerCase().includes(searchConvTerm.toLowerCase()));
+      
+      const msgDate = new Date(c.ultima_data || c.created_at);
+      const matchesDate = (!dateRange.start || msgDate >= new Date(dateRange.start)) &&
+                         (!dateRange.end || msgDate <= new Date(dateRange.end + "T23:59:59"));
+
+      return matchesSearch && matchesDate;
+    });
+  }, [convs, searchConvTerm, dateRange]);
+
    const [openNew, setOpenNew] = useState(false);
   const [openDeptCrud, setOpenDeptCrud] = useState(false);
   const [openProfileCrud, setOpenProfileCrud] = useState(false);
@@ -325,11 +393,7 @@ export default function Mensagens() {
      // Buscar participantes de todas essas conversas
      const { data: allParticipants } = await supabase
        .from('conversation_participants')
-       .select(`
-         conversation_id,
-         user_id,
-         profiles:profiles(id, nome, email, role, foto_url)
-       `)
+        .select(`conversation_id, user_id, last_read_at, profiles:profiles(id, nome, email, role, foto_url)`)
        .in('conversation_id', convIds);
 
      // Buscar última mensagem de cada conversa
@@ -356,6 +420,7 @@ export default function Mensagens() {
          .map(p => (p.profiles as unknown as Profile))
          .filter(Boolean);
 
+       const myParticipation = participants.find(p => p.user_id === user.id);
        const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
 
        return {
@@ -367,7 +432,8 @@ export default function Mensagens() {
          department_id: c.department_id,
          department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,
          outros: others,
-         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
+         ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens"),
+         last_read_at: (myParticipation as any)?.last_read_at
        };
      });
 
@@ -402,11 +468,39 @@ export default function Mensagens() {
       }
       
       setMsgs(data ?? []);
+
+      if (data && data.length > 0) {
+        const { data: statusData } = await supabase
+          .from("message_read_status")
+          .select("*")
+          .in("message_id", data.map(m => m.id));
+
+        if (statusData) {
+          const grouped = statusData.reduce((acc: any, curr: any) => {
+            if (!acc[curr.message_id]) acc[curr.message_id] = [];
+            acc[curr.message_id].push(curr);
+            return acc;
+          }, {});
+          setReadStatuses(grouped);
+        }
+      }
       
-      // marca como lida
+      const now = new Date().toISOString();
       await supabase.from("conversation_participants")
-        .update({ ultima_leitura: new Date().toISOString() })
+        .update({ ultima_leitura: now, last_read_at: now })
         .eq("conversation_id", active).eq("user_id", user!.id);
+
+      if (data && data.length > 0) {
+        const unreadMsgs = data.filter(m => m.sender_id !== user!.id);
+        if (unreadMsgs.length > 0) {
+          const readInserts = unreadMsgs.map(m => ({
+            message_id: m.id,
+            user_id: user!.id,
+            read_at: now
+          }));
+          await supabase.from("message_read_status").upsert(readInserts, { onConflict: 'message_id,user_id' });
+        }
+      }
     };
 
     loadMessages();
@@ -841,9 +935,49 @@ export default function Mensagens() {
           <div className="flex items-center justify-between border-b border-border p-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => loadConvs()}>
-                <Search className="h-3 w-3" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Search className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-64 p-3 space-y-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Busca</span>
+                    <Input 
+                      placeholder="Nome ou Depto..." 
+                      className="h-8 text-xs"
+                      value={searchConvTerm}
+                      onChange={(e) => setSearchConvTerm(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Período</span>
+                    <div className="flex flex-col gap-1">
+                      <Input 
+                        type="date" 
+                        className="h-8 text-xs" 
+                        value={dateRange.start}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                      />
+                      <Input 
+                        type="date" 
+                        className="h-8 text-xs" 
+                        value={dateRange.end}
+                        onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full h-7 text-[10px]"
+                    onClick={() => { setSearchConvTerm(""); setDateRange({ start: "", end: "" }); }}
+                  >
+                    Limpar Filtros
+                  </Button>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); setSelectedDepartments([]); } }}>
               <DialogTrigger asChild>
@@ -1239,18 +1373,20 @@ export default function Mensagens() {
           </div>
            <ScrollArea className="flex-1">
              <div className="p-1">
-               {convs.length === 0 ? (
+               {filteredConvs.length === 0 ? (
                  <div className="p-6 text-center text-xs text-muted-foreground">
                    <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
-                   Nenhuma conversa ativa. Clique em "Nova" para começar.
+                   {convs.length === 0 ? "Nenhuma conversa ativa. Clique em 'Nova' para começar." : "Nenhuma conversa encontrada com os filtros atuais."}
                  </div>
-                ) : convs.map((c) => {
+                ) : filteredConvs.map((c) => {
                   const isDept = c.tipo === 'department' || !!c.department_id;
                   const displayName = isDept
                     ? (c.department_name || c.titulo || 'Departamento')
                     : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
                   const avatarUrl = !isDept ? c.outros[0]?.foto_url : undefined;
                   const initial = isDept ? '#' : (c.outros[0]?.nome?.charAt(0) || 'C');
+                  const unreadCount = msgs.filter(m => m.conversation_id === c.id && m.sender_id !== user?.id && (!c.last_read_at || m.created_at > c.last_read_at)).length;
+
                   return (
                  <button 
                    key={c.id} 
@@ -1282,6 +1418,11 @@ export default function Mensagens() {
                        {c.ultima_msg}
                      </div>
                    </div>
+                    {unreadCount > 0 && (
+                      <Badge className="ml-2 h-4 w-4 flex items-center justify-center p-0 text-[10px]" variant="destructive">
+                        {unreadCount}
+                      </Badge>
+                    )}
                  </button>
                   );
                 })}
@@ -1334,7 +1475,7 @@ export default function Mensagens() {
                       )}
                       <div className="flex flex-col min-w-0">
                         <div className="text-sm font-bold truncate">{headerName}</div>
-                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex items-center gap-2">
                           <span>{headerSub}</span>
                           {!isDept && activeConv?.outros[0]?.department_name && (
                             <>
@@ -1344,11 +1485,28 @@ export default function Mensagens() {
                           )}
                         </div>
                       </div>
+                      <div className="flex items-center gap-1 shrink-0 ml-auto">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7">
+                              <Download className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={exportPDF}>
+                              <FileText className="h-4 w-4 mr-2" /> Exportar PDF
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={exportCSV}>
+                              <FileJson className="h-4 w-4 mr-2" /> Exportar CSV
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   );
                 })()}
               </div>
-              <div className="flex-1 overflow-auto p-4 space-y-2">
+               <div className="flex-1 overflow-auto p-4 space-y-2 bg-slate-50/50">
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
                   const senderName = m.sender?.nome || "Usuário";
@@ -1433,6 +1591,15 @@ export default function Mensagens() {
                               {" - "}
                               {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                             </span>
+                            {mine && (
+                              <span className="flex items-center">
+                                {readStatuses[m.id]?.length > 0 ? (
+                                  <CheckCheck className="h-3 w-3 text-blue-400" />
+                                ) : (
+                                  <Check className="h-3 w-3" />
+                                )}
+                              </span>
+                            )}
                          </div>
                        </div>
                      </div>

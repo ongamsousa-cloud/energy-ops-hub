@@ -568,18 +568,21 @@ export type Database = {
         Row: {
           conversation_id: string
           joined_at: string
+          last_read_at: string | null
           ultima_leitura: string | null
           user_id: string
         }
         Insert: {
           conversation_id: string
           joined_at?: string
+          last_read_at?: string | null
           ultima_leitura?: string | null
           user_id: string
         }
         Update: {
           conversation_id?: string
           joined_at?: string
+          last_read_at?: string | null
           ultima_leitura?: string | null
           user_id?: string
         }
@@ -1487,6 +1490,35 @@ export type Database = {
           },
         ]
       }
+      message_read_status: {
+        Row: {
+          id: string
+          message_id: string
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_read_status_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           anexo_tipo: string | null
@@ -1494,6 +1526,7 @@ export type Database = {
           conteudo: string | null
           conversation_id: string
           created_at: string
+          delivered_at: string | null
           id: string
           is_archived: boolean | null
           sender_id: string
@@ -1506,6 +1539,7 @@ export type Database = {
           conteudo?: string | null
           conversation_id: string
           created_at?: string
+          delivered_at?: string | null
           id?: string
           is_archived?: boolean | null
           sender_id: string
@@ -1518,6 +1552,7 @@ export type Database = {
           conteudo?: string | null
           conversation_id?: string
           created_at?: string
+          delivered_at?: string | null
           id?: string
           is_archived?: boolean | null
           sender_id?: string

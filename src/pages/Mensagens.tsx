@@ -79,18 +79,23 @@ export default function Mensagens() {
      return `${mins}:${secs.toString().padStart(2, '0')}`;
    };
 
-    const addAudioElement = (blob: Blob) => {
+    const addAudioElement = async (blob: Blob) => {
       console.log("Gravação concluída:", blob.size, "bytes");
-      if (blob.size < 500) {
-        console.warn("Áudio muito pequeno, possível erro de captura ou gravação muito curta");
-        toast.error("Áudio muito curto ou falha na captura. Tente novamente.");
+      if (blob.size < 200) {
+        console.warn("Áudio muito pequeno");
+        toast.error("Áudio muito curto. Tente gravar por mais tempo.");
         setRecordingMode(null);
         return;
       }
+      
       setAudioBlob(blob);
+      const url = URL.createObjectURL(blob);
       if (audioPreviewUrl) URL.revokeObjectURL(audioPreviewUrl);
-      setAudioPreviewUrl(URL.createObjectURL(blob));
+      setAudioPreviewUrl(url);
       setRecordingMode(null);
+      
+      // Se estivermos enviando direto em uma conversa ativa, podemos oferecer o envio imediato
+      toast.success("Áudio gravado com sucesso!");
     };
  
    useEffect(() => {
@@ -176,16 +181,28 @@ export default function Mensagens() {
    async function loadConvs() {
      if (!user) return;
      
-     const { data: convData, error } = await supabase
-       .from('conversations')
-       .select(`
-         id, 
-         titulo, 
-         created_at,
-         conversation_participants!inner(user_id)
-       `)
-       .eq('conversation_participants.user_id', user.id)
-       .order('created_at', { ascending: false });
+      // Simplificando a query para evitar problemas com junções complexas
+      const { data: myParticipations, error: partError } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', user.id);
+
+      if (partError) {
+        console.error("Erro ao buscar participações:", partError);
+        return;
+      }
+
+      const myConvIds = myParticipations?.map(p => p.conversation_id) || [];
+      
+      const { data: convData, error } = await supabase
+        .from('conversations')
+        .select(`
+          id, 
+          titulo, 
+          created_at
+        `)
+        .in('id', myConvIds)
+        .order('created_at', { ascending: false });
 
      if (error) {
        console.error("Erro ao carregar conversas:", error);
@@ -361,16 +378,24 @@ export default function Mensagens() {
         if (!convId) continue;
         lastConvId = convId;
 
-        const { error } = await supabase.from("messages").insert({
-          conversation_id: convId,
-          sender_id: user!.id,
-          conteudo,
-          anexo_url: audioUrl,
-          anexo_tipo: audioUrl ? "audio" : null,
-        });
+        try {
+          const { error } = await supabase.from("messages").insert({
+            conversation_id: convId,
+            sender_id: user!.id,
+            conteudo: conteudo || null,
+            anexo_url: audioUrl || null,
+            anexo_tipo: audioUrl ? "audio" : null,
+          });
 
-        if (error) {
-          toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
+          if (error) {
+            console.error(`Erro ao inserir mensagem para ${contact.nome}:`, error);
+            toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
+            continue;
+          }
+          okCount++;
+        } catch (innerErr: any) {
+          console.error(`Exceção ao enviar para ${contact.nome}:`, innerErr);
+          toast.error(`Falha inesperada ao enviar para ${contact.nome}`);
           continue;
         }
         okCount++;

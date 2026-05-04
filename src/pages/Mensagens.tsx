@@ -1493,7 +1493,7 @@ export default function Mensagens() {
                   </div>
                  ) : (
                    <div className="flex items-center gap-2">
-                     <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={uploadAnexo} />
+                      <input ref={fileRef} type="file" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip" hidden onChange={uploadAnexo} />
                      <input ref={camRef} type="file" accept="image/*,video/*" capture="environment" hidden onChange={uploadAnexo} />
                      
                      <div className="flex items-center">

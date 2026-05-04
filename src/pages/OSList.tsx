@@ -15,6 +15,7 @@ import { useAuth } from "@/lib/auth";
 export default function OSList() {
   const { user, hasRole } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [deps, setDeps] = useState<any[]>([]);
    const [filters, setFilters] = useState({
      operational_status: "all",
      financial_status: "all",
@@ -32,6 +33,7 @@ export default function OSList() {
       const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
     
     const fetchRows = () => {
+      supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
       let query = supabase.from("ordens_servico")
        .select(`
           *,
@@ -77,7 +79,7 @@ export default function OSList() {
         <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
       } />
 
-       <div className="grid gap-4 md:grid-cols-4 items-end">
+       <div className="grid gap-4 md:grid-cols-5 items-end">
          <div className="space-y-1.5">
            <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
            <div className="relative">
@@ -106,6 +108,18 @@ export default function OSList() {
             </Select>
           </div>
          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Departamento</label>
+            <Select value={filters.department} onValueChange={(v) => setFilters(f => ({ ...f, department: v }))}>
+              <SelectTrigger><SelectValue placeholder="Setor" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Setores</SelectItem>
+                {deps.map(d => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
            <label className="text-xs font-medium text-muted-foreground">Prioridade</label>
            <Select value={filters.priority} onValueChange={(v) => setFilters(f => ({ ...f, priority: v }))}>
              <SelectTrigger><SelectValue placeholder="Prioridade" /></SelectTrigger>

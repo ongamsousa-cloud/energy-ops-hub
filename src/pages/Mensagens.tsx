@@ -26,11 +26,18 @@ import { Badge } from "@/components/ui/badge";
     documento?: string;
     cargo?: string;
   };
- type Conv = { 
-   id: string; 
-   titulo: string | null; 
-   created_at: string; 
-   outros: Profile[]; 
+ type DeptOption = { id: string; name: string };
+ type Recipient =
+   | { kind: 'user'; profile: Profile }
+   | { kind: 'department'; department: DeptOption };
+ type Conv = {
+   id: string;
+   titulo: string | null;
+   created_at: string;
+   tipo?: string;
+   department_id?: string | null;
+   department_name?: string | null;
+   outros: Profile[];
    ultima_msg?: string;
    unread_count?: number;
  };
@@ -44,7 +51,7 @@ export default function Mensagens() {
   const [editingMsg, setEditingMsg] = useState<{ id: string; conteudo: string } | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{ id: string } | null>(null);
   const [contatos, setContatos] = useState<Profile[]>([]);
-  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [departments, setDepartments] = useState<DeptOption[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
    const [searchTerm, setSearchTerm] = useState("");
    const [filterCode, setFilterCode] = useState("");
@@ -52,6 +59,7 @@ export default function Mensagens() {
    const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
+   const [selectedDepartments, setSelectedDepartments] = useState<DeptOption[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
    const [recordingDuration, setRecordingDuration] = useState(0);
    const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);

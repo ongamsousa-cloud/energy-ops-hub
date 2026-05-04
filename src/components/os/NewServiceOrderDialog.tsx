@@ -51,7 +51,6 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     hora_agendada: "08:00",
     gestorId: "",
     equipeId: "",
-    departmentId: "",
     observacoes: "",
     itens: [] as any[],
     allAtvSelected: false

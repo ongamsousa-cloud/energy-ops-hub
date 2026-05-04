@@ -200,11 +200,7 @@ export default function Mensagens() {
       
       const { data: convData, error } = await supabase
         .from('conversations')
-        .select(`
-          id, 
-          titulo, 
-          created_at
-        `)
+        .select('id, titulo, created_at, tipo, department_id')
         .in('id', myConvIds)
         .order('created_at', { ascending: false });
 
@@ -236,19 +232,32 @@ export default function Mensagens() {
        .in('conversation_id', convIds)
        .order('created_at', { ascending: false });
 
-     const result: Conv[] = convData.map(c => {
+     const deptIds = Array.from(new Set((convData as any[]).map(c => c.department_id).filter(Boolean)));
+     const deptNameMap = new Map<string, string>();
+     if (deptIds.length) {
+       const { data: deptRows } = await supabase
+         .from('departments')
+         .select('id, name')
+         .in('id', deptIds);
+       (deptRows || []).forEach((d: any) => deptNameMap.set(d.id, d.name));
+     }
+
+     const result: Conv[] = (convData as any[]).map((c: any) => {
        const participants = allParticipants?.filter(p => p.conversation_id === c.id) || [];
        const others = participants
          .filter(p => p.user_id !== user.id)
          .map(p => (p.profiles as unknown as Profile))
          .filter(Boolean);
-       
+
        const lastMsg = lastMessages?.find(m => m.conversation_id === c.id);
 
        return {
          id: c.id,
          titulo: c.titulo,
          created_at: c.created_at,
+         tipo: c.tipo,
+         department_id: c.department_id,
+         department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,
          outros: others,
          ultima_msg: lastMsg?.conteudo || (lastMsg ? "[Anexo]" : "Sem mensagens")
        };

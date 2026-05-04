@@ -317,15 +317,20 @@ export default function OSDetalhe() {
     load();
   }
 
-   async function registrarAuditoria(statusNovo: string, comentario: string = "") {
-     await supabase.from("os_audit_logs").insert({
-       os_id: id,
-       user_id: user!.id,
-       status_anterior: os.status,
-       status_novo: statusNovo,
-       comentario
-     });
-   }
+    async function registrarAuditoria(statusNovo: string, comentario: string = "") {
+      try {
+        const { error } = await supabase.from("os_audit_logs").insert({
+          os_id: id,
+          user_id: user!.id,
+          status_anterior: os.status,
+          status_novo: statusNovo,
+          comentario: comentario || ""
+        });
+        if (error) console.error("Erro ao registrar auditoria:", error);
+      } catch (err) {
+        console.error("Erro excepcional na auditoria:", err);
+      }
+    }
 
    async function aprovar() {
      if (!evCheck.ok) {

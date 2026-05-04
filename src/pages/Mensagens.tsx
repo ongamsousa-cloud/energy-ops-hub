@@ -139,45 +139,44 @@ export default function Mensagens() {
 
   const myRole = roles[0];
 
-  // Carrega contatos e departamentos
+  // Carrega contatos e departamentos (consultas separadas para evitar relacionamento inválido)
   useEffect(() => {
     if (!user) return;
     (async () => {
-      // Carrega Departamentos
-      const { data: depts } = await supabase.from("departments").select("id, name").eq("active", true);
+      const [{ data: depts }, profsRes, rolesRes] = await Promise.all([
+        supabase.from("departments").select("id, name").eq("active", true).order("name"),
+        supabase
+          .from("profiles")
+          .select("id, nome, email, department_id, cargo, documento, foto_url")
+          .eq("ativo", true)
+          .neq("id", user.id),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
+
       setDepartments(depts || []);
 
-      // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-        const { data: profs, error: profsError } = await supabase
-          .from("profiles")
-          .select(`
-            id, nome, email, department_id, cargo, documento, foto_url,
-            user_roles(role),
-            departments(name)
-          `)
-         .eq("ativo", true)
-         .neq("id", user.id);
-
-      if (profsError) {
-        console.error("Erro ao carregar perfis:", profsError);
-        toast.error("Erro ao carregar lista de contatos.");
+      if (profsRes.error) {
+        console.error("Erro ao carregar perfis:", profsRes.error);
       }
-      
-       const all: Profile[] = (profs ?? []).map((p: any) => ({
-         id: p.id, 
-         nome: p.nome,
-         email: p.email,
-         department_id: p.department_id,
-         department_name: p.departments?.name,
-         cargo: p.cargo,
-         documento: p.documento,
-         foto_url: p.foto_url,
-         role: (p.user_roles && Array.isArray(p.user_roles) && p.user_roles.length > 0) 
-           ? (p.user_roles[0].role as AppRole) 
-           : (p.role as AppRole | undefined),
-       }));
 
-      // Ordena contatos por nome e remove filtros restritivos
+      const deptMap = new Map((depts || []).map(d => [d.id, d.name] as const));
+      const roleMap = new Map<string, AppRole>();
+      (rolesRes.data || []).forEach((r: any) => {
+        if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, r.role as AppRole);
+      });
+
+      const all: Profile[] = (profsRes.data ?? []).map((p: any) => ({
+        id: p.id,
+        nome: p.nome,
+        email: p.email,
+        department_id: p.department_id ?? undefined,
+        department_name: p.department_id ? deptMap.get(p.department_id) : undefined,
+        cargo: p.cargo ?? undefined,
+        documento: p.documento ?? undefined,
+        foto_url: p.foto_url ?? undefined,
+        role: roleMap.get(p.id),
+      }));
+
       setContatos(all.sort((a, b) => a.nome.localeCompare(b.nome)));
     })();
   }, [user]);

@@ -1019,7 +1019,7 @@ export default function Mensagens() {
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
                   return (
-                    <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                   <div key={m.id} className={cn("flex group", mine ? "justify-end" : "justify-start")}>
                       <div className={cn("max-w-[75%] rounded-lg px-3 py-2 text-sm",
                         mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
                         {m.anexo_url && m.anexo_tipo === "image" && (

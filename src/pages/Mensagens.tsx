@@ -107,6 +107,25 @@ export default function Mensagens() {
   };
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");
+
+  const filteredConvs = useMemo(() => {
+    return convs.filter(c => {
+      const isDept = c.tipo === 'department' || !!c.department_id;
+      const displayName = isDept
+        ? (c.department_name || c.titulo || 'Departamento')
+        : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
+      
+      const matchesSearch = displayName.toLowerCase().includes(searchConvTerm.toLowerCase()) ||
+                          (c.department_name && c.department_name.toLowerCase().includes(searchConvTerm.toLowerCase()));
+      
+      const msgDate = new Date(c.ultima_data || c.created_at);
+      const matchesDate = (!dateRange.start || msgDate >= new Date(dateRange.start)) &&
+                         (!dateRange.end || msgDate <= new Date(dateRange.end + "T23:59:59"));
+
+      return matchesSearch && matchesDate;
+    });
+  }, [convs, searchConvTerm, dateRange]);
+
    const [openNew, setOpenNew] = useState(false);
   const [openDeptCrud, setOpenDeptCrud] = useState(false);
   const [openProfileCrud, setOpenProfileCrud] = useState(false);

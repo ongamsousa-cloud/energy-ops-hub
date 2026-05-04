@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
- import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2 } from "lucide-react";
+ import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive } from "lucide-react";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,6 +58,12 @@ export default function Mensagens() {
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);
+  const [openDeptCrud, setOpenDeptCrud] = useState(false);
+  const [openProfileCrud, setOpenProfileCrud] = useState(false);
+  const [editingDept, setEditingDept] = useState<DeptOption | null>(null);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [pendingMessages, setPendingMessages] = useState<any[]>([]);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
    const [selectedDepartments, setSelectedDepartments] = useState<DeptOption[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
@@ -136,6 +142,61 @@ export default function Mensagens() {
    async function enviarAudio() {
      await enviar();
    }
+
+  // Efeito para checar mensagens arquivadas (5 anos)
+  useEffect(() => {
+    if (myRole === 'admin') {
+      (async () => {
+        const fiveYearsAgo = new Date();
+        fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 5);
+        const { count } = await supabase
+          .from("messages")
+          .select("*", { count: 'exact', head: true })
+          .lt("created_at", fiveYearsAgo.toISOString())
+          .eq("is_archived", false);
+        setArchivedCount(count || 0);
+      })();
+    }
+  }, [myRole]);
+
+  async function handleArchiveOldMessages() {
+    const { error } = await (supabase as any).rpc('archive_old_messages');
+    if (error) {
+      toast.error("Erro ao arquivar mensagens: " + error.message);
+    } else {
+      toast.success("Mensagens com mais de 5 anos foram arquivadas.");
+      setArchivedCount(0);
+    }
+  }
+
+  async function saveDepartment(name: string) {
+    try {
+      if (editingDept) {
+        await supabase.from("departments").update({ name }).eq("id", editingDept.id);
+        toast.success("Departamento atualizado.");
+      } else {
+        await supabase.from("departments").insert({ name, active: true });
+        toast.success("Departamento criado.");
+      }
+      setOpenDeptCrud(false);
+      setEditingDept(null);
+      // Recarregar departamentos
+      const { data } = await supabase.from("departments").select("id, name").eq("active", true).order("name");
+      setDepartments(data || []);
+    } catch (err: any) {
+      toast.error("Erro ao salvar departamento: " + err.message);
+    }
+  }
+
+  async function deleteDept(id: string) {
+    if (!confirm("Deseja realmente excluir este departamento?")) return;
+    const { error } = await supabase.from("departments").update({ active: false }).eq("id", id);
+    if (error) toast.error("Erro ao excluir.");
+    else {
+      toast.success("Excluído com sucesso.");
+      setDepartments(prev => prev.filter(d => d.id !== id));
+    }
+  }
 
   const myRole = roles[0];
 

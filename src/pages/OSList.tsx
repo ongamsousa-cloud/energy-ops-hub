@@ -145,7 +145,12 @@ export default function OSList() {
                    <div className="font-mono text-xs font-bold text-primary">{r.numero}</div>
                    <StatusBadge status={r.status} />
                  </div>
-                 <h3 className="font-semibold text-sm line-clamp-1 mb-1">{r.obra?.nome}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-sm line-clamp-1">{r.obra?.nome}</h3>
+                    {r.department?.name && (
+                      <Badge variant="secondary" className="text-[9px] h-4 px-1">{r.department.name}</Badge>
+                    )}
+                  </div>
                  <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
                    {r.cidade || r.obra?.cidade || 'Local não informado'} · {r.bairro || r.obra?.bairro || 'Bairro'}
                  </p>

@@ -478,6 +478,16 @@ export default function Mensagens() {
 
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
+  const ROLE_TO_DEPT: Record<string, string> = {
+    admin: 'Administração',
+    gestor: 'Operação',
+    supervisor: 'Operação',
+    campo: 'Operação',
+    financeiro: 'Financeiro',
+    auditor: 'Auditoria',
+    estoque: 'Almoxarifado / Estoque',
+  };
+
   const filteredContatos = useMemo(() => {
     let result = contatos;
     if (selectedDeptId) {
@@ -503,15 +513,6 @@ export default function Mensagens() {
     return result;
   }, [contatos, searchTerm, selectedDeptId]);
 
-  const ROLE_TO_DEPT: Record<string, string> = {
-    admin: 'Administração',
-    gestor: 'Operação',
-    supervisor: 'Operação',
-    campo: 'Operação',
-    financeiro: 'Financeiro',
-    auditor: 'Auditoria',
-    estoque: 'Almoxarifado / Estoque',
-  };
   const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
     filteredContatos.forEach(c => {

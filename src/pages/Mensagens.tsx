@@ -855,8 +855,14 @@ export default function Mensagens() {
                     <div className="text-sm font-bold truncate">
                       {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                      {activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Online"}
+                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                      <span>{activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Profissional"}</span>
+                      {activeConv?.outros[0]?.department_name && (
+                        <>
+                          <span>•</span>
+                          <span>{activeConv.outros[0].department_name}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

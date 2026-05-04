@@ -1251,7 +1251,9 @@ export default function Mensagens() {
                          {displayName}
                        </div>
                        <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
-                         {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                          {new Date(c.ultima_data || c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                          {" "}
+                          {new Date(c.ultima_data || c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                        </span>
                      </div>
                      <div className="text-[11px] text-muted-foreground truncate leading-relaxed">

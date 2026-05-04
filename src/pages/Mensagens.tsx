@@ -463,13 +463,25 @@ export default function Mensagens() {
 
      if (!finalContent && !finalAnexo) return;
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: active,
-      sender_id: user!.id,
-      conteudo: finalContent || null,
-       anexo_url: finalAnexo?.url ?? null,
-       anexo_tipo: finalAnexo?.tipo ?? null,
-    });
+     let error;
+     if (editingMsg) {
+       const { error: editError } = await supabase
+         .from("messages")
+         .update({ conteudo: finalContent })
+         .eq("id", editingMsg.id);
+       error = editError;
+       setEditingMsg(null);
+     } else {
+       const { error: insertError } = await supabase.from("messages").insert({
+         conversation_id: active,
+         sender_id: user!.id,
+         conteudo: finalContent || null,
+         anexo_url: finalAnexo?.url ?? null,
+         anexo_tipo: finalAnexo?.tipo ?? null,
+       });
+       error = insertError;
+     }
+
      if (error) {
        console.error("Erro ao enviar mensagem:", error);
        return toast.error("Falha ao enviar: " + error.message);
@@ -477,6 +489,16 @@ export default function Mensagens() {
      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);
+  }
+
+  async function deleteMessage(id: string) {
+    const { error } = await supabase.from("messages").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir mensagem.");
+    } else {
+      setMsgs(prev => prev.filter(m => m.id !== id));
+      setDeleteConfirmOpen(null);
+    }
   }
 
   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {

@@ -487,37 +487,45 @@ export default function Mensagens() {
 
   const filteredContatos = useMemo(() => {
     let result = contatos;
+
+    if (filterCode) {
+      const low = filterCode.toLowerCase();
+      result = result.filter(c => 
+        (c.documento && c.documento.toLowerCase().includes(low)) || 
+        c.id.toLowerCase().includes(low)
+      );
+    }
+
     if (selectedDeptId) {
       const dept = departments.find(d => d.id === selectedDeptId);
       const deptName = dept?.name;
       result = result.filter(c => {
         if (c.department_id === selectedDeptId) return true;
         if (!deptName) return false;
-        // fallback: role-based mapping when department_id not set
         const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
         return fallback === deptName || c.department_name === deptName;
       });
     }
+
     if (searchTerm) {
       const low = searchTerm.toLowerCase();
       result = result.filter(c => 
         c.nome.toLowerCase().includes(low) || 
         c.email.toLowerCase().includes(low) ||
+        (c.documento && c.documento.toLowerCase().includes(low)) ||
         (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low)) ||
         (c.department_name && c.department_name.toLowerCase().includes(low))
       );
     }
     
-    if (filterCode) {
-      result = result.filter(c => c.id.toLowerCase().includes(filterCode.toLowerCase()));
-    }
-    
     if (filterCargo) {
-      result = result.filter(c => (c as any).cargo?.toLowerCase().includes(filterCargo.toLowerCase()));
+      const low = filterCargo.toLowerCase();
+      result = result.filter(c => c.cargo?.toLowerCase().includes(low));
     }
     
     if (filterFuncao) {
-      result = result.filter(c => c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(filterFuncao.toLowerCase()));
+      const low = filterFuncao.toLowerCase();
+      result = result.filter(c => c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low));
     }
 
     return result;

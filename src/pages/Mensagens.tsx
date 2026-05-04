@@ -202,7 +202,7 @@ export default function Mensagens() {
   async function saveProfile(data: Partial<Profile>) {
     try {
       if (editingProfile) {
-        const { error } = await supabase.from("profiles").update({
+        const { error } = await (supabase as any).from("profiles").update({
           nome: data.nome,
           email: data.email,
           department_id: data.department_id,
@@ -212,8 +212,8 @@ export default function Mensagens() {
         if (error) throw error;
         toast.success("Perfil atualizado.");
       } else {
-        // Para novo perfil, geralmente é via convite ou admin, mas aqui faremos um insert básico
-        const { error } = await supabase.from("profiles").insert({
+        const { error } = await (supabase as any).from("profiles").insert({
+          id: crypto.randomUUID(),
           nome: data.nome,
           email: data.email,
           department_id: data.department_id,

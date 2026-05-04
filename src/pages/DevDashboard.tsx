@@ -56,16 +56,22 @@
        });
      }
  
-     // 2. Perfis inativos
-     const { data: inactiveUsers } = await supabase.from("profiles").select("id").eq("ativo", false);
-     if (inactiveUsers?.length) {
-       issues.push({ 
-         id: "inactive-users", 
-         title: "Usuários pendentes", 
-         count: inactiveUsers.length, 
-         severity: "medium",
-         action: "Review approvals"
-       });
+     // 2. Perfis sem role
+     const { data: usersNoRole } = await supabase.rpc('get_users_without_roles');
+     if (usersNoRole?.length) {
+       issues.push({ id: "no-role", title: "Usuários sem perfil de acesso", count: usersNoRole.length, severity: "high" });
+     }
+ 
+     // 3. Materiais órfãos (sem OS)
+     const { data: orphanMats } = await supabase.from("os_materials").select("id").is("os_id", null);
+     if (orphanMats?.length) {
+       issues.push({ id: "orphan-mats", title: "Materiais sem vínculo de OS", count: orphanMats.length, severity: "medium" });
+     }
+ 
+     // 4. Inconsistência de Estoque (movimentos negativos sem saldo)
+     const { data: stockIncons } = await supabase.from("stock_movements").select("id").eq("type", "out").lt("quantity", 0);
+     if (stockIncons?.length) {
+       issues.push({ id: "stock-incon", title: "Inconsistência de quantidades no estoque", count: stockIncons.length, severity: "high" });
      }
  
      setHealthIssues(issues);

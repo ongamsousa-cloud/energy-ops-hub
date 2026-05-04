@@ -130,8 +130,8 @@ export default function Mensagens() {
     
     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo: "audio" });
-      setAudioBlob(null);
-      setAudioPreviewUrl(null);
+    setAudioBlob(null);
+    setAudioPreviewUrl(null);
   }
 
   const myRole = roles[0];
@@ -145,7 +145,7 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-      const { data: profs } = await supabase
+      const { data: profs, error: profsError } = await supabase
         .from("profiles")
         .select(`
           id, nome, email, department_id,
@@ -154,6 +154,11 @@ export default function Mensagens() {
         `)
         .eq("ativo", true)
         .neq("id", user.id);
+
+      if (profsError) {
+        console.error("Erro ao carregar perfis:", profsError);
+        toast.error("Erro ao carregar lista de contatos.");
+      }
       
       const all: Profile[] = (profs ?? []).map((p: any) => ({
         id: p.id, 
@@ -420,23 +425,7 @@ export default function Mensagens() {
      setText("");
    }
 
-   async function enviarAudioDirect(convId: string) {
-     if (!audioBlob) return;
-     const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-     const path = `chat/${convId}/${file.name}`;
-     const { error } = await supabase.storage.from("os-evidences").upload(path, file);
-     if (error) { toast.error(error.message); return; }
-     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
-     await supabase.from("messages").insert({
-       conversation_id: convId,
-       sender_id: user!.id,
-       anexo_url: data.publicUrl,
-       anexo_tipo: "audio"
-     });
-     setAudioBlob(null);
-   }
-
-    const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
     if (!active) return;
@@ -950,37 +939,41 @@ export default function Mensagens() {
                        </Button>
                      </div>
 
-                     <div className="relative flex-1">
-                       <Input 
-                         value={text} 
-                         onChange={(e) => setText(e.target.value)}
-                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
-                         placeholder="Escreva sua mensagem..." 
-                         className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
-                       />
-                        {!isRecording && (
-                          <button 
-                            className={cn(
-                              "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
-                              "text-muted-foreground hover:text-primary"
-                            )}
-                             onClick={async () => { 
-                               try {
-                                 setRecordingMode('direct');
-                                 await recorderControls.startRecording();
-                                 toast.info("Iniciando gravação...");
-                               } catch (err: any) {
-                                 console.error("Erro ao iniciar gravação direta:", err);
-                                 toast.error("Erro ao acessar microfone.");
-                                 setRecordingMode(null);
-                               }
-                             }}
-                            title="Gravar Áudio"
-                          >
-                            <Mic className="h-4 w-4" />
-                          </button>
-                        )}
-                     </div>
+                      <div className="relative flex-1">
+                        <Input 
+                          value={text} 
+                          onChange={(e) => setText(e.target.value)}
+                          onKeyDown={(e) => { 
+                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
+                              e.preventDefault(); 
+                              enviar(); 
+                            } 
+                          }}
+                          placeholder="Escreva sua mensagem..." 
+                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
+                        />
+                         {!isRecording && !audioBlob && (
+                           <button 
+                             className={cn(
+                               "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                               "text-muted-foreground hover:text-primary"
+                             )}
+                              onClick={async () => { 
+                                try {
+                                  setRecordingMode('direct');
+                                  await recorderControls.startRecording();
+                                } catch (err: any) {
+                                  console.error("Erro ao iniciar gravação direta:", err);
+                                  toast.error("Erro ao acessar microfone.");
+                                  setRecordingMode(null);
+                                }
+                              }}
+                             title="Gravar Áudio"
+                           >
+                             <Mic className="h-4 w-4" />
+                           </button>
+                         )}
+                      </div>
 
                       <Button 
                         size="icon" 

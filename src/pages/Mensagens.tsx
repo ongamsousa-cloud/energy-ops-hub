@@ -443,7 +443,10 @@ export default function Mensagens() {
        anexo_url: finalAnexo?.url ?? null,
        anexo_tipo: finalAnexo?.tipo ?? null,
     });
-    if (error) return toast.error(error.message);
+     if (error) {
+       console.error("Erro ao enviar mensagem:", error);
+       return toast.error("Falha ao enviar: " + error.message);
+     }
      if (messageText === undefined) setText("");
       setAudioBlob(null);
       setAudioPreviewUrl(null);

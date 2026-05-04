@@ -72,7 +72,8 @@ export default function Mensagens() {
    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
    const [pendingAudioUrl, setPendingAudioUrl] = useState<string | null>(null);
    const [audioPreviewUrl, setAudioPreviewUrl] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
+   const [mobileView, setMobileView] = useState<'list' | 'thread'>('list');
+   const myRole = roles[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -197,8 +198,6 @@ export default function Mensagens() {
       setDepartments(prev => prev.filter(d => d.id !== id));
     }
   }
-
-  const myRole = roles[0];
 
   // Carrega contatos e departamentos (consultas separadas para evitar relacionamento inválido)
   useEffect(() => {

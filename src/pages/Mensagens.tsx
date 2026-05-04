@@ -52,6 +52,7 @@ export default function Mensagens() {
   const [convs, setConvs] = useState<Conv[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<any[]>([]);
+  const [readStatuses, setReadStatuses] = useState<Record<string, any[]>>({});
   const [text, setText] = useState("");
   const [editingMsg, setEditingMsg] = useState<{ id: string; conteudo: string } | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<{ id: string } | null>(null);

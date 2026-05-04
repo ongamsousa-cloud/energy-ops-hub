@@ -579,13 +579,30 @@ export default function Mensagens() {
 
   const [isUploading, setIsUploading] = useState(false);
 
-  async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
+   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string, retryId?: string) {
     if (!active) {
       console.warn("Nenhuma conversa ativa selecionada");
       return;
     }
-    console.log("Iniciando envio de mensagem para conversa:", active);
     const finalContent = messageText !== undefined ? messageText : text.trim();
+    
+    const tempId = retryId || crypto.randomUUID();
+    const tempMsg = {
+      id: tempId,
+      conversation_id: active,
+      sender_id: user!.id,
+      conteudo: finalContent,
+      anexo_url: anexo?.url,
+      anexo_tipo: anexo?.tipo,
+      created_at: new Date().toISOString(),
+      status: 'sending'
+    };
+
+    if (!retryId) {
+      setMsgs(prev => [...prev, tempMsg]);
+    } else {
+      setMsgs(prev => prev.map(m => m.id === tempId ? { ...m, status: 'sending' } : m));
+    }
      
      // Se temos um áudio pendente e nenhum anexo foi passado explicitamente
      let finalAnexo = anexo;

@@ -1373,12 +1373,12 @@ export default function Mensagens() {
           </div>
            <ScrollArea className="flex-1">
              <div className="p-1">
-               {convs.length === 0 ? (
+               {filteredConvs.length === 0 ? (
                  <div className="p-6 text-center text-xs text-muted-foreground">
                    <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
-                   Nenhuma conversa ativa. Clique em "Nova" para começar.
+                   {convs.length === 0 ? "Nenhuma conversa ativa. Clique em 'Nova' para começar." : "Nenhuma conversa encontrada com os filtros atuais."}
                  </div>
-                ) : convs.map((c) => {
+                ) : filteredConvs.map((c) => {
                   const isDept = c.tipo === 'department' || !!c.department_id;
                   const displayName = isDept
                     ? (c.department_name || c.titulo || 'Departamento')

@@ -16,6 +16,8 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   const [profs, setProfs] = useState<any[]>([]);
   const [obraId, setObraId] = useState("all");
   const [profId, setProfId] = useState("all");
+  const [depId, setDepId] = useState("all");
+  const [deps, setDeps] = useState<any[]>([]);
   const [statusF, setStatusF] = useState("all");
   const [search, setSearch] = useState("");
   const [openNew, setOpenNew] = useState(false);
@@ -23,7 +25,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   async function load() {
     let q = supabase
       .from("ordens_servico")
-      .select("id, numero, status, total_umd, created_at, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
+      .select("id, numero, status, total_umd, created_at, department_id, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
       .gte("created_at", period.start.toISOString())
       .lte("created_at", period.end.toISOString())
       .order("created_at", { ascending: false })
@@ -31,6 +33,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
     if (obraId !== "all") q = q.eq("obra_id", obraId);
     if (profId !== "all") q = q.eq("profissional_id", profId);
     if (statusF !== "all") q = q.eq("status", statusF as any);
+    if (depId !== "all") q = q.eq("department_id", depId);
     const { data } = await q;
     setRows(data ?? []);
   }
@@ -38,6 +41,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   useEffect(() => {
     supabase.from("obras").select("id, numero, nome").then(({ data }) => setObras(data ?? []));
     supabase.from("profiles").select("id, nome").eq("ativo", true).then(({ data }) => setProfs(data ?? []));
+    supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -50,7 +54,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
       supabase.removeChannel(ch);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period.start, period.end, obraId, profId, statusF]);
+  }, [period.start, period.end, obraId, profId, statusF, depId]);
 
   const filtered = useMemo(
     () =>
@@ -105,10 +109,17 @@ export default function OSDashboardTab({ period }: { period: Period }) {
           </SelectContent>
         </Select>
         <Select value={profId} onValueChange={setProfId}>
-          <SelectTrigger className="h-9 w-[180px]"><SelectValue placeholder="Profissional" /></SelectTrigger>
+          <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Profissional" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="all">Todos Profissionais</SelectItem>
             {profs.map((p) => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={depId} onValueChange={setDepId}>
+          <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Setor" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos Setores</SelectItem>
+            {deps.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
           </SelectContent>
         </Select>
         <Button onClick={() => setOpenNew(true)} className="h-9">

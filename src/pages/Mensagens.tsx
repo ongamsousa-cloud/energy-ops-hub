@@ -130,8 +130,8 @@ export default function Mensagens() {
     
     const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo: "audio" });
-      setAudioBlob(null);
-      setAudioPreviewUrl(null);
+    setAudioBlob(null);
+    setAudioPreviewUrl(null);
   }
 
   const myRole = roles[0];

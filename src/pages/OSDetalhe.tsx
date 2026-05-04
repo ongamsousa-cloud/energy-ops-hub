@@ -548,7 +548,10 @@ export default function OSDetalhe() {
         <span><strong>Cliente:</strong> {os.obra?.cliente || "Não informado"}</span>
         <span className="col-span-2 md:col-span-1"><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
         {os.equipe_id && <span className="col-span-2 md:col-span-1"><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
-        <span className="col-span-2 md:col-span-2 italic"><strong>Endereço:</strong> {os.obra?.endereco}, {os.obra?.bairro}, {os.obra?.cidade}/{os.obra?.estado}</span>
+         <span className="col-span-2 md:col-span-2 italic"><strong>Endereço:</strong> {os.endereco || os.obra?.endereco}, {os.bairro || os.obra?.bairro}, {os.cidade || os.obra?.cidade}/{os.estado || os.obra?.estado}</span>
+         {(os.solicitante_nome || os.solicitante_telefone) && (
+           <span className="col-span-2 md:col-span-2"><strong>Solicitante:</strong> {os.solicitante_nome} {os.solicitante_telefone ? `(${os.solicitante_telefone})` : ""}</span>
+         )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">

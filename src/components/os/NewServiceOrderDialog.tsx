@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
- import { Search, Plus, Trash2, X, AlertCircle } from "lucide-react";
+ import { Search, Plus, Trash2, X, AlertCircle, MapPin, Loader2 } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -55,8 +55,15 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      observacoes: "",
      itens: [] as any[],
      allAtvSelected: false,
-     client_name: "",
-     address: ""
+      client_name: "",
+      cep: "",
+      endereco: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      ponto_referencia: "",
+      solicitante_nome: "",
+      solicitante_telefone: ""
    });
 
   const [selectedObra, setSelectedObra] = useState<any>(null);
@@ -131,14 +138,39 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
+   const fetchAddress = async (cep: string) => {
+     const cleanCep = cep.replace(/\D/g, "");
+     if (cleanCep.length !== 8) return;
+     
+     try {
+       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+       const data = await response.json();
+       if (!data.erro) {
+         setFormData(prev => ({
+           ...prev,
+           endereco: data.logradouro,
+           bairro: data.bairro,
+           cidade: data.localidade,
+           estado: data.uf
+         }));
+       }
+     } catch (error) {
+       console.error("Erro ao buscar CEP:", error);
+     }
+   };
+
    const handleObraChange = (obraId: string) => {
      const obra = obras.find(o => o.id === obraId);
      setSelectedObra(obra);
      setFormData(prev => ({ 
        ...prev, 
        obraId,
-       client_name: obra?.cliente || "",
-       address: obra?.endereco ? `${obra.endereco}, ${obra.bairro}, ${obra.cidade}/${obra.estado}` : ""
+       client_name: obra?.cliente || prev.client_name,
+       cep: obra?.cep || prev.cep,
+       endereco: obra?.endereco || prev.endereco,
+       bairro: obra?.bairro || prev.bairro,
+       cidade: obra?.cidade || prev.cidade,
+       estado: obra?.estado || prev.estado
      }));
    };
 
@@ -162,6 +194,14 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
          hora_agendada: formData.hora_agendada,
          observacoes: formData.observacoes,
          created_by: user!.id,
+         cep: formData.cep,
+         endereco: formData.endereco,
+         bairro: formData.bairro,
+         cidade: formData.cidade,
+         estado: formData.estado,
+         ponto_referencia: formData.ponto_referencia,
+         solicitante_nome: formData.solicitante_nome,
+         solicitante_telefone: formData.solicitante_telefone
        }).select("id").single();
  
        if (osError) throw osError;
@@ -221,23 +261,63 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label>Obra <span className="text-destructive">*</span></Label>
-                  <Select value={formData.obraId} onValueChange={handleObraChange}>
-                    <SelectTrigger><SelectValue placeholder="Selecione a obra" /></SelectTrigger>
-                    <SelectContent>
-                      {obras.map((o) => (
-                        <SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedObra && (
-                    <div className="mt-2 p-3 bg-muted/30 rounded-md text-xs space-y-1">
-                      <div><strong>Cliente:</strong> {selectedObra.cliente || "Não informado"}</div>
-                      <div><strong>Endereço:</strong> {selectedObra.endereco}, {selectedObra.bairro}, {selectedObra.cidade}/{selectedObra.estado}</div>
-                    </div>
-                  )}
-                </div>
+               <div className="space-y-2 md:col-span-2 border-t pt-4">
+                 <h3 className="text-sm font-semibold">Localização e Contato</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   <div className="space-y-2">
+                     <Label>CEP</Label>
+                     <div className="flex gap-2">
+                       <Input 
+                         placeholder="00000-000" 
+                         value={formData.cep} 
+                         onChange={(e) => {
+                           setFormData({...formData, cep: e.target.value});
+                           if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
+                         }} 
+                       />
+                     </div>
+                   </div>
+                   <div className="md:col-span-2 space-y-2">
+                     <Label>Obra (Preenche automático)</Label>
+                     <Select value={formData.obraId} onValueChange={handleObraChange}>
+                       <SelectTrigger><SelectValue placeholder="Selecione uma obra existente" /></SelectTrigger>
+                       <SelectContent>
+                         {obras.map((o) => (
+                           <SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                   <div className="md:col-span-2 space-y-2">
+                     <Label>Endereço <span className="text-destructive">*</span></Label>
+                     <Input value={formData.endereco} onChange={(e) => setFormData({...formData, endereco: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Bairro</Label>
+                     <Input value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Cidade</Label>
+                     <Input value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Estado</Label>
+                     <Input value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Ponto de Referência</Label>
+                     <Input value={formData.ponto_referencia} onChange={(e) => setFormData({...formData, ponto_referencia: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Nome do Solicitante</Label>
+                     <Input value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Telefone</Label>
+                     <Input value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
+                   </div>
+                 </div>
+               </div>
               </div>
               <Button className="w-full" onClick={() => {
                 if(!formData.departmentId || !formData.obraId) return toast.error("Preencha os campos obrigatórios");

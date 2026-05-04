@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
    id: string;
    titulo: string | null;
    created_at: string;
+    ultima_data?: string | null;
    tipo?: string;
    department_id?: string | null;
    department_name?: string | null;
@@ -361,6 +362,7 @@ export default function Mensagens() {
          id: c.id,
          titulo: c.titulo,
          created_at: c.created_at,
+          ultima_data: lastMsg?.created_at || c.created_at,
          tipo: c.tipo,
          department_id: c.department_id,
          department_name: c.department_id ? deptNameMap.get(c.department_id) ?? null : null,
@@ -387,31 +389,35 @@ export default function Mensagens() {
   // Carrega mensagens da conversa ativa + realtime
   useEffect(() => {
     if (!active) { setMsgs([]); return; }
-    (async () => {
-      const { data } = await supabase
+    const loadMessages = async () => {
+      const { data, error } = await supabase
         .from("messages")
-        .select("*")
+        .select("*, sender:profiles(nome)")
         .eq("conversation_id", active)
         .order("created_at");
+      
+      if (error) {
+        console.error("Erro ao carregar mensagens:", error);
+        return;
+      }
+      
       setMsgs(data ?? []);
+      
       // marca como lida
       await supabase.from("conversation_participants")
         .update({ ultima_leitura: new Date().toISOString() })
         .eq("conversation_id", active).eq("user_id", user!.id);
-    })();
-     const ch = supabase
-       .channel(`msg-${active}`)
-       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
-         (payload) => {
-           if (payload.eventType === "INSERT") {
-             setMsgs((prev) => [...prev, payload.new]);
-           } else if (payload.eventType === "UPDATE") {
-             setMsgs((prev) => prev.map(m => m.id === payload.new.id ? payload.new : m));
-           } else if (payload.eventType === "DELETE") {
-             setMsgs((prev) => prev.filter(m => m.id !== payload.old.id));
-           }
-         })
-       .subscribe();
+    };
+
+    loadMessages();
+
+    const ch = supabase
+      .channel(`msg-${active}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${active}` },
+        () => {
+          loadMessages(); // Recarregar para garantir o join do sender
+        })
+      .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [active, user]);
 
@@ -1245,7 +1251,9 @@ export default function Mensagens() {
                          {displayName}
                        </div>
                        <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
-                         {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                          {new Date(c.ultima_data || c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
+                          {" "}
+                          {new Date(c.ultima_data || c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                        </span>
                      </div>
                      <div className="text-[11px] text-muted-foreground truncate leading-relaxed">
@@ -1321,10 +1329,23 @@ export default function Mensagens() {
               <div className="flex-1 overflow-auto p-4 space-y-2">
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
+                  const senderName = m.sender?.nome || "Usuário";
+                  const recipientName = activeConv?.tipo === 'department' 
+                    ? (activeConv.department_name || 'Departamento')
+                    : (activeConv?.outros.map((o: any) => o.nome).join(", ") || 'Destinatário');
+
                   return (
                    <div key={m.id} className={cn("flex group", mine ? "justify-end" : "justify-start")}>
                       <div className={cn("max-w-[75%] rounded-lg px-3 py-2 text-sm",
                         mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                        <div className={cn("text-[9px] mb-1 opacity-70 font-bold uppercase tracking-tight flex items-center gap-1", mine ? "justify-end" : "justify-start")}>
+                          {mine ? (
+                            <><span>Para:</span> <span className="underline decoration-primary-foreground/30">{recipientName}</span></>
+                          ) : (
+                            <><span>De:</span> <span className="underline decoration-primary/10">{senderName}</span></>
+                          )}
+                        </div>
+
                         {m.anexo_url && m.anexo_tipo === "image" && (
                           <img src={m.anexo_url} className="mb-1 max-h-64 rounded" />
                         )}
@@ -1372,9 +1393,13 @@ export default function Mensagens() {
                              </DropdownMenu>
                            )}
                          </div>
-                         <div className={cn("mt-1 text-[10px] opacity-70 flex items-center gap-1", mine ? "justify-end" : "")}>
+                          <div className={cn("mt-1 text-[10px] opacity-70 flex flex-wrap items-center gap-x-2 gap-y-0.5", mine ? "justify-end" : "")}>
                            {m.updated_at !== m.created_at && <span>(editada)</span>}
-                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            <span>
+                              {new Date(m.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit', year: '2-digit' })}
+                              {" - "}
+                              {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
                          </div>
                        </div>
                      </div>

@@ -15,7 +15,6 @@ import Obras from "./pages/Obras";
 import ObraDetalhe from "./pages/ObraDetalhe";
 import Categorias from "./pages/Categorias";
 import Atividades from "./pages/Atividades";
-import AtividadesImport from "./pages/AtividadesImport";
 import Equipes from "./pages/Equipes";
 import Profissionais from "./pages/Profissionais";
 import OSList from "./pages/OSList";
@@ -70,7 +69,6 @@ const App = () => (
               <Route path="obras/:id" element={<ObraDetalhe />} />
               <Route path="categorias" element={<ProtectedRoute roles={["admin","gestor"]}><Categorias /></ProtectedRoute>} />
               <Route path="atividades" element={<ProtectedRoute roles={["admin","gestor"]}><Atividades /></ProtectedRoute>} />
-              <Route path="atividades/importar" element={<ProtectedRoute roles={["admin","gestor"]}><AtividadesImport /></ProtectedRoute>} />
               <Route path="equipes" element={<ProtectedRoute roles={["admin","gestor","supervisor"]}><Equipes /></ProtectedRoute>} />
               <Route path="profissionais" element={<ProtectedRoute roles={["admin","gestor"]}><Profissionais /></ProtectedRoute>} />
               <Route path="usuarios/aprovacoes" element={<ProtectedRoute roles={["admin"]}><AprovacoesUsuarios /></ProtectedRoute>} />

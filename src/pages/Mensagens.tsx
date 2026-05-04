@@ -1031,12 +1031,37 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "audio" && (
                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
                         )}
-                        {m.conteudo && <div className="whitespace-pre-wrap break-words">{m.conteudo}</div>}
-                        <div className={cn("mt-1 text-[10px] opacity-70", mine ? "text-right" : "")}>
-                          {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </div>
-                    </div>
+                         <div className="flex justify-between items-start gap-2">
+                           {m.conteudo && <div className="whitespace-pre-wrap break-words flex-1">{m.conteudo}</div>}
+                           {mine && (
+                             <DropdownMenu>
+                               <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <MoreVertical className="h-3 w-3" />
+                                 </Button>
+                               </DropdownMenuTrigger>
+                               <DropdownMenuContent align="end">
+                                 {m.conteudo && (
+                                   <DropdownMenuItem onClick={() => {
+                                     setEditingMsg({ id: m.id, conteudo: m.conteudo });
+                                     setText(m.conteudo);
+                                   }}>
+                                     <Edit2 className="h-3 w-3 mr-2" /> Editar
+                                   </DropdownMenuItem>
+                                 )}
+                                 <DropdownMenuItem className="text-destructive" onClick={() => setDeleteConfirmOpen({ id: m.id })}>
+                                   <Trash2 className="h-3 w-3 mr-2" /> Excluir
+                                 </DropdownMenuItem>
+                               </DropdownMenuContent>
+                             </DropdownMenu>
+                           )}
+                         </div>
+                         <div className={cn("mt-1 text-[10px] opacity-70 flex items-center gap-1", mine ? "justify-end" : "")}>
+                           {m.updated_at !== m.created_at && <span>(editada)</span>}
+                           {new Date(m.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                         </div>
+                       </div>
+                     </div>
                   );
                 })}
                 <div ref={endRef} />

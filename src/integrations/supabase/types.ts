@@ -1860,6 +1860,7 @@ export type Database = {
       }
       ordens_servico: {
         Row: {
+          address: string | null
           aprovado_em: string | null
           aprovado_por: string | null
           archived_at: string | null
@@ -1870,6 +1871,7 @@ export type Database = {
           cep: string | null
           cidade: string | null
           client_id: string | null
+          client_name: string | null
           created_at: string
           created_by: string | null
           criticality_level: string | null
@@ -1922,6 +1924,7 @@ export type Database = {
           valor_previsto: number | null
         }
         Insert: {
+          address?: string | null
           aprovado_em?: string | null
           aprovado_por?: string | null
           archived_at?: string | null
@@ -1932,6 +1935,7 @@ export type Database = {
           cep?: string | null
           cidade?: string | null
           client_id?: string | null
+          client_name?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
@@ -1984,6 +1988,7 @@ export type Database = {
           valor_previsto?: number | null
         }
         Update: {
+          address?: string | null
           aprovado_em?: string | null
           aprovado_por?: string | null
           archived_at?: string | null
@@ -1994,6 +1999,7 @@ export type Database = {
           cep?: string | null
           cidade?: string | null
           client_id?: string | null
+          client_name?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
@@ -2532,6 +2538,54 @@ export type Database = {
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_status_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          new_status: string
+          notes: string | null
+          old_status: string | null
+          os_id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          new_status: string
+          notes?: string | null
+          old_status?: string | null
+          os_id: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          new_status?: string
+          notes?: string | null
+          old_status?: string | null
+          os_id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_status_history_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_status_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3646,6 +3700,10 @@ export type Database = {
       archive_old_messages: { Args: never; Returns: undefined }
       can_message: {
         Args: { _receiver: string; _sender: string }
+        Returns: boolean
+      }
+      check_os_access: {
+        Args: { os_row: Database["public"]["Tables"]["ordens_servico"]["Row"] }
         Returns: boolean
       }
       get_conversation_between_users: {

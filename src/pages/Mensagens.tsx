@@ -1313,6 +1313,19 @@ export default function Mensagens() {
                         {m.anexo_url && m.anexo_tipo === "audio" && (
                           <audio src={m.anexo_url} controls className="mb-1 w-full min-w-[200px]" />
                         )}
+                        {m.status === 'sending' && (
+                          <div className="flex items-center gap-2 text-[10px] opacity-70 italic mb-1">
+                            <RefreshCw className="h-3 w-3 animate-spin" /> Enviando...
+                          </div>
+                        )}
+                        {m.status === 'error' && (
+                          <div className="flex items-center gap-2 text-[10px] text-destructive-foreground font-bold mb-1 bg-destructive/20 p-1 rounded">
+                            <AlertCircle className="h-3 w-3" /> Falha no envio
+                            <Button variant="link" size="sm" className="h-auto p-0 text-[10px] text-white underline" onClick={() => retryMessage(m)}>
+                              Reenviar
+                            </Button>
+                          </div>
+                        )}
                          <div className="flex justify-between items-start gap-2">
                            {m.conteudo && <div className="whitespace-pre-wrap break-words flex-1">{m.conteudo}</div>}
                            {mine && (

@@ -1,0 +1,200 @@
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635161', 'Balanceamento Rede Secundária', 'Unidade', 0.024 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635164', 'Balanceamento Rede Secundária HE', 'Unidade', 0.033 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635173', 'Tensionamento do Ramal de Ligação', 'Unidade', 0.016 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635176', 'Tensionamento do Ramal de Ligação HE', 'Unidade', 0.022 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635181', 'Instalar Espaçador de Baixa Tensão', 'Unidade', 0.12 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635182', 'Retirar  Espaçador de Baixa Tensão', 'Unidade', 0.12 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635184', 'Instalar Espaçador de Baixa Tensão HE', 'Unidade', 0.166 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635185', 'Retirar  Espaçador de Baixa Tensão HE', 'Unidade', 0.166 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635191', 'InstCond Multiplex.BT Seção Fase=35 mm²', 'km', 30 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635192', 'Ret Cond Multiplex BT Seção Fase=35 mm²', 'km', 12 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635194', 'Inst Cond Multiplex.BT Seção =35 mm² HE', 'km', 42 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635195', 'Ret Cond Multiplex BT Seção =35 mm² HE', 'km', 16 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635201', 'Inst Cond Multiplex BT Seção Fase=50 mm²', 'km', 33 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635202', 'Ret Cond Multiplex BT Seção Fase=50mm²', 'km', 13.2 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635204', 'Inst Cond Multiplex BT Seção =50 mm² HE', 'km', 46 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635205', 'Ret Cond Multiplex BT Seção =50mm² HE', 'km', 18 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635211', 'Inst Cond Multiplex BT Seção Fase=70mm²', 'km', 36 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635212', 'Ret Cond Multiplex BT Seção Fase=70mm²', 'km', 14 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635214', 'Inst Cond Multiplex BT Seção =70mm² HE', 'km', 50 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635215', 'Ret Cond Multiplex BT Seção =70mm² HE', 'km', 20 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635221', 'Inst Cond Multiplex BT Seção Fase=120mm²', 'km', 40 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635222', 'Ret Cond Multiplex BT Seção Fase=120mm²', 'km', 15 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635224', 'Inst Cond Multiplex BT Seção =120mm² HE', 'km', 55 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635225', 'Ret Cond Multiplex BT Seção =120mm² HE', 'km', 20 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635231', 'Instalar Conector de BT, Tipo Perfurante ou ampactinho', 'Unidade', 0.06 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635232', 'Retirar  Conector de BT, Tipo Perfurante ou ampactinho', 'Unidade', 0.024 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635234', 'Inst. Conector de BT, Tipo Perfurante ou ampactinho HE', 'Unidade', 0.083 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635235', 'Ret.  Conector de BT Tipo Perfurante ou ampactinho HE', 'Unidade', 0.033 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635251', 'Emenda Cabo Multip.BT Seção 35 a 120mm²', 'Unidade', 0.18 

@@ -1,0 +1,200 @@
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636045', 'Retirar  Chave a Óleo HE', 'Unidade', 1.442 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636091', 'Reaperto e Regulagem de Chave', 'Unidade', 0.5 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636094', 'Reaperto e Regulagem de Chave HE', 'Unidade', 0.693 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636101', 'Instalar Chave Faca', 'Unidade', 0.2 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636102', 'Retirar  Chave Faca', 'Unidade', 0.08 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636104', 'Instalar Chave Faca HE', 'Unidade', 0.277 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636105', 'Retirar  Chave Faca HE', 'Unidade', 0.111 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636111', 'Instalar Chave Religadora ou Religador Monofásico', 'Unidade', 0.3 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636112', 'Retirar  Chave Religadora ou Religador Monofásico', 'Unidade', 0.09 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636114', 'Instalar Chave Religadora HE', 'Unidade', 0.416 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636115', 'Retirar  Chave Religadora HE', 'Unidade', 0.125 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639012', 'Abrir chave fusível/faca', 'Unidade', 0.05 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639015', 'Abrir chave fusível/faca HE', 'Unidade', 0.069 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639021', 'Fechar chave fusível/faca', 'Unidade', 0.04 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639024', 'Fechar chave fusível/faca HE', 'Unidade', 0.055 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654266', 'Instalar Chave by pass', 'Unidade', 0.4 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654267', 'Retirar  Chave by pass', 'Unidade', 0.16 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654268', 'Instalar Chave by pass HE', 'Unidade', 0.56 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654269', 'Retirar  Chave by pass HE', 'Unidade', 0.224 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE PARA RÁIOS E CHAVES'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635001', 'Instalar Condutor 4CAA e 6CU', 'km', 4.6 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635002', 'Retirar  Condutor 4CAA e 6CU', 'km', 1.84 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635004', 'Instalar Condutor 4CAA e 6CU HE', 'km', 6.377 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635005', 'Retirar  Condutor 4CAA e 6CU HE', 'km', 2.551 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635011', 'Inst. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU', 'km', 10.8 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635012', 'Ret. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU', 'km', 4.32 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635014', 'InsT Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU HE', 'km', 14.972 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635015', 'Ret. Cond. 2 a 2/0 CA/CAA e 4 a 1/0CU HE', 'km', 5.988 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635021', 'InstCond.Bit. maior 2/0 CA/CAA e 1/0CU', 'km', 15 
+    FROM public.categorias WHERE nome = 'LANÇAMENTO DE CONDUTOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;

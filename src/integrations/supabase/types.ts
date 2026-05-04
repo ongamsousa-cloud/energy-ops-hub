@@ -169,6 +169,7 @@ export type Database = {
       }
       atividades: {
         Row: {
+          anexos: string[] | null
           ativo: boolean
           categoria_id: string
           codigo_item: string
@@ -186,6 +187,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          anexos?: string[] | null
           ativo?: boolean
           categoria_id: string
           codigo_item: string
@@ -203,6 +205,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          anexos?: string[] | null
           ativo?: boolean
           categoria_id?: string
           codigo_item?: string

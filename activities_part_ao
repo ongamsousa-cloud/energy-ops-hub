@@ -1,0 +1,200 @@
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638062', 'Limpeza Faixa c/Veg.acima 2m – 220/380 V', 'km', 5.323 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638065', 'Limp. Faixa c/Veg.acima 2m 220/380 V HE', 'km', 7.379 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638072', 'Limpeza Faixa c/Veg.ac.2m – 6,6 a 25 kV', 'km', 10.266 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638075', 'Limp. Faixa c/Veg.ac.2m – 6,6 a 25 Kv HE', 'km', 14.231 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638082', 'Limpeza Faixa c/Veg.acima 2m – 34,5 kV', 'km', 14.449 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638085', 'Limpeza Faixa c/Veg.acima 2m 34,5 kV HE', 'km', 20.029 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638092', 'Poda de Arvore Área Urbana', 'Unidade', 0.076 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638095', 'Poda de Arvore Área Urbana HE', 'Unidade', 0.105 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638102', 'Corte Arvore Área Urbana', 'Unidade', 0.095 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638105', 'Corte Arvore Área Urbana HE', 'Unidade', 0.132 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638112', 'Corte Bambuzal Isolado', 'm2', 0.152 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638115', 'Corte Bambuzal Isolado HE', 'm2', 0.211 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638122', 'Poda de árvore área Rural', 'Unidade', 0.038 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638125', 'Poda de árvore área Rural HE', 'Unidade', 0.053 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638132', 'Corte de árvore área Rural', 'Unidade', 0.038 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '638135', 'Corte de árvore área Rural HE', 'Unidade', 0.053 
+    FROM public.categorias WHERE nome = 'ROÇADA E LIMPEZA'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639031', 'Insp. circuito p/ localizar falha', 'km', 0.2 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639034', 'Insp. circuito p/ localizar falha HE', 'km', 0.277 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639201', 'Verificar níveis de tensão', 'Unidade', 0.08 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639204', 'Verificar níveis de tensão HE', 'Unidade', 0.111 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639291', 'Inspec. estrutura de rede aérea urbana', 'Unidade', 0.007 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639351', 'Inst Afastador ninhos de joão-de-barro', 'Unidade', 0.01 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639352', 'Ret Afastador ninhos de joão-de-barro', 'Unidade', 0.01 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639354', 'Inst Afastador ninhos joão-de-barro HE', 'Unidade', 0.014 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639355', 'Ret Afastador ninhos de joão-de-barro HE', 'Unidade', 0.014 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '653509', 'Conserto de calçada', 'Unidade', 0.9 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '653548', 'Conserto de calçada HE', 'Unidade', 1.26 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '639294', 'Inspec. estrutura rede aérea urbana HE', 'Unidade', 0.01 
+    FROM public.categorias WHERE nome = 'INSPEÇÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,

@@ -1,0 +1,200 @@
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635254', 'Emenda Cabo Multip.BT Seção 35a120mm² HE', 'Unidade', 0.25 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635261', 'Inst Flying-Tap/Cruzam.Aéreo,RDMultipl.', 'Unidade', 0.06 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635262', 'Ret Flying-Tap/CruzamAéreo, RD Multipl.', 'Unidade', 0.024 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635264', 'Inst Flying-Tap/Cruzam.AéreoMultipl. HE', 'Unidade', 0.083 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635265', 'Ret Flying-Tap/CruzamAéreoMultipl. HE', 'Unidade', 0.033 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636121', 'InstPára-Raios de BT, Redes Multiplex.', 'Unidade', 0.06 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636122', 'RetPára-Raios de BT, Redes Multiplex.', 'Unidade', 0.024 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636124', 'InstPára-Raios BT, Redes Multiplex. HE', 'Unidade', 0.083 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636125', 'RetPára-Raios de BT, Redes Multiplex HE', 'Unidade', 0.033 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654282', 'Instalação de Ramal de Ligação', 'km', 15 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654283', 'Retirada de Ramal de Ligação', 'km', 6 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654284', 'Instalação de Ramal de Ligação HE', 'km', 21 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654285', 'Retirada de Ramal de Ligação HE', 'km', 8.4 
+    FROM public.categorias WHERE nome = 'ESTRUTURA DE BAIXA TENSÃO'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '635083', 'Serviço em Condutor AT (Descida FU ao Trafo)', 'fase', 0.1 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636021', 'Instalar Transformador Monofásico', 'Unidade', 2.4 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636022', 'Retirar  Transformador Monofásico', 'Unidade', 0.96 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636024', 'Instalar Transformador Monofásico - HE', 'Unidade', 3.326 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636025', 'Retirar  Transformador Monofásico - HE', 'Unidade', 1.33 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636031', 'Instalar Transformador Trifásico', 'Unidade', 5.2 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636032', 'Retirar  Transformador Trifásico', 'Unidade', 2.08 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636034', 'Instalar Transformador Trifásico - HE', 'Unidade', 7.208 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '636035', 'Retirar  Transformador Trifásico - HE', 'Unidade', 2.8 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654286', 'Instalar Transformador Monofásico – Sem acesso de veículo', 'Unidade', 4.32 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654287', 'Retirar Transformador Monofásico – Sem acesso de veículo', 'Unidade', 1.72 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654288', 'Instalar Transformador Monofásico – Sem acesso de veículo - HE', 'Unidade', 6.04 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654289', 'Retirar Transformador Monofásico – Sem acesso de veículo - HE', 'Unidade', 2.4 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654290', 'Instalar Transformador Trifásico – Sem acesso de veículo', 'Unidade', 9.36 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,
+    umd_unitaria = EXCLUDED.umd_unitaria;
+INSERT INTO public.atividades (categoria_id, codigo_item, descricao, unidade, umd_unitaria) 
+    SELECT id, '654291', 'Retirar Transformador Trifásico – Sem acesso de veículo', 'Unidade', 3.74 
+    FROM public.categorias WHERE nome = 'INSTALAÇÃO DE TRANSFORMADOR'
+    ON CONFLICT (codigo_item) DO UPDATE SET 
+    descricao = EXCLUDED.descricao,
+    unidade = EXCLUDED.unidade,

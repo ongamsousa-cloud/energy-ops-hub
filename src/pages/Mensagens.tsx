@@ -407,11 +407,39 @@ export default function Mensagens() {
       }
       
       setMsgs(data ?? []);
+
+      if (data && data.length > 0) {
+        const { data: statusData } = await supabase
+          .from("message_read_status")
+          .select("*")
+          .in("message_id", data.map(m => m.id));
+
+        if (statusData) {
+          const grouped = statusData.reduce((acc: any, curr: any) => {
+            if (!acc[curr.message_id]) acc[curr.message_id] = [];
+            acc[curr.message_id].push(curr);
+            return acc;
+          }, {});
+          setReadStatuses(grouped);
+        }
+      }
       
-      // marca como lida
+      const now = new Date().toISOString();
       await supabase.from("conversation_participants")
-        .update({ ultima_leitura: new Date().toISOString() })
+        .update({ ultima_leitura: now, last_read_at: now })
         .eq("conversation_id", active).eq("user_id", user!.id);
+
+      if (data && data.length > 0) {
+        const unreadMsgs = data.filter(m => m.sender_id !== user!.id);
+        if (unreadMsgs.length > 0) {
+          const readInserts = unreadMsgs.map(m => ({
+            message_id: m.id,
+            user_id: user!.id,
+            read_at: now
+          }));
+          await supabase.from("message_read_status").upsert(readInserts, { onConflict: 'message_id,user_id' });
+        }
+      }
     };
 
     loadMessages();

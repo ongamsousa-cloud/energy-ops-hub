@@ -643,6 +643,7 @@ export type Database = {
       }
       departments: {
         Row: {
+          acronym: string | null
           active: boolean | null
           created_at: string | null
           description: string | null
@@ -651,6 +652,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          acronym?: string | null
           active?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -659,6 +661,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          acronym?: string | null
           active?: boolean | null
           created_at?: string | null
           description?: string | null

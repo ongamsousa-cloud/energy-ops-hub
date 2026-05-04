@@ -481,7 +481,15 @@ export default function Mensagens() {
   const filteredContatos = useMemo(() => {
     let result = contatos;
     if (selectedDeptId) {
-      result = result.filter(c => c.department_id === selectedDeptId);
+      const dept = departments.find(d => d.id === selectedDeptId);
+      const deptName = dept?.name;
+      result = result.filter(c => {
+        if (c.department_id === selectedDeptId) return true;
+        if (!deptName) return false;
+        // fallback: role-based mapping when department_id not set
+        const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
+        return fallback === deptName || c.department_name === deptName;
+      });
     }
     if (searchTerm) {
       const low = searchTerm.toLowerCase();

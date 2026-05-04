@@ -1489,7 +1489,7 @@ export default function Mensagens() {
                   );
                 })()}
               </div>
-              <div className="flex-1 overflow-auto p-4 space-y-2">
+               <div className="flex-1 overflow-auto p-4 space-y-2 bg-slate-50/50">
                 {msgs.map((m) => {
                   const mine = m.sender_id === user?.id;
                   const senderName = m.sender?.nome || "Usuário";

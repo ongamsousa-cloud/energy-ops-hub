@@ -1878,6 +1878,7 @@ export type Database = {
           data_agendada: string | null
           department_id: string | null
           due_at: string | null
+          endereco: string | null
           endereco_completo: string | null
           equipe_id: string | null
           estado: string | null
@@ -1907,10 +1908,13 @@ export type Database = {
           operational_status:
             | Database["public"]["Enums"]["os_operational_status"]
             | null
+          ponto_referencia: string | null
           prioridade: string | null
           profissional_id: string
           region_id: string | null
           servico_id: string | null
+          solicitante_nome: string | null
+          solicitante_telefone: string | null
           status: Database["public"]["Enums"]["os_status"]
           status_financeiro: string | null
           status_workflow: string | null
@@ -1942,6 +1946,7 @@ export type Database = {
           data_agendada?: string | null
           department_id?: string | null
           due_at?: string | null
+          endereco?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
           estado?: string | null
@@ -1971,10 +1976,13 @@ export type Database = {
           operational_status?:
             | Database["public"]["Enums"]["os_operational_status"]
             | null
+          ponto_referencia?: string | null
           prioridade?: string | null
           profissional_id: string
           region_id?: string | null
           servico_id?: string | null
+          solicitante_nome?: string | null
+          solicitante_telefone?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
           status_workflow?: string | null
@@ -2006,6 +2014,7 @@ export type Database = {
           data_agendada?: string | null
           department_id?: string | null
           due_at?: string | null
+          endereco?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
           estado?: string | null
@@ -2035,10 +2044,13 @@ export type Database = {
           operational_status?:
             | Database["public"]["Enums"]["os_operational_status"]
             | null
+          ponto_referencia?: string | null
           prioridade?: string | null
           profissional_id?: string
           region_id?: string | null
           servico_id?: string | null
+          solicitante_nome?: string | null
+          solicitante_telefone?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
           status_workflow?: string | null

@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
- import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive } from "lucide-react";
+  import { Send, Paperclip, Camera, Plus, MessageSquare, Search, User, Users as UsersIcon, Building2, Mic, X, Trash2, ArrowLeft, MoreVertical, Edit2, AlertCircle, RefreshCw, Settings, Archive, Download, FileJson, FileText, Check, CheckCheck, Calendar } from "lucide-react";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder';
 import { Checkbox } from "@/components/ui/checkbox";

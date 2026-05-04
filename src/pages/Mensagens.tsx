@@ -1475,7 +1475,8 @@ export default function Mensagens() {
                       )}
                       <div className="flex flex-col min-w-0">
                         <div className="text-sm font-bold truncate">{headerName}</div>
-                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex items-center justify-between w-full">
+                          <div className="flex gap-2 min-w-0">
                           <span>{headerSub}</span>
                           {!isDept && activeConv?.outros[0]?.department_name && (
                             <>
@@ -1484,6 +1485,23 @@ export default function Mensagens() {
                             </>
                           )}
                         </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                  <Download className="h-3.5 w-3.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={exportPDF}>
+                                  <FileText className="h-4 w-4 mr-2" /> Exportar PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={exportCSV}>
+                                  <FileJson className="h-4 w-4 mr-2" /> Exportar CSV
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                       </div>
                     </div>
                   );

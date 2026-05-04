@@ -735,7 +735,7 @@ export default function Mensagens() {
                           className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
                           value={text}
                           onChange={(e) => setText(e.target.value)}
-                          disabled={isRecording || selectedContacts.length === 0}
+                           disabled={isRecording}
                           onKeyDown={(e) => { 
                             if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
                               e.preventDefault(); 
@@ -762,7 +762,7 @@ export default function Mensagens() {
                                  setRecordingMode(null);
                                }
                              }}
-                            disabled={selectedContacts.length === 0}
+                           disabled={false}
                           >
                             <Mic className="h-5 w-5" />
                           </button>
@@ -771,7 +771,7 @@ export default function Mensagens() {
                       <Button
                         className="h-14 w-14 rounded-2xl shrink-0 shadow-xl bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
                         onClick={sendBroadcast}
-                        disabled={(!text.trim() && !audioBlob) || isRecording || selectedContacts.length === 0 || isUploading}
+                         disabled={(!text.trim() && !audioBlob) || isRecording || isUploading}
                       >
                         {isUploading ? <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-5 w-5" />}
                       </Button>

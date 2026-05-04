@@ -728,8 +728,17 @@ export default function Mensagens() {
                                           {p.nome.charAt(0)}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-bold truncate">{p.nome}</p>
-                                          <p className="text-[11px] text-muted-foreground truncate">{p.department_name || "Sem departamento"}</p>
+                                          <div className="flex items-center gap-2">
+                                            <p className="text-sm font-bold truncate">{p.nome}</p>
+                                            {p.documento && (
+                                              <span className="text-[9px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+                                                {p.documento}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-[11px] text-muted-foreground truncate">
+                                            {p.cargo ? `${p.cargo} • ` : ""}{p.department_name || "Sem departamento"}
+                                          </p>
                                         </div>
                                         <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
                                           Conversar

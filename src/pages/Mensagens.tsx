@@ -1064,7 +1064,22 @@ export default function Mensagens() {
                      </div>
                   );
                 })}
-                <div ref={endRef} />
+               <div ref={endRef} />
+               
+               <Dialog open={!!deleteConfirmOpen} onOpenChange={(val) => !val && setDeleteConfirmOpen(null)}>
+                 <DialogContent className="sm:max-w-[425px]">
+                   <DialogHeader>
+                     <DialogTitle>Excluir Mensagem</DialogTitle>
+                     <DialogDescription>
+                       Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
+                     </DialogDescription>
+                   </DialogHeader>
+                   <DialogFooter className="flex gap-2 sm:gap-0">
+                     <Button variant="ghost" onClick={() => setDeleteConfirmOpen(null)}>Cancelar</Button>
+                     <Button variant="destructive" onClick={() => deleteConfirmOpen && deleteMessage(deleteConfirmOpen.id)}>Excluir</Button>
+                   </DialogFooter>
+                 </DialogContent>
+               </Dialog>
               </div>
                <div className="border-t border-border p-3 bg-muted/20">
                  {audioBlob ? (

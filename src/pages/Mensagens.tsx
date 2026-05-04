@@ -645,30 +645,36 @@ export default function Mensagens() {
                                 {list.map((p) => {
                                   const checked = isContactSelected(p.id);
                                   return (
-                                    <button
+                                    <div
                                       key={p.id}
-                                      onClick={() => toggleContact(p)}
                                       className={cn(
-                                        "flex items-center gap-3 w-full text-left p-3 rounded-xl transition-all border",
+                                        "flex items-center gap-3 w-full text-left p-2 rounded-xl transition-all border group",
                                         checked 
                                           ? "bg-primary/5 border-primary/20 shadow-sm" 
-                                          : "hover:bg-muted/50 border-transparent"
+                                          : "hover:bg-muted/30 border-transparent"
                                       )}
                                     >
                                       <Checkbox 
                                         checked={checked} 
                                         onCheckedChange={() => toggleContact(p)} 
-                                        onClick={(e) => e.stopPropagation()} 
-                                        className="h-5 w-5"
+                                        className="h-5 w-5 ml-1"
                                       />
-                                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0">
-                                        {p.nome.charAt(0)}
+                                      <div 
+                                        className="flex-1 flex items-center gap-3 cursor-pointer"
+                                        onClick={() => startConversa(p)}
+                                      >
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                          {p.nome.charAt(0)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-bold truncate">{p.nome}</p>
+                                          <p className="text-[11px] text-muted-foreground truncate">{p.department_name || "Sem departamento"}</p>
+                                        </div>
+                                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
+                                          Conversar
+                                        </Button>
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold truncate">{p.nome}</p>
-                                        <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
-                                      </div>
-                                    </button>
+                                    </div>
                                   );
                                 })}
                               </div>

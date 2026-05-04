@@ -132,11 +132,11 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-      const { data: profs, error: profsError } = await (supabase as any)
+      const { data: profs, error: profsError } = await supabase
         .from("profiles")
         .select(`
           id, nome, email, department_id,
-          user_roles!inner(role),
+          user_roles(role),
           departments(name)
         `)
         .eq("ativo", true)
@@ -518,12 +518,14 @@ export default function Mensagens() {
      <div className="pb-8 relative">
        {/* Headless Audio Recorder logic - always rendered but invisible */}
        <div className="fixed -top-96 -left-96 opacity-0 pointer-events-none">
-         <AudioRecorder 
-           onRecordingComplete={addAudioElement} 
-           recorderControls={recorderControls}
-           downloadOnSavePress={false}
-           downloadFileExtension="webm"
-         />
+          {typeof window !== 'undefined' && (
+            <AudioRecorder 
+              onRecordingComplete={addAudioElement} 
+              recorderControls={recorderControls}
+              downloadOnSavePress={false}
+              downloadFileExtension="webm"
+            />
+          )}
        </div>
  
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
@@ -534,8 +536,13 @@ export default function Mensagens() {
           mobileView === 'thread' ? "hidden md:flex" : "flex"
         )}>
           <div className="flex items-center justify-between border-b border-border p-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
-            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) setSearchTerm(""); }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => loadConvs()}>
+                <Search className="h-3 w-3" />
+              </Button>
+            </div>
+            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); } }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>

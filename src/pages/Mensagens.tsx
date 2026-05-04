@@ -746,7 +746,6 @@ export default function Mensagens() {
                           className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
                           value={text}
                           onChange={(e) => setText(e.target.value)}
-                           disabled={isRecording}
                           onKeyDown={(e) => { 
                             if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
                               e.preventDefault(); 
@@ -963,6 +962,7 @@ export default function Mensagens() {
 
                       <div className="relative flex-1">
                         <Input 
+                          autoFocus
                           value={text} 
                           onChange={(e) => setText(e.target.value)}
                           onKeyDown={(e) => { 

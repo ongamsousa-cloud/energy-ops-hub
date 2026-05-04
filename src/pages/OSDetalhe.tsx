@@ -72,10 +72,11 @@ export default function OSDetalhe() {
    const [evRules, setEvRules] = useState<EvidenceRules | null>(null);
    const [evCheck, setEvCheck] = useState<EvidenceCheck>({ ok: false, missing: [] });
 
-  const isOwner = os && user && os.profissional_id === user.id;
+  const isOwner = os && user && (os.profissional_id === user.id || os.created_by === user.id);
+  const isFromDept = os && profile && os.department_id === profile.department_id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
    const isGestor = hasRole(["admin", "gestor"]);
-    const canEdit = (isOwner || isGestor) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
+    const canEdit = (isOwner || isGestor || isFromDept) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -1017,16 +1018,21 @@ export default function OSDetalhe() {
          )}
          
           {/* Fluxo de Aceite e Início */}
-          {((os.operational_status || os.status) === "Pendente" || (os.operational_status || os.status) === "pendente") && isOwner && (
-            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
-              await supabase.from("ordens_servico").update({ 
-                operational_status: "Iniciada" as any,
-                status: "iniciada"
-              }).eq("id", id);
-              await registrarAuditoria("Iniciada", "Profissional deu o aceite na Ordem de Serviço");
-              toast.success("Ordem de Serviço Aceita e Iniciada");
-              load();
-            }}>
+           {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
+             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
+               const update: any = { 
+                 operational_status: "Iniciada" as any,
+                 status: "iniciada"
+               };
+               // Se não houver profissional ou for diferente do atual, assume a OS
+               if (!os.profissional_id || os.profissional_id !== user!.id) {
+                 update.profissional_id = user!.id;
+               }
+               await supabase.from("ordens_servico").update(update).eq("id", id);
+               await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
+               toast.success("Ordem de Serviço Aceita e Iniciada");
+               load();
+             }}>
               <CheckCircle className="mr-2 h-5 w-5" />
               Dar o Aceite na OS
             </Button>

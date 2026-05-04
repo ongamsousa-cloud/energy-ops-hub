@@ -14,7 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
- type Profile = { id: string; nome: string; email: string; role?: AppRole; foto_url?: string };
+  type Profile = { 
+    id: string; 
+    nome: string; 
+    email: string; 
+    role?: AppRole; 
+    foto_url?: string;
+    department_id?: string;
+    department_name?: string;
+  };
  type Conv = { 
    id: string; 
    titulo: string | null; 
@@ -31,6 +39,8 @@ export default function Mensagens() {
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [contatos, setContatos] = useState<Profile[]>([]);
+  const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
+  const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
@@ -126,56 +136,38 @@ export default function Mensagens() {
 
   const myRole = roles[0];
 
-  // Carrega contatos permitidos pela hierarquia
+  // Carrega contatos e departamentos
   useEffect(() => {
     if (!user) return;
     (async () => {
+      // Carrega Departamentos
+      const { data: depts } = await supabase.from("departments").select("id, name").eq("active", true);
+      setDepartments(depts || []);
+
+      // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
       const { data: profs } = await supabase
         .from("profiles")
-        .select("id, nome, email, user_roles(role)")
+        .select(`
+          id, nome, email, department_id,
+          user_roles(role),
+          departments(name)
+        `)
         .eq("ativo", true)
         .neq("id", user.id);
+      
       const all: Profile[] = (profs ?? []).map((p: any) => ({
-        id: p.id, nome: p.nome, email: p.email,
+        id: p.id, 
+        nome: p.nome, 
+        email: p.email,
+        department_id: p.department_id,
+        department_name: p.departments?.name,
         role: p.user_roles?.[0]?.role as AppRole | undefined,
       }));
 
-      let filtered: Profile[] = [];
-      const isAdminGestor = roles.some((r) => r === "admin" || r === "gestor");
-      
-      if (isAdminGestor) {
-        filtered = all;
-      } else if (roles.includes("supervisor")) {
-        // gestores/admin + técnicos das equipes que ele supervisiona
-        const { data: eqs } = await supabase.from("equipes").select("id").eq("supervisor_id", user.id);
-        const eqIds = (eqs ?? []).map((e: any) => e.id);
-        let tecIds: string[] = [];
-        if (eqIds.length) {
-          const { data: mems } = await supabase.from("equipe_membros").select("profissional_id").in("equipe_id", eqIds);
-          tecIds = (mems ?? []).map((m: any) => m.profissional_id);
-        }
-        filtered = all.filter((p) =>
-          p.role === "admin" || p.role === "gestor" || p.role === "supervisor" || (p.role === "campo" && tecIds.includes(p.id))
-        );
-      } else if (roles.includes("campo")) {
-        // só supervisores das equipes em que o técnico participa + gestores/admin
-        const { data: mems } = await supabase.from("equipe_membros").select("equipe_id").eq("profissional_id", user.id);
-        const eqIds = (mems ?? []).map((m: any) => m.equipe_id);
-        let supIds: string[] = [];
-        if (eqIds.length) {
-          const { data: eqs } = await supabase.from("equipes").select("supervisor_id").in("id", eqIds);
-          supIds = (eqs ?? []).map((e: any) => e.supervisor_id).filter(Boolean);
-        }
-        filtered = all.filter((p) => supIds.includes(p.id) || p.role === "admin" || p.role === "gestor");
-      } else if (roles.includes("financeiro") || roles.includes("auditor")) {
-        filtered = all.filter((p) => p.role === "admin" || p.role === "gestor");
-      } else {
-        filtered = all.filter(p => p.role === "admin" || p.role === "gestor");
-      }
-      
-      setContatos(filtered);
+      // Removendo filtros restritivos para permitir comunicação entre departamentos como solicitado
+      setContatos(all);
     })();
-  }, [user, roles]);
+  }, [user]);
 
   // Carrega conversas
    async function loadConvs() {

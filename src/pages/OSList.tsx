@@ -42,7 +42,7 @@ export default function OSList() {
        let query = supabase.from("ordens_servico")
         .select(`
            *,
-           department:departments(name),
+            department:departments(name, acronym),
           obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
           profissional:profiles!ordens_servico_profissional_id_fkey(nome)
         `);
@@ -225,7 +225,7 @@ export default function OSList() {
                <SelectContent>
                   <SelectItem value="all">Todos os Status</SelectItem>
                   <SelectItem value="Pendente">Pendente / Aceite</SelectItem>
-                  <SelectItem value="Iniciada">Iniciada</SelectItem>
+                   <SelectItem value="Iniciada">Iniciada / Lançada</SelectItem>
                   <SelectItem value="Em deslocamento">Em deslocamento</SelectItem>
                   <SelectItem value="Em execução">Em execução</SelectItem>
                   <SelectItem value="Aguardando validação">Aguardando validação</SelectItem>
@@ -288,7 +288,9 @@ export default function OSList() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-sm line-clamp-1">{r.obra?.nome}</h3>
                     {r.department?.name && (
-                      <Badge variant="secondary" className="text-[9px] h-4 px-1">{r.department.name}</Badge>
+                      <Badge variant="secondary" className="text-[9px] h-4 px-1">
+                        {r.department.acronym ? `${r.department.acronym} - ` : ""}{r.department.name}
+                      </Badge>
                     )}
                   </div>
                  <p className="text-xs text-muted-foreground line-clamp-2 mb-4">

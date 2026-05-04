@@ -1027,37 +1027,45 @@ export default function OSDetalhe() {
              Registrar Chegada ao Local
            </Button>
          )}
-        {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
-          <div className="flex flex-wrap gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-success hover:bg-success/90 text-white">
-                      <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {!evCheck.ok && (
-                  <TooltipContent>
-                    <div className="text-xs max-w-xs">
-                      <strong>Pendências de evidência:</strong>
-                      <ul className="list-disc pl-4 mt-1">
-                        {evCheck.missing.map((m, i) => <li key={i}>{m}</li>)}
-                      </ul>
-                    </div>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
-            <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
-              <History className="h-3.5 w-3.5" /> Solicitar Correção
-            </Button>
-            <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
-              <XCircle className="h-3.5 w-3.5" /> Reprovar
-            </Button>
-          </div>
-        )}
+         {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
+           <div className="flex flex-wrap gap-2">
+             <TooltipProvider>
+               <Tooltip>
+                 <TooltipTrigger asChild>
+                   <span>
+                     <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
+                       <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+                     </Button>
+                   </span>
+                 </TooltipTrigger>
+                 {!evCheck.ok && (
+                   <TooltipContent>
+                     <div className="text-xs max-w-xs">
+                       <strong>Pendências de evidência:</strong>
+                       <ul className="list-disc pl-4 mt-1">
+                         {evCheck.missing.map((m, i) => <li key={i}>{m}</li>)}
+                       </ul>
+                     </div>
+                   </TooltipContent>
+                 )}
+               </Tooltip>
+             </TooltipProvider>
+             <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+               <History className="h-3.5 w-3.5" /> Solicitar Correção
+             </Button>
+             <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+               <XCircle className="h-3.5 w-3.5" /> Reprovar
+             </Button>
+             <Button size="sm" variant="secondary" className="gap-1.5" onClick={() => {
+               if(confirm("Enviar esta OS para o departamento de Medição?")) {
+                 registrarAuditoria(os.status, "OS enviada para medição");
+                 toast.success("OS encaminhada para medição");
+               }
+             }}>
+               <Filter className="h-3.5 w-3.5" /> Enviar para Medição
+             </Button>
+           </div>
+         )}
         <Button variant="ghost" onClick={()=>nav(-1)}>Voltar</Button>
       </div>
 

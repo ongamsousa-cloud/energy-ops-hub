@@ -43,18 +43,21 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const [busy, setBusy] = useState(false);
   const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    obraId: initialObraId || "",
-    departmentId: "",
-    prioridade: "media",
-    data_agendada: new Date().toISOString().split('T')[0],
-    hora_agendada: "08:00",
-    gestorId: "",
-    equipeId: "",
-    observacoes: "",
-    itens: [] as any[],
-    allAtvSelected: false
-  });
+   const [step, setStep] = useState(1);
+   const [formData, setFormData] = useState({
+     obraId: initialObraId || "",
+     departmentId: "",
+     prioridade: "media",
+     data_agendada: new Date().toISOString().split('T')[0],
+     hora_agendada: "08:00",
+     gestorId: "",
+     equipeId: "",
+     observacoes: "",
+     itens: [] as any[],
+     allAtvSelected: false,
+     client_name: "",
+     address: ""
+   });
 
   const [selectedObra, setSelectedObra] = useState<any>(null);
 
@@ -128,11 +131,16 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
-  const handleObraChange = (obraId: string) => {
-    const obra = obras.find(o => o.id === obraId);
-    setSelectedObra(obra);
-    setFormData(prev => ({ ...prev, obraId }));
-  };
+   const handleObraChange = (obraId: string) => {
+     const obra = obras.find(o => o.id === obraId);
+     setSelectedObra(obra);
+     setFormData(prev => ({ 
+       ...prev, 
+       obraId,
+       client_name: obra?.cliente || "",
+       address: obra?.endereco ? `${obra.endereco}, ${obra.bairro}, ${obra.cidade}/${obra.estado}` : ""
+     }));
+   };
 
    async function handleSave() {
      if (!formData.obraId) return toast.error("Selecione a obra");
@@ -194,286 +202,191 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           <DialogDescription>Preencha os dados abaixo para iniciar uma nova OS.</DialogDescription>
         </DialogHeader>
         
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Profissional Solicitante</Label>
-              <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <Label>Obra <span className="text-destructive">*</span></Label>
-              <Select value={formData.obraId} onValueChange={handleObraChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a obra" />
-                </SelectTrigger>
-                <SelectContent>
-                  {obras.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedObra && (
-                <div className="mt-2 p-2 bg-muted/30 rounded-md text-[11px] text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-1">
-                  <div className="flex gap-1"><strong>Cliente:</strong> {selectedObra.cliente || "Não informado"}</div>
-                  <div className="flex gap-1"><strong>CEP:</strong> {selectedObra.cep || "—"}</div>
-                  <div className="flex gap-1 col-span-2 italic">{selectedObra.endereco}, {selectedObra.bairro}, {selectedObra.cidade}/{selectedObra.estado}</div>
+        <div className="p-6">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Profissional Solicitante</Label>
+                  <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
                 </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Data Programada</Label>
-              <Input type="date" value={formData.data_agendada} onChange={(e) => setFormData({...formData, data_agendada: e.target.value})} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Hora Programada</Label>
-              <Input type="time" value={formData.hora_agendada} onChange={(e) => setFormData({...formData, hora_agendada: e.target.value})} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
-              <Select value={formData.departmentId} onValueChange={(v) => setFormData({...formData, departmentId: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o setor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {departamentos.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Prioridade</Label>
-              <Select value={formData.prioridade} onValueChange={(v) => setFormData({...formData, prioridade: v})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="baixa">Baixa</SelectItem>
-                  <SelectItem value="media">Média</SelectItem>
-                  <SelectItem value="alta">Alta</SelectItem>
-                  <SelectItem value="urgente">Urgente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-             <div className="space-y-2">
-               <Label>Gestor Responsável</Label>
-               <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Selecione o gestor" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {gestores.map((g) => (
-                     <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-
-             <div className="space-y-2">
-               <Label>Serviço Principal <span className="text-destructive">*</span></Label>
-               <Select 
-                 value={selectedServicoId} 
-                 onValueChange={(v) => {
-                   setSelectedServicoId(v);
-                   setSelectedCategoriaId("all");
-                   const servCats = categorias.filter(c => c.servico_id === v);
-                   const hasAtvs = atividades.some(a => servCats.some(c => c.id === a.categoria_id));
-                    setServicoHasNoActivities(!hasAtvs);
-                    if (!hasAtvs && v) {
-                      toast.warning("Atenção: Este serviço não possui atividades cadastradas nas suas categorias.");
-                    }
-                 }}
-               >
-                 <SelectTrigger>
-                   <SelectValue placeholder="Selecione o serviço" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {servicos.map((s) => (
-                     <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-           </div>
- 
-           {(hasRole(['admin', 'gestor', 'supervisor'])) && (
-             <div className="space-y-2">
-               <Label>Equipe Executora (Opcional)</Label>
-               <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
-                 <SelectTrigger>
-                   <SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   <SelectItem value="none">A definir pelo Gestor</SelectItem>
-                   {equipes.map((e) => (
-                     <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-             </div>
-           )}
-
-            {servicoHasNoActivities && (
-              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md flex items-start gap-2 text-destructive text-sm">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold">Nenhuma atividade configurada</p>
-                  <p>Este serviço ou suas categorias não possuem itens cadastrados no catálogo técnico. Verifique as configurações do banco de dados.</p>
+                <div className="space-y-2">
+                  <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
+                  <Select value={formData.departmentId} onValueChange={(v) => setFormData({...formData, departmentId: v})}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                    <SelectContent>
+                      {departamentos.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Obra <span className="text-destructive">*</span></Label>
+                  <Select value={formData.obraId} onValueChange={handleObraChange}>
+                    <SelectTrigger><SelectValue placeholder="Selecione a obra" /></SelectTrigger>
+                    <SelectContent>
+                      {obras.map((o) => (
+                        <SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedObra && (
+                    <div className="mt-2 p-3 bg-muted/30 rounded-md text-xs space-y-1">
+                      <div><strong>Cliente:</strong> {selectedObra.cliente || "Não informado"}</div>
+                      <div><strong>Endereço:</strong> {selectedObra.endereco}, {selectedObra.bairro}, {selectedObra.cidade}/{selectedObra.estado}</div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-semibold">Atividades / Serviços <span className="text-destructive">*</span></Label>
-              
-                <Popover open={activityPopoverOpen} onOpenChange={(val) => {
-                  setActivityPopoverOpen(val);
-                  if (val && !atividades.length) {
-                    fetchInitialData();
-                  }
-                }}>
-                 <PopoverTrigger asChild>
-                   <Button variant="outline" size="sm" className="h-8 gap-1">
-                     <Plus className="h-3.5 w-3.5" /> Adicionar Item do Catálogo
-                   </Button>
-                 </PopoverTrigger>
-                 <PopoverContent className="w-[500px] p-0" align="end">
-                   <Command>
-                     <div className="p-2 border-b space-y-2">
-                       <Select value={selectedCategoriaId} onValueChange={setSelectedCategoriaId}>
-                         <SelectTrigger className="h-8 text-xs">
-                           <SelectValue placeholder="Filtrar por Categoria" />
-                         </SelectTrigger>
-                          <SelectContent className="max-h-[300px]">
-                            <SelectItem value="all" className="font-semibold text-primary">Todas as Atividades do Serviço</SelectItem>
-                            <SelectItem value="all_global" className="font-semibold text-amber-600 italic">Catálogo Completo (Geral)</SelectItem>
-                            {categorias
-                              .filter(c => !selectedServicoId || selectedCategoriaId === "all_global" || c.servico_id === selectedServicoId)
-                              .map((c) => (
-                                <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                              ))}
-                          </SelectContent>
-                       </Select>
-                     </div>
-                     <CommandInput placeholder="Buscar por código, descrição ou categoria..." />
-                       <CommandList className="max-h-[350px]">
-                       <CommandEmpty>Nenhuma atividade encontrada.</CommandEmpty>
-                        {categorias
-                          .filter(cat => {
-                            if (selectedCategoriaId === "all_global") return true;
-                            if (selectedCategoriaId === "all") return !selectedServicoId || cat.servico_id === selectedServicoId;
-                            return cat.id === selectedCategoriaId;
-                          })
-                          .sort((a, b) => a.nome.localeCompare(b.nome))
-                          .map(cat => {
-                            const catAtividades = atividades.filter(a => a.categoria_id === cat.id);
-                            if (catAtividades.length === 0) return null;
-                            return (
-                              <CommandGroup key={cat.id} heading={cat.nome}>
-                                {catAtividades.map((a) => (
-                                  <CommandItem
-                                    key={a.id}
-                                    value={`${a.codigo_item} ${a.descricao} ${cat.nome}`}
-                                    onSelect={() => addActivity(a)}
-                                    className="cursor-pointer"
-                                  >
-                                    <div className="flex flex-col w-full">
-                                      <div className="flex justify-between items-start">
-                                        <span className="font-mono text-xs font-bold text-primary">{a.codigo_item}</span>
-                                        <span className="text-[10px] text-muted-foreground uppercase">{a.unidade}</span>
-                                      </div>
-                                      <span className="text-sm line-clamp-2">{a.descricao}</span>
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            );
-                          })}
-                     </CommandList>
-                   </Command>
-                 </PopoverContent>
-               </Popover>
+              <Button className="w-full" onClick={() => {
+                if(!formData.departmentId || !formData.obraId) return toast.error("Preencha os campos obrigatórios");
+                setStep(2);
+              }}>Próximo Passo</Button>
             </div>
+          )}
 
-            <div className="border rounded-md overflow-hidden">
-              {formData.itens.length === 0 ? (
-                <div className="p-8 text-center text-sm text-muted-foreground bg-muted/20">
-                  Nenhuma atividade adicionada. Use o botão acima para adicionar itens da planilha.
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Data Programada</Label>
+                  <Input type="date" value={formData.data_agendada} onChange={(e) => setFormData({...formData, data_agendada: e.target.value})} />
                 </div>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 border-b text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="text-left px-3 py-2 font-medium">Código</th>
-                      <th className="text-left px-3 py-2 font-medium">Descrição</th>
-                      <th className="text-center px-3 py-2 font-medium w-24">Qtd</th>
-                      <th className="text-center px-3 py-2 font-medium w-16"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {formData.itens.map((item) => (
-                      <tr key={item.id} className="hover:bg-accent/5 transition-colors">
-                        <td className="px-3 py-2 font-mono text-xs font-bold text-primary">{item.codigo_item}</td>
-                        <td className="px-3 py-2">
-                          <div className="flex flex-col">
-                            <span className="line-clamp-1 font-medium">{item.descricao}</span>
-                            <span className="text-[10px] text-muted-foreground uppercase">{item.unidade}</span>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2">
-                          <Input 
-                            type="number" 
-                            min="1" 
-                            step="0.01"
-                            value={item.quantidade} 
-                            onChange={(e) => updateItemQty(item.id, parseFloat(e.target.value) || 0)}
-                            className="h-8 text-center px-1"
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-center">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => removeActivity(item.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                <div className="space-y-2">
+                  <Label>Hora Programada</Label>
+                  <Input type="time" value={formData.hora_agendada} onChange={(e) => setFormData({...formData, hora_agendada: e.target.value})} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Prioridade</Label>
+                  <Select value={formData.prioridade} onValueChange={(v) => setFormData({...formData, prioridade: v})}>
+                    <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="baixa">Baixa</SelectItem>
+                      <SelectItem value="media">Média</SelectItem>
+                      <SelectItem value="alta">Alta</SelectItem>
+                      <SelectItem value="urgente">Urgente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Gestor Responsável</Label>
+                  <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o gestor" /></SelectTrigger>
+                    <SelectContent>
+                      {gestores.map((g) => (
+                        <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Voltar</Button>
+                <Button className="flex-1" onClick={() => setStep(3)}>Próximo Passo</Button>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-2">
-            <Label>Observações Adicionais</Label>
-            <Textarea 
-              placeholder="Detalhes sobre o serviço, local específico, etc."
-              value={formData.observacoes}
-              onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
-              className="min-h-[80px]"
-            />
-          </div>
+          {step === 3 && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Serviço Principal <span className="text-destructive">*</span></Label>
+                <Select value={selectedServicoId} onValueChange={(v) => setSelectedServicoId(v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
+                  <SelectContent>
+                    {servicos.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {(hasRole(['admin', 'gestor', 'supervisor'])) && (
+                <div className="space-y-2">
+                  <Label>Equipe Executora (Opcional)</Label>
+                  <Select value={formData.equipeId} onValueChange={(v) => setFormData({...formData, equipeId: v})}>
+                    <SelectTrigger><SelectValue placeholder="Definir equipe (deixe em branco para o gestor definir)" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">A definir pelo Gestor</SelectItem>
+                      {equipes.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>Voltar</Button>
+                <Button className="flex-1" onClick={() => setStep(4)}>Próximo Passo</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="font-semibold">Itens do Catálogo <span className="text-destructive">*</span></Label>
+                <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8"><Plus className="h-3 w-3 mr-1"/> Adicionar</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[400px] p-0" align="end">
+                    <Command>
+                      <CommandInput placeholder="Buscar atividade..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhuma encontrada.</CommandEmpty>
+                        {atividades.filter(a => !formData.itens.some(i => i.id === a.id)).map(a => (
+                          <CommandItem key={a.id} onSelect={() => addActivity(a)}>
+                            {a.codigo_item} - {a.descricao}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-md p-2">
+                {formData.itens.length === 0 ? <p className="text-center text-muted-foreground py-4">Nenhum item adicionado.</p> :
+                  formData.itens.map(item => (
+                    <div key={item.id} className="flex items-center justify-between p-2 bg-muted/40 rounded border text-xs">
+                      <div className="font-medium truncate flex-1">{item.descricao}</div>
+                      <div className="flex items-center gap-2">
+                        <Input type="number" className="h-7 w-16 text-center" value={item.quantidade} onChange={(e) => updateItemQty(item.id, Number(e.target.value))} />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeActivity(item.id)}><Trash2 className="h-3.5 w-3.5"/></Button>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(3)}>Voltar</Button>
+                <Button className="flex-1" onClick={() => setStep(5)}>Revisar e Criar</Button>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-4">
+              <div className="bg-muted/30 p-4 rounded-lg text-sm space-y-2">
+                <h4 className="font-bold border-b pb-1">Resumo da Ordem de Serviço</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-muted-foreground">Obra:</div> <div className="font-medium">{selectedObra?.nome}</div>
+                  <div className="text-muted-foreground">Data/Hora:</div> <div className="font-medium">{formData.data_agendada} {formData.hora_agendada}</div>
+                  <div className="text-muted-foreground">Departamento:</div> <div className="font-medium">{departamentos.find(d => d.id === formData.departmentId)?.name}</div>
+                  <div className="text-muted-foreground">Prioridade:</div> <div className="font-medium uppercase">{formData.prioridade}</div>
+                  <div className="text-muted-foreground">Total Itens:</div> <div className="font-medium">{formData.itens.length}</div>
+                </div>
+              </div>
+              <Textarea placeholder="Observações adicionais..." value={formData.observacoes} onChange={e => setFormData({...formData, observacoes: e.target.value})} />
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => setStep(4)}>Voltar</Button>
+                <Button className="flex-1" disabled={busy} onClick={handleSave}>
+                  {busy ? "Processando..." : "Finalizar e Criar OS"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-
-        <DialogFooter className="p-6 border-t bg-muted/10">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={busy}>
-            {busy ? "Salvando..." : "Criar Ordem de Serviço"}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

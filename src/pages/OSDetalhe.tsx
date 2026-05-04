@@ -80,9 +80,10 @@ export default function OSDetalhe() {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
          .select(`
            *, 
-           obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
+           obra:obras(numero, nome, endereco, cidade, estado, bairro, cep, cliente), 
            profissional:profiles!ordens_servico_profissional_id_fkey(nome),
-           servico:servicos(nome)
+           servico:servicos(nome),
+           department:departments(name)
          `)
          .eq("id", id).maybeSingle();
 

@@ -33,7 +33,8 @@ export default function OSDetalhe() {
   const [evid, setEvid] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
-   const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [reviewDialog, setReviewDialog] = useState<{ open: boolean, type: 'correcao' | 'reprovar', comment: string }>({ open: false, type: 'correcao', comment: '' });
     const [busy, setBusy] = useState(false);
     const [stockLevels, setStockLevels] = useState<any[]>([]);
     const [cats, setCats] = useState<any[]>([]);
@@ -355,31 +356,30 @@ export default function OSDetalhe() {
      }
    }
 
-  const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
-    open: false, type: null, comment: "" 
-  });
-
-  function openReview(type: "reprovar" | "correcao") {
-    setRevModal({ open: true, type, comment: "" });
-  }
-
   async function handleReview() {
-    if (!revModal.comment && revModal.type === "reprovar") return toast.error("Motivo é obrigatório");
-    const status = revModal.type === "reprovar" ? "reprovada" : "correcao_solicitada";
+    if (!reviewDialog.comment && reviewDialog.type === "reprovar") return toast.error("Motivo é obrigatório");
+    const status = reviewDialog.type === "reprovar" ? "reprovada" : "correcao_solicitada";
     const update: any = { status };
-    if (revModal.type === "reprovar") {
-      update.motivo_reprovacao = revModal.comment;
+    if (reviewDialog.type === "reprovar") {
+      update.motivo_reprovacao = reviewDialog.comment;
       update.aprovado_por = user!.id;
       update.aprovado_em = new Date().toISOString();
     } else {
-      update.observacao_supervisor = revModal.comment;
+      update.observacao_supervisor = reviewDialog.comment;
     }
-    const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
-    if (error) return toast.error(error.message);
-    await registrarAuditoria(status, revModal.comment);
-    toast.success(revModal.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
-    setRevModal({ open: false, type: null, comment: "" });
-    load();
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
+      if (error) throw error;
+      await registrarAuditoria(status, reviewDialog.comment);
+      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+      setReviewDialog(prev => ({ ...prev, open: false }));
+      load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
    async function salvarAtribuicao(equipeId: string | null, profId: string | null) {
@@ -1123,10 +1123,10 @@ export default function OSDetalhe() {
                  )}
                </Tooltip>
              </TooltipProvider>
-             <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5">
                <History className="h-3.5 w-3.5" /> Solicitar Correção
              </Button>
-             <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5">
                <XCircle className="h-3.5 w-3.5" /> Reprovar
              </Button>
              <Button size="sm" variant="secondary" className="gap-1.5" onClick={() => {

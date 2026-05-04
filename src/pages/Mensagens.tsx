@@ -478,10 +478,28 @@ export default function Mensagens() {
 
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 
+  const ROLE_TO_DEPT: Record<string, string> = {
+    admin: 'Administração',
+    gestor: 'Operação',
+    supervisor: 'Operação',
+    campo: 'Operação',
+    financeiro: 'Financeiro',
+    auditor: 'Auditoria',
+    estoque: 'Almoxarifado / Estoque',
+  };
+
   const filteredContatos = useMemo(() => {
     let result = contatos;
     if (selectedDeptId) {
-      result = result.filter(c => c.department_id === selectedDeptId);
+      const dept = departments.find(d => d.id === selectedDeptId);
+      const deptName = dept?.name;
+      result = result.filter(c => {
+        if (c.department_id === selectedDeptId) return true;
+        if (!deptName) return false;
+        // fallback: role-based mapping when department_id not set
+        const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
+        return fallback === deptName || c.department_name === deptName;
+      });
     }
     if (searchTerm) {
       const low = searchTerm.toLowerCase();
@@ -498,7 +516,8 @@ export default function Mensagens() {
   const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
     filteredContatos.forEach(c => {
-      const r = c.department_name || 'Geral';
+      const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
+      const r = c.department_name || fallback || 'Sem departamento';
       if (!groups[r]) groups[r] = [];
       groups[r].push(c);
     });

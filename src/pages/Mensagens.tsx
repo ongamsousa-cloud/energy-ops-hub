@@ -59,13 +59,16 @@ export default function Mensagens() {
     if (active) setMobileView('thread');
   }, [active]);
 
-   const recorderControls = useAudioRecorder(
-     {
-       noiseSuppression: true,
-       echoCancellation: true,
-     },
-     (err) => console.error("Erro no gravador:", err)
-   );
+  const recorderControls = useAudioRecorder(
+    {
+      noiseSuppression: true,
+      echoCancellation: true,
+    },
+    (err) => {
+      console.error("Erro no gravador:", err);
+      toast.error("Erro no microfone: " + err.message);
+    }
+  );
  
    const isRecording = recorderControls.isRecording;
  
@@ -129,11 +132,11 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-      const { data: profs, error: profsError } = await supabase
+      const { data: profs, error: profsError } = await (supabase as any)
         .from("profiles")
         .select(`
           id, nome, email, department_id,
-          user_roles(role),
+          user_roles!inner(role),
           departments(name)
         `)
         .eq("ativo", true)
@@ -334,14 +337,14 @@ export default function Mensagens() {
         if (audioBlob && !audioUrl) {
           const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
           const path = `chat/broadcast/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
           if (upErr) { 
             console.error("Erro no upload do broadcast:", upErr);
             toast.error("Erro no upload do áudio: " + upErr.message); 
             setIsUploading(false);
             return; 
           }
-          audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+          audioUrl = supabase.storage.from("audio-messages").getPublicUrl(path).data.publicUrl;
         }
       } catch (e: any) {
         console.error("Exceção no upload:", e);
@@ -422,9 +425,9 @@ export default function Mensagens() {
        try {
          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
          const path = `chat/${active}/${file.name}`;
-         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
-         if (upErr) throw upErr;
-         const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+          if (upErr) throw upErr;
+          const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
          finalAnexo = { url: data.publicUrl, tipo: "audio" };
        } catch (err: any) {
          toast.error("Erro ao enviar áudio: " + err.message);
@@ -456,9 +459,9 @@ export default function Mensagens() {
     const f = e.target.files?.[0]; if (!f || !active) return;
     const tipo = f.type.startsWith("video/") ? "video" : "image";
     const path = `chat/${active}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
+    const { error } = await supabase.storage.from("audio-messages").upload(path, f, { contentType: f.type });
     if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+    const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo });
     e.target.value = "";
   }

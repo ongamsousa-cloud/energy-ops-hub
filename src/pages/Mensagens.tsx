@@ -63,6 +63,48 @@ export default function Mensagens() {
    const [searchConvTerm, setSearchConvTerm] = useState("");
    const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
    const [filterCode, setFilterCode] = useState("");
+
+  const exportCSV = () => {
+    if (!activeConv || msgs.length === 0) return;
+    const data = msgs.map(m => ({
+      Data: new Date(m.created_at).toLocaleString('pt-BR'),
+      Remetente: m.sender?.nome || (m.sender_id === user?.id ? 'Você' : 'Sistema'),
+      Conteudo: m.conteudo || (m.anexo_url ? '[Anexo]' : ''),
+      Anexo: m.anexo_url || ''
+    }));
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `conversa-${activeConv.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV exportado com sucesso!");
+  };
+
+  const exportPDF = () => {
+    if (!activeConv || msgs.length === 0) return;
+    const doc = new jsPDF();
+    doc.text(`Conversa: ${activeConv.titulo || activeConv.id}`, 10, 10);
+    doc.text(`Exportado em: ${new Date().toLocaleString('pt-BR')}`, 10, 16);
+    
+    const tableData = msgs.map(m => [
+      new Date(m.created_at).toLocaleString('pt-BR'),
+      m.sender?.nome || (m.sender_id === user?.id ? 'Você' : 'Sistema'),
+      m.conteudo || (m.anexo_url ? '[Anexo]' : '')
+    ]);
+
+    (doc as any).autoTable({
+      head: [['Data/Hora', 'Remetente', 'Mensagem']],
+      body: tableData,
+      startY: 25
+    });
+
+    doc.save(`conversa-${activeConv.id}.pdf`);
+    toast.success("PDF exportado com sucesso!");
+  };
    const [filterCargo, setFilterCargo] = useState("");
    const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);

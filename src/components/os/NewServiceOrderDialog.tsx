@@ -51,10 +51,13 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     hora_agendada: "08:00",
     gestorId: "",
     equipeId: "",
+    departmentId: "",
     observacoes: "",
     itens: [] as any[],
     allAtvSelected: false
   });
+
+  const [selectedObra, setSelectedObra] = useState<any>(null);
 
   useEffect(() => {
     if (open) {
@@ -126,6 +129,12 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
+  const handleObraChange = (obraId: string) => {
+    const obra = obras.find(o => o.id === obraId);
+    setSelectedObra(obra);
+    setFormData(prev => ({ ...prev, obraId }));
+  };
+
    async function handleSave() {
      if (!formData.obraId) return toast.error("Selecione a obra");
      if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
@@ -193,9 +202,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
               <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label>Obra <span className="text-destructive">*</span></Label>
-              <Select value={formData.obraId} onValueChange={(v) => setFormData({...formData, obraId: v})}>
+              <Select value={formData.obraId} onValueChange={handleObraChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a obra" />
                 </SelectTrigger>
@@ -205,6 +214,13 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   ))}
                 </SelectContent>
               </Select>
+              {selectedObra && (
+                <div className="mt-2 p-2 bg-muted/30 rounded-md text-[11px] text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-1">
+                  <div className="flex gap-1"><strong>Cliente:</strong> {selectedObra.cliente || "Não informado"}</div>
+                  <div className="flex gap-1"><strong>CEP:</strong> {selectedObra.cep || "—"}</div>
+                  <div className="flex gap-1 col-span-2 italic">{selectedObra.endereco}, {selectedObra.bairro}, {selectedObra.cidade}/{selectedObra.estado}</div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

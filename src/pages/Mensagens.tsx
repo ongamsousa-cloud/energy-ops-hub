@@ -1577,7 +1577,7 @@ export default function Mensagens() {
                             {mine && (
                               <span className="flex items-center">
                                 {readStatuses[m.id]?.length > 0 ? (
-                                  <CheckCheck className="h-3 w-3 text-blue-400" title={`Lida em: ${new Date(readStatuses[m.id][0].read_at).toLocaleString('pt-BR')}`} />
+                                  <CheckCheck className="h-3 w-3 text-blue-400" />
                                 ) : (
                                   <Check className="h-3 w-3" />
                                 )}

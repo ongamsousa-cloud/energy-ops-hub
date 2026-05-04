@@ -75,7 +75,7 @@ export default function OSDetalhe() {
   const isOwner = os && user && os.profissional_id === user.id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
    const isGestor = hasRole(["admin", "gestor"]);
-  const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
+   const canEdit = (isOwner || isGestor) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente"].includes(os?.status);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -1016,7 +1016,33 @@ export default function OSDetalhe() {
            </Button>
          )}
          
-         {os.status === "iniciada" && isOwner && (
+          {(os.status === "iniciada" || os.operational_status === "pendente") && isOwner && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
+              await supabase.from("ordens_servico").update({ 
+                operational_status: "aceito",
+                status: "em_andamento"
+              }).eq("id", id);
+              await registrarAuditoria("em_andamento", "Profissional aceitou a Ordem de Serviço");
+              toast.success("Ordem de Serviço Aceita");
+              load();
+            }}>
+              <CheckCircle2 className="mr-2 h-5 w-5" />
+              Dar o Aceite na OS
+            </Button>
+          )}
+
+          {os.operational_status === "aceito" && isOwner && (
+         {isGestor && (
+           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+             const newValue = !os.arquivada;
+             await supabase.from("ordens_servico").update({ arquivada: newValue }).eq("id", id);
+             toast.success(newValue ? "OS Arquivada" : "OS Reativada");
+             load();
+           }}>
+             {os.arquivada ? <RefreshCw className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+             {os.arquivada ? "Reativar OS" : "Arquivar OS"}
+           </Button>
+         )}
            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
              const geo = await getGeo();
              await supabase.from("ordens_servico").update({ 

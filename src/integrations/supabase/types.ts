@@ -3734,6 +3734,12 @@ export type Database = {
         Args: { _department_id: string }
         Returns: string
       }
+      get_users_without_roles: {
+        Args: never
+        Returns: {
+          id: string
+        }[]
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]

@@ -137,13 +137,13 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-       const { data: profs, error: profsError } = await supabase
-         .from("profiles")
-         .select(`
-           id, nome, email, department_id, cargo,
-           user_roles(role),
-           departments(name)
-         `)
+        const { data: profs, error: profsError } = await supabase
+          .from("profiles")
+          .select(`
+            id, nome, email, department_id, cargo, documento,
+            user_roles(role),
+            departments(name)
+          `)
          .eq("ativo", true)
          .neq("id", user.id);
 
@@ -159,6 +159,7 @@ export default function Mensagens() {
          department_id: p.department_id,
          department_name: p.departments?.name,
          cargo: p.cargo,
+         documento: p.documento,
          role: p.user_roles?.[0]?.role as AppRole | undefined,
        }));
 

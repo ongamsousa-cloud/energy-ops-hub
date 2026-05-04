@@ -145,7 +145,7 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-      const { data: profs } = await supabase
+      const { data: profs, error: profsError } = await supabase
         .from("profiles")
         .select(`
           id, nome, email, department_id,
@@ -154,6 +154,11 @@ export default function Mensagens() {
         `)
         .eq("ativo", true)
         .neq("id", user.id);
+
+      if (profsError) {
+        console.error("Erro ao carregar perfis:", profsError);
+        toast.error("Erro ao carregar lista de contatos.");
+      }
       
       const all: Profile[] = (profs ?? []).map((p: any) => ({
         id: p.id, 

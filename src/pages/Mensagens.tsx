@@ -59,13 +59,16 @@ export default function Mensagens() {
     if (active) setMobileView('thread');
   }, [active]);
 
-   const recorderControls = useAudioRecorder(
-     {
-       noiseSuppression: true,
-       echoCancellation: true,
-     },
-     (err) => console.error("Erro no gravador:", err)
-   );
+  const recorderControls = useAudioRecorder(
+    {
+      noiseSuppression: true,
+      echoCancellation: true,
+    },
+    (err) => {
+      console.error("Erro no gravador:", err);
+      toast.error("Erro no microfone: " + err.message);
+    }
+  );
  
    const isRecording = recorderControls.isRecording;
  
@@ -334,14 +337,14 @@ export default function Mensagens() {
         if (audioBlob && !audioUrl) {
           const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
           const path = `chat/broadcast/${file.name}`;
-          const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
+          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
           if (upErr) { 
             console.error("Erro no upload do broadcast:", upErr);
             toast.error("Erro no upload do áudio: " + upErr.message); 
             setIsUploading(false);
             return; 
           }
-          audioUrl = supabase.storage.from("os-evidences").getPublicUrl(path).data.publicUrl;
+          audioUrl = supabase.storage.from("audio-messages").getPublicUrl(path).data.publicUrl;
         }
       } catch (e: any) {
         console.error("Exceção no upload:", e);
@@ -422,9 +425,9 @@ export default function Mensagens() {
        try {
          const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
          const path = `chat/${active}/${file.name}`;
-         const { error: upErr } = await supabase.storage.from("os-evidences").upload(path, file);
-         if (upErr) throw upErr;
-         const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+          const { error: upErr } = await supabase.storage.from("audio-messages").upload(path, file);
+          if (upErr) throw upErr;
+          const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
          finalAnexo = { url: data.publicUrl, tipo: "audio" };
        } catch (err: any) {
          toast.error("Erro ao enviar áudio: " + err.message);
@@ -456,9 +459,9 @@ export default function Mensagens() {
     const f = e.target.files?.[0]; if (!f || !active) return;
     const tipo = f.type.startsWith("video/") ? "video" : "image";
     const path = `chat/${active}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("os-evidences").upload(path, f, { contentType: f.type });
+    const { error } = await supabase.storage.from("audio-messages").upload(path, f, { contentType: f.type });
     if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
+    const { data } = supabase.storage.from("audio-messages").getPublicUrl(path);
     await enviar({ url: data.publicUrl, tipo });
     e.target.value = "";
   }
@@ -515,12 +518,14 @@ export default function Mensagens() {
      <div className="pb-8 relative">
        {/* Headless Audio Recorder logic - always rendered but invisible */}
        <div className="fixed -top-96 -left-96 opacity-0 pointer-events-none">
-         <AudioRecorder 
-           onRecordingComplete={addAudioElement} 
-           recorderControls={recorderControls}
-           downloadOnSavePress={false}
-           downloadFileExtension="webm"
-         />
+          {typeof window !== 'undefined' && (
+            <AudioRecorder 
+              onRecordingComplete={addAudioElement} 
+              recorderControls={recorderControls}
+              downloadOnSavePress={false}
+              downloadFileExtension="webm"
+            />
+          )}
        </div>
  
       <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
@@ -531,8 +536,13 @@ export default function Mensagens() {
           mobileView === 'thread' ? "hidden md:flex" : "flex"
         )}>
           <div className="flex items-center justify-between border-b border-border p-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
-            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) setSearchTerm(""); }}>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Conversas</span>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => loadConvs()}>
+                <Search className="h-3 w-3" />
+              </Button>
+            </div>
+            <Dialog open={openNew} onOpenChange={(val) => { setOpenNew(val); if (!val) { setSearchTerm(""); setSelectedContacts([]); } }}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="ghost"><Plus className="h-3.5 w-3.5 mr-1" />Nova</Button>
               </DialogTrigger>
@@ -642,30 +652,36 @@ export default function Mensagens() {
                                 {list.map((p) => {
                                   const checked = isContactSelected(p.id);
                                   return (
-                                    <button
+                                    <div
                                       key={p.id}
-                                      onClick={() => toggleContact(p)}
                                       className={cn(
-                                        "flex items-center gap-3 w-full text-left p-3 rounded-xl transition-all border",
+                                        "flex items-center gap-3 w-full text-left p-2 rounded-xl transition-all border group",
                                         checked 
                                           ? "bg-primary/5 border-primary/20 shadow-sm" 
-                                          : "hover:bg-muted/50 border-transparent"
+                                          : "hover:bg-muted/30 border-transparent"
                                       )}
                                     >
                                       <Checkbox 
                                         checked={checked} 
                                         onCheckedChange={() => toggleContact(p)} 
-                                        onClick={(e) => e.stopPropagation()} 
-                                        className="h-5 w-5"
+                                        className="h-5 w-5 ml-1"
                                       />
-                                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0">
-                                        {p.nome.charAt(0)}
+                                      <div 
+                                        className="flex-1 flex items-center gap-3 cursor-pointer"
+                                        onClick={() => startConversa(p)}
+                                      >
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                          {p.nome.charAt(0)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-bold truncate">{p.nome}</p>
+                                          <p className="text-[11px] text-muted-foreground truncate">{p.department_name || "Sem departamento"}</p>
+                                        </div>
+                                        <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
+                                          Conversar
+                                        </Button>
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold truncate">{p.nome}</p>
-                                        <p className="text-[11px] text-muted-foreground truncate">{p.email}</p>
-                                      </div>
-                                    </button>
+                                    </div>
                                   );
                                 })}
                               </div>
@@ -730,7 +746,6 @@ export default function Mensagens() {
                           className="pr-12 rounded-2xl h-14 bg-card border-muted-foreground/20 focus-visible:ring-primary shadow-sm text-sm"
                           value={text}
                           onChange={(e) => setText(e.target.value)}
-                           disabled={isRecording}
                           onKeyDown={(e) => { 
                             if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob) && selectedContacts.length > 0) { 
                               e.preventDefault(); 
@@ -947,6 +962,7 @@ export default function Mensagens() {
 
                       <div className="relative flex-1">
                         <Input 
+                          autoFocus
                           value={text} 
                           onChange={(e) => setText(e.target.value)}
                           onKeyDown={(e) => { 

@@ -222,12 +222,6 @@ export default function Atividades() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader title="Atividades" description="Gerencie o catálogo técnico de serviços e UMDs." />
         <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/app/atividades/importar">
-              <Download className="mr-2 h-4 w-4" />
-              Importar Excel
-            </Link>
-          </Button>
           <Button onClick={handleAdd} size="sm">
             <Plus className="mr-2 h-4 w-4" />
             Nova Atividade

@@ -1062,33 +1062,40 @@ export default function Mensagens() {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-3 flex-1">
-                  {activeConv?.outros[0]?.foto_url ? (
-                    <img 
-                      src={activeConv.outros[0].foto_url} 
-                      alt={activeConv.outros[0].nome} 
-                      className="h-8 w-8 rounded-full object-cover border border-border"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                      {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
-                    </div>
-                  )}
-                  <div className="flex flex-col min-w-0">
-                    <div className="text-sm font-bold truncate">
-                      {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
-                      <span>{activeConv?.outros[0]?.role ? ROLE_LABEL[activeConv.outros[0].role as AppRole] : "Profissional"}</span>
-                      {activeConv?.outros[0]?.department_name && (
-                        <>
-                          <span>•</span>
-                          <span>{activeConv.outros[0].department_name}</span>
-                        </>
+                {(() => {
+                  const isDept = activeConv?.tipo === 'department' || !!activeConv?.department_id;
+                  const headerName = isDept
+                    ? (activeConv?.department_name || activeConv?.titulo || 'Departamento')
+                    : (activeConv?.outros.map((o) => o.nome).join(", ") || 'Conversa');
+                  const headerSub = isDept
+                    ? `Conversa do departamento • ${activeConv?.outros.length ?? 0} participantes`
+                    : (activeConv?.outros[0]?.role
+                        ? ROLE_LABEL[activeConv.outros[0].role as AppRole]
+                        : 'Profissional');
+                  return (
+                    <div className="flex items-center gap-3 flex-1">
+                      {!isDept && activeConv?.outros[0]?.foto_url ? (
+                        <img src={activeConv.outros[0].foto_url} alt={headerName} className="h-8 w-8 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                          {isDept ? <Building2 className="h-4 w-4" /> : (activeConv?.outros[0]?.nome?.charAt(0) || 'C')}
+                        </div>
                       )}
+                      <div className="flex flex-col min-w-0">
+                        <div className="text-sm font-bold truncate">{headerName}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter flex gap-2">
+                          <span>{headerSub}</span>
+                          {!isDept && activeConv?.outros[0]?.department_name && (
+                            <>
+                              <span>•</span>
+                              <span>{activeConv.outros[0].department_name}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
               <div className="flex-1 overflow-auto p-4 space-y-2">
                 {msgs.map((m) => {

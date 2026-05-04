@@ -199,6 +199,40 @@ export default function Mensagens() {
     }
   }
 
+  async function saveProfile(data: Partial<Profile>) {
+    try {
+      if (editingProfile) {
+        const { error } = await supabase.from("profiles").update({
+          nome: data.nome,
+          email: data.email,
+          department_id: data.department_id,
+          cargo: data.cargo,
+          documento: data.documento
+        }).eq("id", editingProfile.id);
+        if (error) throw error;
+        toast.success("Perfil atualizado.");
+      } else {
+        // Para novo perfil, geralmente é via convite ou admin, mas aqui faremos um insert básico
+        const { error } = await supabase.from("profiles").insert({
+          nome: data.nome,
+          email: data.email,
+          department_id: data.department_id,
+          cargo: data.cargo,
+          documento: data.documento,
+          ativo: true
+        });
+        if (error) throw error;
+        toast.success("Perfil criado.");
+      }
+      setOpenProfileCrud(false);
+      setEditingProfile(null);
+      // Recarregar contatos (reaproveitando lógica existente ou forçando refresh)
+      window.location.reload(); // Simplificado para garantir todos os joins
+    } catch (err: any) {
+      toast.error("Erro ao salvar perfil: " + err.message);
+    }
+  }
+
   // Carrega contatos e departamentos (consultas separadas para evitar relacionamento inválido)
   useEffect(() => {
     if (!user) return;
@@ -706,7 +740,28 @@ export default function Mensagens() {
           )}
        </div>
  
-      <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
+       <div className="flex flex-col gap-2">
+         <PageHeader title="Mensagens" description="Comunicação interna respeitando a hierarquia da equipe." />
+         
+         {archivedCount > 0 && myRole === 'admin' && (
+           <div className="mx-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-4">
+             <div className="flex items-center gap-3">
+               <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                 <Archive className="h-5 w-5" />
+               </div>
+               <div>
+                 <p className="text-sm font-bold text-amber-900">Mensagens Arquivadas</p>
+                 <p className="text-xs text-amber-700">Existem {archivedCount} mensagens com mais de 5 anos arquivadas. Deseja excluí-las permanentemente?</p>
+               </div>
+             </div>
+             <div className="flex gap-2">
+               <Button variant="outline" size="sm" className="bg-white border-amber-200 text-amber-700 hover:bg-amber-100" onClick={handleArchiveOldMessages}>
+                 Arquivar/Limpar
+               </Button>
+             </div>
+           </div>
+         )}
+       </div>
       <div className="grid h-[calc(100vh-12rem)] grid-cols-1 gap-3 md:grid-cols-[300px_1fr]">
         {/* Lista */}
         <div className={cn(

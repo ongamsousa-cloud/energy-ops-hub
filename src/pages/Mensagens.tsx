@@ -691,16 +691,38 @@ export default function Mensagens() {
     }
   }
 
-  async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f || !active) return;
-    const tipo = f.type.startsWith("video/") ? "video" : "image";
-    const path = `${active}/${user!.id}/${crypto.randomUUID()}-${f.name}`;
-    const { error } = await supabase.storage.from("message-attachments").upload(path, f, { contentType: f.type });
-    if (error) { toast.error(error.message); return; }
-    const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
-    await enviar({ url: data.publicUrl, tipo });
-    e.target.value = "";
-  }
+   async function uploadAnexo(e: React.ChangeEvent<HTMLInputElement>) {
+     const f = e.target.files?.[0]; 
+     if (!f || !active) return;
+     
+     const isImage = f.type.startsWith("image/");
+     const isVideo = f.type.startsWith("video/");
+     const isAudio = f.type.startsWith("audio/");
+     const tipo = isVideo ? "video" : isImage ? "image" : isAudio ? "audio" : "file";
+     
+     const toastId = toast.loading(`Enviando ${tipo === 'file' ? 'arquivo' : tipo}...`);
+     setIsUploading(true);
+ 
+     try {
+       const path = `${active}/${user!.id}/${crypto.randomUUID()}-${f.name}`;
+       const { error } = await supabase.storage.from("message-attachments").upload(path, f, { 
+         contentType: f.type,
+         upsert: false
+       });
+       
+       if (error) throw error;
+       
+       const { data } = supabase.storage.from("message-attachments").getPublicUrl(path);
+       await enviar({ url: data.publicUrl, tipo });
+       toast.success("Arquivo enviado com sucesso!", { id: toastId });
+     } catch (err: any) {
+       console.error("Erro no upload:", err);
+       toast.error("Erro ao enviar arquivo: " + (err.message || "Tente novamente"), { id: toastId });
+     } finally {
+       setIsUploading(false);
+       e.target.value = "";
+     }
+   }
 
   const activeConv = useMemo(() => convs.find((c) => c.id === active), [convs, active]);
 

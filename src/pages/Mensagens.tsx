@@ -995,7 +995,14 @@ export default function Mensagens() {
                    <MessageSquare className="mx-auto mb-2 h-6 w-6 opacity-40" />
                    Nenhuma conversa ativa. Clique em "Nova" para começar.
                  </div>
-               ) : convs.map((c) => (
+                ) : convs.map((c) => {
+                  const isDept = c.tipo === 'department' || !!c.department_id;
+                  const displayName = isDept
+                    ? (c.department_name || c.titulo || 'Departamento')
+                    : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
+                  const avatarUrl = !isDept ? c.outros[0]?.foto_url : undefined;
+                  const initial = isDept ? '#' : (c.outros[0]?.nome?.charAt(0) || 'C');
+                  return (
                  <button 
                    key={c.id} 
                    onClick={() => setActive(c.id)}
@@ -1004,21 +1011,17 @@ export default function Mensagens() {
                      active === c.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent border-l-4 border-transparent"
                    )}
                  >
-                    {c.outros[0]?.foto_url ? (
-                      <img 
-                        src={c.outros[0].foto_url} 
-                        alt={c.outros[0].nome} 
-                        className="h-10 w-10 rounded-full object-cover shrink-0 border border-border"
-                      />
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={displayName} className="h-10 w-10 rounded-full object-cover shrink-0 border border-border" />
                     ) : (
                       <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                        {c.outros[0]?.nome?.charAt(0) || "C"}
+                        {isDept ? <Building2 className="h-4 w-4" /> : initial}
                       </div>
                     )}
                    <div className="flex-1 min-w-0">
                      <div className="flex items-center justify-between mb-0.5">
                        <div className={cn("text-sm font-bold truncate", active === c.id ? "text-primary" : "text-foreground")}>
-                         {c.outros.map((o) => o.nome).join(", ") || c.titulo || "Conversa"}
+                         {displayName}
                        </div>
                        <span className="text-[9px] text-muted-foreground whitespace-nowrap ml-1">
                          {new Date(c.created_at).toLocaleDateString("pt-BR", { day: '2-digit', month: '2-digit' })}
@@ -1029,7 +1032,8 @@ export default function Mensagens() {
                      </div>
                    </div>
                  </button>
-               ))}
+                  );
+                })}
              </div>
            </ScrollArea>
         </div>

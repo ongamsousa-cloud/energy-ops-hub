@@ -1385,6 +1385,8 @@ export default function Mensagens() {
                     : (c.outros.map((o) => o.nome).join(", ") || c.titulo || 'Conversa');
                   const avatarUrl = !isDept ? c.outros[0]?.foto_url : undefined;
                   const initial = isDept ? '#' : (c.outros[0]?.nome?.charAt(0) || 'C');
+                  const unreadCount = msgs.filter(m => m.conversation_id === c.id && m.sender_id !== user?.id && (!c.last_read_at || m.created_at > c.last_read_at)).length;
+
                   return (
                  <button 
                    key={c.id} 

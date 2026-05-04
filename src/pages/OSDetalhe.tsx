@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
- import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter } from "lucide-react";
+  import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter, Archive } from "lucide-react";
  import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -75,7 +75,7 @@ export default function OSDetalhe() {
   const isOwner = os && user && os.profissional_id === user.id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
    const isGestor = hasRole(["admin", "gestor"]);
-  const canEdit = isOwner && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho"].includes(os?.status);
+   const canEdit = (isOwner || isGestor) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente"].includes(os?.status);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -1016,20 +1016,47 @@ export default function OSDetalhe() {
            </Button>
          )}
          
-         {os.status === "iniciada" && isOwner && (
-           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
-             const geo = await getGeo();
-             await supabase.from("ordens_servico").update({ 
-               operational_status: "chegou_ao_local",
-               status: "em_andamento",
-               inicio_atendimento: new Date().toISOString()
-             }).eq("id", id);
-             toast.success("Atendimento iniciado");
-             load();
-           }}>
-             Registrar Chegada ao Local
-           </Button>
-         )}
+          {(os.status === "iniciada" || os.operational_status === "pendente") && isOwner && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
+              await supabase.from("ordens_servico").update({ 
+                operational_status: "em_deslocamento",
+                status: "em_andamento"
+              }).eq("id", id);
+              await registrarAuditoria("em_andamento", "Profissional aceitou a Ordem de Serviço (Em deslocamento)");
+              toast.success("Ordem de Serviço Aceita");
+              load();
+            }}>
+              <CheckCircle className="mr-2 h-5 w-5" />
+              Dar o Aceite na OS
+            </Button>
+          )}
+
+          {os.operational_status === "em_deslocamento" && isOwner && (
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+              const geo = await getGeo();
+              await supabase.from("ordens_servico").update({ 
+                operational_status: "chegou_ao_local",
+                status: "em_andamento",
+                inicio_atendimento: new Date().toISOString()
+              }).eq("id", id);
+              toast.success("Atendimento iniciado");
+              load();
+            }}>
+              Registrar Chegada ao Local
+            </Button>
+          )}
+
+          {isGestor && (
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+              const newValue = !os.arquivada;
+              await supabase.from("ordens_servico").update({ arquivada: newValue }).eq("id", id);
+              toast.success(newValue ? "OS Arquivada" : "OS Reativada");
+              load();
+            }}>
+              {os.arquivada ? <RefreshCw className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+              {os.arquivada ? "Reativar OS" : "Arquivar OS"}
+            </Button>
+          )}
          {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
            <div className="flex flex-wrap gap-2">
              <TooltipProvider>

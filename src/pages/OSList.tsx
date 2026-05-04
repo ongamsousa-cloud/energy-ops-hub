@@ -5,7 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
- import { Plus, Filter, Search, Calendar } from "lucide-react";
+  import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2 } from "lucide-react";
  import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -17,14 +17,16 @@ export default function OSList() {
   const { user, hasRole } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   const [deps, setDeps] = useState<any[]>([]);
-   const [filters, setFilters] = useState({
-     operational_status: "all",
-     financial_status: "all",
-     audit_status: "all",
-     priority: "all",
-     department: "all",
-     search: ""
-   });
+    const [filters, setFilters] = useState({
+      operational_status: "all",
+      financial_status: "all",
+      audit_status: "all",
+      priority: "all",
+      department: "all",
+      search: "",
+      period: "month",
+      showArchived: false
+    });
 
   useEffect(() => {
     if (!user) return;
@@ -35,13 +37,13 @@ export default function OSList() {
     
     const fetchRows = () => {
       supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
-      let query = supabase.from("ordens_servico")
-       .select(`
-          *,
-          department:departments(name),
-         obra:obras(numero, nome, endereco, cidade, estado), 
-         profissional:profiles!ordens_servico_profissional_id_fkey(nome)
-       `);
+       let query = supabase.from("ordens_servico")
+        .select(`
+           *,
+           department:departments(name),
+          obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
+          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+        `);
 
       if (isTechnician) query = query.eq("profissional_id", user.id);
       else if (isSupervisor) query = query.eq("assigned_supervisor_id", user.id);
@@ -58,19 +60,36 @@ export default function OSList() {
 
     const filteredRows = useMemo(() => {
       return rows.filter(r => {
+        if (!filters.showArchived && r.arquivada) return false;
+        if (filters.showArchived && !r.arquivada) return false;
+
         const matchOp = filters.operational_status === "all" || (r.operational_status || r.status) === filters.operational_status;
         const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
         const matchAudit = filters.audit_status === "all" || r.audit_status === filters.audit_status;
         const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
-       const matchDep = filters.department === "all" || r.department_id === filters.department;
+        const matchDep = filters.department === "all" || r.department_id === filters.department;
         const searchLower = filters.search.toLowerCase();
         const matchSearch = !filters.search || 
-          r.numero?.toLowerCase().includes(searchLower) ||
+          r.numero?.toString().toLowerCase().includes(searchLower) ||
           r.obra?.nome?.toLowerCase().includes(searchLower) ||
           r.cidade?.toLowerCase().includes(searchLower) ||
+          r.endereco?.toLowerCase().includes(searchLower) ||
           r.bairro?.toLowerCase().includes(searchLower);
+
+        let matchPeriod = true;
+        const createdAt = new Date(r.created_at);
+        const now = new Date();
+        if (filters.period === "today") {
+          matchPeriod = createdAt.toDateString() === now.toDateString();
+        } else if (filters.period === "week") {
+          const weekAgo = new Date();
+          weekAgo.setDate(now.getDate() - 7);
+          matchPeriod = createdAt >= weekAgo;
+        } else if (filters.period === "month") {
+          matchPeriod = createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+        }
         
-        return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch;
+        return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch && matchPeriod;
       });
     }, [rows, filters]);
 
@@ -80,60 +99,71 @@ export default function OSList() {
         <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
       } />
 
-       <div className="grid gap-4 md:grid-cols-5 items-end">
-         <div className="space-y-1.5">
-           <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
-           <div className="relative">
-             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-             <Input 
-               placeholder="Número, obra ou local..." 
-               className="pl-9"
-               value={filters.search}
-               onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-             />
+        <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-6 items-end bg-muted/20 p-4 rounded-lg border">
+          <div className="space-y-1.5 lg:col-span-2">
+            <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input 
+                placeholder="Número, obra ou local..." 
+                className="pl-9"
+                value={filters.search}
+                onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Período</label>
+            <Select value={filters.period} onValueChange={(v) => setFilters(f => ({ ...f, period: v }))}>
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">Últimos 7 dias</SelectItem>
+                <SelectItem value="month">Este Mês</SelectItem>
+                <SelectItem value="all">Tudo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+           <div className="space-y-1.5">
+             <label className="text-xs font-medium text-muted-foreground">Status Operacional</label>
+             <Select value={filters.operational_status} onValueChange={(v) => setFilters(f => ({ ...f, operational_status: v }))}>
+               <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="all">Todos os Status</SelectItem>
+                 <SelectItem value="pendente">Pendente / Aceite</SelectItem>
+                 <SelectItem value="em_deslocamento">Em deslocamento</SelectItem>
+                 <SelectItem value="em_execucao">Em execução</SelectItem>
+                 <SelectItem value="aguardando_validacao">Aguardando validação</SelectItem>
+                 <SelectItem value="concluida">Concluída</SelectItem>
+                 <SelectItem value="cancelada">Cancelada</SelectItem>
+               </SelectContent>
+             </Select>
            </div>
-         </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Status Operacional</label>
-            <Select value={filters.operational_status} onValueChange={(v) => setFilters(f => ({ ...f, operational_status: v }))}>
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="em_deslocamento">Em deslocamento</SelectItem>
-                <SelectItem value="em_execucao">Em execução</SelectItem>
-                <SelectItem value="aguardando_validacao">Aguardando validação</SelectItem>
-                <SelectItem value="concluida">Concluída</SelectItem>
-                <SelectItem value="cancelada">Cancelada</SelectItem>
-              </SelectContent>
-            </Select>
+             <label className="text-xs font-medium text-muted-foreground">Departamento</label>
+             <Select value={filters.department} onValueChange={(v) => setFilters(f => ({ ...f, department: v }))}>
+               <SelectTrigger><SelectValue placeholder="Setor" /></SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="all">Todos os Setores</SelectItem>
+                 {deps.map(d => (
+                   <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                 ))}
+               </SelectContent>
+             </Select>
+           </div>
+           <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">Visualização</label>
+            <Button 
+              variant={filters.showArchived ? "secondary" : "outline"} 
+              size="sm" 
+              className="w-full h-10 gap-2"
+              onClick={() => setFilters(f => ({ ...f, showArchived: !f.showArchived }))}
+            >
+              {filters.showArchived ? <EyeOff className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
+              {filters.showArchived ? "Ver Ativas" : "Ver Arquivadas"}
+            </Button>
           </div>
-         <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Departamento</label>
-            <Select value={filters.department} onValueChange={(v) => setFilters(f => ({ ...f, department: v }))}>
-              <SelectTrigger><SelectValue placeholder="Setor" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Setores</SelectItem>
-                {deps.map(d => (
-                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-           <label className="text-xs font-medium text-muted-foreground">Prioridade</label>
-           <Select value={filters.priority} onValueChange={(v) => setFilters(f => ({ ...f, priority: v }))}>
-             <SelectTrigger><SelectValue placeholder="Prioridade" /></SelectTrigger>
-             <SelectContent>
-               <SelectItem value="all">Todas as Prioridades</SelectItem>
-               <SelectItem value="baixa">Baixa</SelectItem>
-               <SelectItem value="media">Média</SelectItem>
-               <SelectItem value="alta">Alta</SelectItem>
-               <SelectItem value="urgente">Urgente</SelectItem>
-             </SelectContent>
-           </Select>
-         </div>
-       </div>
+        </div>
 
        {filteredRows.length === 0 ? (
          <EmptyState title="Nenhuma OS encontrada" description="Tente ajustar os filtros ou pesquisar por outro termo." />

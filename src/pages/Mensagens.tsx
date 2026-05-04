@@ -114,25 +114,9 @@ export default function Mensagens() {
      };
    }, [audioPreviewUrl]);
 
-  async function enviarAudio() {
-    if (!audioBlob || !active) return;
-    const file = new File([audioBlob], `audio-${crypto.randomUUID()}.webm`, { type: 'audio/webm' });
-    const path = `chat/${active}/${file.name}`;
-    
-    const { error } = await supabase.storage
-      .from("os-evidences")
-      .upload(path, file);
-      
-    if (error) {
-      toast.error("Erro ao enviar áudio: " + error.message);
-      return;
-    }
-    
-    const { data } = supabase.storage.from("os-evidences").getPublicUrl(path);
-    await enviar({ url: data.publicUrl, tipo: "audio" });
-    setAudioBlob(null);
-    setAudioPreviewUrl(null);
-  }
+   async function enviarAudio() {
+     await enviar();
+   }
 
   const myRole = roles[0];
 

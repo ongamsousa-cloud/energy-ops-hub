@@ -41,7 +41,10 @@ export default function Mensagens() {
   const [contatos, setContatos] = useState<Profile[]>([]);
   const [departments, setDepartments] = useState<{id: string, name: string}[]>([]);
   const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+   const [searchTerm, setSearchTerm] = useState("");
+   const [filterCode, setFilterCode] = useState("");
+   const [filterCargo, setFilterCargo] = useState("");
+   const [filterFuncao, setFilterFuncao] = useState("");
    const [openNew, setOpenNew] = useState(false);
    const [selectedContacts, setSelectedContacts] = useState<Profile[]>([]);
    const [recordingMode, setRecordingMode] = useState<'broadcast' | 'direct' | null>(null);
@@ -132,29 +135,30 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-      const { data: profs, error: profsError } = await supabase
-        .from("profiles")
-        .select(`
-          id, nome, email, department_id,
-          user_roles(role),
-          departments(name)
-        `)
-        .eq("ativo", true)
-        .neq("id", user.id);
+       const { data: profs, error: profsError } = await supabase
+         .from("profiles")
+         .select(`
+           id, nome, email, department_id, cargo,
+           user_roles(role),
+           departments(name)
+         `)
+         .eq("ativo", true)
+         .neq("id", user.id);
 
       if (profsError) {
         console.error("Erro ao carregar perfis:", profsError);
         toast.error("Erro ao carregar lista de contatos.");
       }
       
-      const all: Profile[] = (profs ?? []).map((p: any) => ({
-        id: p.id, 
-        nome: p.nome, 
-        email: p.email,
-        department_id: p.department_id,
-        department_name: p.departments?.name,
-        role: p.user_roles?.[0]?.role as AppRole | undefined,
-      }));
+       const all: Profile[] = (profs ?? []).map((p: any) => ({
+         id: p.id, 
+         nome: p.nome, 
+         email: p.email,
+         department_id: p.department_id,
+         department_name: p.departments?.name,
+         cargo: p.cargo,
+         role: p.user_roles?.[0]?.role as AppRole | undefined,
+       }));
 
       // Ordena contatos por nome e remove filtros restritivos
       setContatos(all.sort((a, b) => a.nome.localeCompare(b.nome)));
@@ -500,8 +504,21 @@ export default function Mensagens() {
         (c.department_name && c.department_name.toLowerCase().includes(low))
       );
     }
+    
+    if (filterCode) {
+      result = result.filter(c => c.id.toLowerCase().includes(filterCode.toLowerCase()));
+    }
+    
+    if (filterCargo) {
+      result = result.filter(c => (c as any).cargo?.toLowerCase().includes(filterCargo.toLowerCase()));
+    }
+    
+    if (filterFuncao) {
+      result = result.filter(c => c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(filterFuncao.toLowerCase()));
+    }
+
     return result;
-  }, [contatos, searchTerm, selectedDeptId]);
+  }, [contatos, searchTerm, selectedDeptId, filterCode, filterCargo, filterFuncao]);
 
   const contatosPorDept = useMemo(() => {
     const groups: Record<string, Profile[]> = {};
@@ -602,16 +619,42 @@ export default function Mensagens() {
                         </div>
                       )}
 
-                      {/* Busca e Seleção em Massa */}
-                      <div className="p-4 border-b space-y-3">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            placeholder="Pesquisar por nome ou e-mail..."
-                            className="pl-10 h-10 border-muted"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
+                      {/* Busca e Filtros Avançados */}
+                      <div className="p-4 border-b space-y-3 bg-muted/5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Nome ou E-mail..."
+                              className="pl-10 h-9 border-muted"
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                          </div>
+                          <div className="relative">
+                            <Input
+                              placeholder="Código/ID..."
+                              className="h-9 border-muted"
+                              value={filterCode}
+                              onChange={(e) => setFilterCode(e.target.value)}
+                            />
+                          </div>
+                          <div className="relative">
+                            <Input
+                              placeholder="Cargo..."
+                              className="h-9 border-muted"
+                              value={filterCargo}
+                              onChange={(e) => setFilterCargo(e.target.value)}
+                            />
+                          </div>
+                          <div className="relative">
+                            <Input
+                              placeholder="Função..."
+                              className="h-9 border-muted"
+                              value={filterFuncao}
+                              onChange={(e) => setFilterFuncao(e.target.value)}
+                            />
+                          </div>
                         </div>
                         {filteredContatos.length > 0 && (
                           <div className="flex items-center justify-between">

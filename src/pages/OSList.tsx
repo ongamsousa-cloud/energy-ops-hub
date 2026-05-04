@@ -37,11 +37,7 @@ export default function OSList() {
   useEffect(() => {
     if (!user) return;
 
-     // Técnicos (campo) só veem suas próprias OS
-      const isTechnician = hasRole("campo") && !hasRole(["admin", "gestor", "supervisor"]);
-      const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
-    
-    const fetchRows = () => {
+     const fetchRows = async () => {
       supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
        let query = supabase.from("ordens_servico")
         .select(`
@@ -51,9 +47,7 @@ export default function OSList() {
           profissional:profiles!ordens_servico_profissional_id_fkey(nome)
         `);
 
-      if (isTechnician) query = query.eq("profissional_id", user.id);
-      else if (isSupervisor) query = query.eq("assigned_supervisor_id", user.id);
-      query.order("created_at", { ascending: false }).limit(200)
+      query.order("created_at", { ascending: false }).limit(500)
         .then(({ data }) => setRows(data ?? []));
     };
     fetchRows();

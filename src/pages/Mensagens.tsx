@@ -939,37 +939,41 @@ export default function Mensagens() {
                        </Button>
                      </div>
 
-                     <div className="relative flex-1">
-                       <Input 
-                         value={text} 
-                         onChange={(e) => setText(e.target.value)}
-                         onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } }}
-                         placeholder="Escreva sua mensagem..." 
-                         className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
-                       />
-                        {!isRecording && (
-                          <button 
-                            className={cn(
-                              "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
-                              "text-muted-foreground hover:text-primary"
-                            )}
-                             onClick={async () => { 
-                               try {
-                                 setRecordingMode('direct');
-                                 await recorderControls.startRecording();
-                                 toast.info("Iniciando gravação...");
-                               } catch (err: any) {
-                                 console.error("Erro ao iniciar gravação direta:", err);
-                                 toast.error("Erro ao acessar microfone.");
-                                 setRecordingMode(null);
-                               }
-                             }}
-                            title="Gravar Áudio"
-                          >
-                            <Mic className="h-4 w-4" />
-                          </button>
-                        )}
-                     </div>
+                      <div className="relative flex-1">
+                        <Input 
+                          value={text} 
+                          onChange={(e) => setText(e.target.value)}
+                          onKeyDown={(e) => { 
+                            if (e.key === "Enter" && !e.shiftKey && (text.trim() || audioBlob)) { 
+                              e.preventDefault(); 
+                              enviar(); 
+                            } 
+                          }}
+                          placeholder="Escreva sua mensagem..." 
+                          className="pr-10 bg-card border-border focus-visible:ring-primary rounded-full h-10 shadow-inner"
+                        />
+                         {!isRecording && !audioBlob && (
+                           <button 
+                             className={cn(
+                               "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-colors",
+                               "text-muted-foreground hover:text-primary"
+                             )}
+                              onClick={async () => { 
+                                try {
+                                  setRecordingMode('direct');
+                                  await recorderControls.startRecording();
+                                } catch (err: any) {
+                                  console.error("Erro ao iniciar gravação direta:", err);
+                                  toast.error("Erro ao acessar microfone.");
+                                  setRecordingMode(null);
+                                }
+                              }}
+                             title="Gravar Áudio"
+                           >
+                             <Mic className="h-4 w-4" />
+                           </button>
+                         )}
+                      </div>
 
                       <Button 
                         size="icon" 

@@ -30,6 +30,7 @@ import Mensagens from "./pages/Mensagens";
 import AprovacoesUsuarios from "./pages/AprovacoesUsuarios";
 import NotFound from "./pages/NotFound";
 import Configuracoes from "./pages/Configuracoes";
+import Departamentos from "./pages/Departamentos";
 import { useAppTheme } from "./hooks/useAppTheme";
 
 const queryClient = new QueryClient();
@@ -82,6 +83,7 @@ const App = () => (
               <Route path="estoque" element={<ProtectedRoute roles={["admin","gestor","supervisor","financeiro","auditor","campo","estoque"]}><Estoque /></ProtectedRoute>} />
               <Route path="mensagens" element={<Mensagens />} />
               <Route path="configuracoes" element={<ProtectedRoute roles={["admin"]}><Configuracoes /></ProtectedRoute>} />
+              <Route path="departamentos" element={<ProtectedRoute roles={["admin"]}><Departamentos /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

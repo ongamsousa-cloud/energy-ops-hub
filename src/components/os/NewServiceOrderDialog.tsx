@@ -35,6 +35,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
    const [servicoHasNoActivities, setServicoHasNoActivities] = useState(false);
    const [categorias, setCategorias] = useState<any[]>([]);
    const [servicos, setServicos] = useState<any[]>([]);
+  const [departamentos, setDepartamentos] = useState<any[]>([]);
    const [selectedServicoId, setSelectedServicoId] = useState<string>("");
    const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
@@ -44,6 +45,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
   const [formData, setFormData] = useState({
     obraId: initialObraId || "",
+    departmentId: "",
     prioridade: "media",
     data_agendada: new Date().toISOString().split('T')[0],
     hora_agendada: "08:00",
@@ -53,6 +55,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     itens: [] as any[],
     allAtvSelected: false
   });
+
+  const [selectedObra, setSelectedObra] = useState<any>(null);
 
   useEffect(() => {
     if (open) {
@@ -64,13 +68,14 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   }, [open, initialObraId]);
 
    async function fetchInitialData() {
-     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes] = await Promise.all([
-       supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
+     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes, resDeps] = await Promise.all([
+       supabase.from("obras").select("*").eq("ativo", true).order("numero"),
        supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
        supabase.from("categorias").select("*").order("nome"),
        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
        supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
-       supabase.from("equipes").select("id, nome").order("nome")
+       supabase.from("equipes").select("id, nome").order("nome"),
+       supabase.from("departments").select("id, name").eq("active", true).order("name")
      ]);
  
      setObras(resObras.data ?? []);
@@ -81,6 +86,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       setServicos(allServicos);
      setGestores(resGestores.data ?? []);
      setEquipes(resEquipes.data ?? []);
+     setDepartamentos(resDeps.data ?? []);
      
       if (allServicos.length) {
         const firstServId = allServicos[0].id;
@@ -122,6 +128,12 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }));
   }
 
+  const handleObraChange = (obraId: string) => {
+    const obra = obras.find(o => o.id === obraId);
+    setSelectedObra(obra);
+    setFormData(prev => ({ ...prev, obraId }));
+  };
+
    async function handleSave() {
      if (!formData.obraId) return toast.error("Selecione a obra");
      if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
@@ -130,6 +142,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      try {
        const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
          obra_id: formData.obraId,
+         department_id: formData.departmentId || null,
          servico_id: selectedServicoId || null,
          profissional_id: user!.id,
          assigned_manager_id: formData.gestorId || null,
@@ -188,9 +201,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
               <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label>Obra <span className="text-destructive">*</span></Label>
-              <Select value={formData.obraId} onValueChange={(v) => setFormData({...formData, obraId: v})}>
+              <Select value={formData.obraId} onValueChange={handleObraChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a obra" />
                 </SelectTrigger>
@@ -200,6 +213,13 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   ))}
                 </SelectContent>
               </Select>
+              {selectedObra && (
+                <div className="mt-2 p-2 bg-muted/30 rounded-md text-[11px] text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-1">
+                  <div className="flex gap-1"><strong>Cliente:</strong> {selectedObra.cliente || "Não informado"}</div>
+                  <div className="flex gap-1"><strong>CEP:</strong> {selectedObra.cep || "—"}</div>
+                  <div className="flex gap-1 col-span-2 italic">{selectedObra.endereco}, {selectedObra.bairro}, {selectedObra.cidade}/{selectedObra.estado}</div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -210,6 +230,20 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             <div className="space-y-2">
               <Label>Hora Programada</Label>
               <Input type="time" value={formData.hora_agendada} onChange={(e) => setFormData({...formData, hora_agendada: e.target.value})} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
+              <Select value={formData.departmentId} onValueChange={(v) => setFormData({...formData, departmentId: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o setor" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departamentos.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">

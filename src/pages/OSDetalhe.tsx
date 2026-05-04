@@ -29,6 +29,7 @@ export default function OSDetalhe() {
    const [fin, setFin] = useState<any>(null);
    const [items, setItems] = useState<any[]>([]);
   const [osMaterials, setOsMaterials] = useState<any[]>([]);
+  const [deps, setDeps] = useState<any[]>([]);
   const [evid, setEvid] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
@@ -80,9 +81,10 @@ export default function OSDetalhe() {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
          .select(`
            *, 
-           obra:obras(numero, nome, endereco, cidade, estado, bairro, cep), 
+           obra:obras(numero, nome, endereco, cidade, estado, bairro, cep, cliente), 
            profissional:profiles!ordens_servico_profissional_id_fkey(nome),
-           servico:servicos(nome)
+           servico:servicos(nome),
+           department:departments(name)
          `)
          .eq("id", id).maybeSingle();
 
@@ -110,6 +112,7 @@ export default function OSDetalhe() {
      supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
      supabase.from("equipes").select("*").order("nome").then(({ data }) => setEquipes(data ?? []));
      supabase.from("profiles").select("id, nome").order("nome").then(({ data }) => setProfs(data ?? []));
+     supabase.from("departments").select("id, name").eq("active", true).order("name").then(({ data }) => setDeps(data ?? []));
      getEvidenceRules().then(setEvRules);
    }, [load]);
 
@@ -539,11 +542,14 @@ export default function OSDetalhe() {
         }
       />
 
-      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground bg-muted/20 p-2 rounded">
-      <span><strong>Serviço:</strong> {os.servico?.nome || "Geral"}</span>
-      <span><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
-      {os.equipe_id && <span><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
-    </div>
+      <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/50 shadow-inner">
+        <span><strong>Setor:</strong> <Badge variant="secondary" className="ml-1 text-[9px] h-4">{os.department?.name || "Geral"}</Badge></span>
+        <span><strong>Serviço:</strong> {os.servico?.nome || "Geral"}</span>
+        <span><strong>Cliente:</strong> {os.obra?.cliente || "Não informado"}</span>
+        <span className="col-span-2 md:col-span-1"><strong>Profissional:</strong> {os.profissional?.nome || "Não atribuído"}</span>
+        {os.equipe_id && <span className="col-span-2 md:col-span-1"><strong>Equipe:</strong> {equipes.find(e => e.id === os.equipe_id)?.nome || "Carregando..."}</span>}
+        <span className="col-span-2 md:col-span-2 italic"><strong>Endereço:</strong> {os.obra?.endereco}, {os.obra?.bairro}, {os.obra?.cidade}/{os.obra?.estado}</span>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="rounded-md border-border p-4 shadow-none">

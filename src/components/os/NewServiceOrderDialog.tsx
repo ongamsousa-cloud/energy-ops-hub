@@ -69,7 +69,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
    async function fetchInitialData() {
      const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes, resDeps] = await Promise.all([
-       supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
+       supabase.from("obras").select("*").eq("ativo", true).order("numero"),
        supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
        supabase.from("categorias").select("*").order("nome"),
        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),

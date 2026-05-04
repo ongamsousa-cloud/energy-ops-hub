@@ -361,16 +361,24 @@ export default function Mensagens() {
         if (!convId) continue;
         lastConvId = convId;
 
-        const { error } = await supabase.from("messages").insert({
-          conversation_id: convId,
-          sender_id: user!.id,
-          conteudo,
-          anexo_url: audioUrl,
-          anexo_tipo: audioUrl ? "audio" : null,
-        });
+        try {
+          const { error } = await supabase.from("messages").insert({
+            conversation_id: convId,
+            sender_id: user!.id,
+            conteudo: conteudo || null,
+            anexo_url: audioUrl || null,
+            anexo_tipo: audioUrl ? "audio" : null,
+          });
 
-        if (error) {
-          toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
+          if (error) {
+            console.error(`Erro ao inserir mensagem para ${contact.nome}:`, error);
+            toast.error(`Erro ao enviar para ${contact.nome}: ${error.message}`);
+            continue;
+          }
+          okCount++;
+        } catch (innerErr: any) {
+          console.error(`Exceção ao enviar para ${contact.nome}:`, innerErr);
+          toast.error(`Falha inesperada ao enviar para ${contact.nome}`);
           continue;
         }
         okCount++;

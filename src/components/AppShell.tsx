@@ -28,7 +28,7 @@ const NAV: Item[] = [
   { to: "/app/departamentos", label: "Departamentos", icon: Building2, roles: ["admin"] },
   { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },
    { to: "/app/medicao", label: "Medição", icon: Calculator, roles: ["admin","gestor","financeiro"] },
-   { to: "/app/dev", label: "Painel Developer", icon: Terminal, roles: ["admin", "developer"] },
+   { to: "/app/dev", label: "Painel Developer", icon: Terminal, roles: ["admin"] },
 ];
 
 export default function AppShell() {

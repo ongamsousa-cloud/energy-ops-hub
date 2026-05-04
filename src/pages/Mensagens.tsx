@@ -361,11 +361,10 @@ export default function Mensagens() {
         return;
       }
 
+      let okCount = 0;
       try {
         const conteudo = text.trim() || null;
         let lastConvId: string | null = null;
-        let okCount = 0;
-
         for (const contact of selectedContacts) {
          const convId = await getOrCreateConversa(contact, true);
         if (!convId) continue;

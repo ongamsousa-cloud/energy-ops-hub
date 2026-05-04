@@ -143,7 +143,7 @@ export default function Mensagens() {
         const { data: profs, error: profsError } = await supabase
           .from("profiles")
           .select(`
-            id, nome, email, department_id, cargo, documento,
+            id, nome, email, department_id, cargo, documento, foto_url,
             user_roles(role),
             departments(name)
           `)
@@ -157,12 +157,13 @@ export default function Mensagens() {
       
        const all: Profile[] = (profs ?? []).map((p: any) => ({
          id: p.id, 
-         nome: p.nome, 
+         nome: p.nome,
          email: p.email,
          department_id: p.department_id,
          department_name: p.departments?.name,
          cargo: p.cargo,
          documento: p.documento,
+         foto_url: p.foto_url,
          role: (p.user_roles && Array.isArray(p.user_roles) && p.user_roles.length > 0) 
            ? (p.user_roles[0].role as AppRole) 
            : (p.role as AppRole | undefined),
@@ -792,9 +793,17 @@ export default function Mensagens() {
                                         className="flex-1 flex items-center gap-3 cursor-pointer"
                                         onClick={() => startConversa(p)}
                                       >
-                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
-                                          {p.nome.charAt(0)}
-                                        </div>
+                                        {p.foto_url ? (
+                                          <img 
+                                            src={p.foto_url} 
+                                            alt={p.nome} 
+                                            className="h-10 w-10 rounded-full object-cover shrink-0 border border-border"
+                                          />
+                                        ) : (
+                                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                                            {p.nome.charAt(0)}
+                                          </div>
+                                        )}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2">
                                             <p className="text-sm font-bold truncate">{p.nome}</p>
@@ -949,9 +958,17 @@ export default function Mensagens() {
                      active === c.id ? "bg-primary/10 border-l-4 border-primary" : "hover:bg-accent border-l-4 border-transparent"
                    )}
                  >
-                   <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
-                     {c.outros[0]?.nome?.charAt(0) || "C"}
-                   </div>
+                    {c.outros[0]?.foto_url ? (
+                      <img 
+                        src={c.outros[0].foto_url} 
+                        alt={c.outros[0].nome} 
+                        className="h-10 w-10 rounded-full object-cover shrink-0 border border-border"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase group-hover:bg-primary group-hover:text-white transition-colors">
+                        {c.outros[0]?.nome?.charAt(0) || "C"}
+                      </div>
+                    )}
                    <div className="flex-1 min-w-0">
                      <div className="flex items-center justify-between mb-0.5">
                        <div className={cn("text-sm font-bold truncate", active === c.id ? "text-primary" : "text-foreground")}>
@@ -996,9 +1013,17 @@ export default function Mensagens() {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                    {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
-                  </div>
+                  {activeConv?.outros[0]?.foto_url ? (
+                    <img 
+                      src={activeConv.outros[0].foto_url} 
+                      alt={activeConv.outros[0].nome} 
+                      className="h-8 w-8 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                      {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
+                    </div>
+                  )}
                   <div className="flex flex-col min-w-0">
                     <div className="text-sm font-bold truncate">
                       {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}

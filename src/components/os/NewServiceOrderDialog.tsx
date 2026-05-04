@@ -180,29 +180,29 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      
      setBusy(true);
      try {
-       const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
-         obra_id: formData.obraId,
-         department_id: formData.departmentId || null,
-         servico_id: selectedServicoId || null,
-         profissional_id: user!.id,
-         assigned_manager_id: formData.gestorId || null,
-         equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-          status: "iniciada",
-          operational_status: "Pendente",
-         prioridade: formData.prioridade,
-         data_agendada: formData.data_agendada,
-         hora_agendada: formData.hora_agendada,
-         observacoes: formData.observacoes,
-         created_by: user!.id,
-         cep: formData.cep,
-         endereco: formData.endereco,
-         bairro: formData.bairro,
-         cidade: formData.cidade,
-         estado: formData.estado,
-         ponto_referencia: formData.ponto_referencia,
-         solicitante_nome: formData.solicitante_nome,
-         solicitante_telefone: formData.solicitante_telefone
-       }).select("id").single();
+        const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
+          obra_id: formData.obraId,
+          department_id: formData.departmentId || null,
+          servico_id: selectedServicoId || null,
+          profissional_id: user!.id,
+          assigned_manager_id: formData.gestorId || null,
+          equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
+          status: "iniciada" as any,
+          operational_status: "Pendente" as any,
+          prioridade: formData.prioridade,
+          data_agendada: formData.data_agendada,
+          hora_agendada: formData.hora_agendada,
+          observacoes: formData.observacoes,
+          created_by: user!.id,
+          cep: formData.cep,
+          endereco: formData.endereco,
+          bairro: formData.bairro,
+          cidade: formData.cidade,
+          estado: formData.estado,
+          ponto_referencia: formData.ponto_referencia,
+          solicitante_nome: formData.solicitante_nome,
+          solicitante_telefone: formData.solicitante_telefone
+        } as any).select("id").single();
  
        if (osError) throw osError;
 

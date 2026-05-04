@@ -1074,12 +1074,18 @@ export default function Mensagens() {
                             </div>
                           ))}
                           {filteredContatos.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                              <User className="h-16 w-16 opacity-5 mb-4" />
-                              <p className="text-sm font-bold">Nenhum profissional cadastrado</p>
-                              <p className="text-[11px] opacity-70 text-center max-w-[260px] mt-2">
-                                Você ainda pode enviar a mensagem clicando em um <span className="font-semibold">departamento</span> na lista ao lado — ele será o destinatário.
+                            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/5 rounded-2xl border border-dashed mx-4">
+                              <Building2 className="h-12 w-12 opacity-10 mb-3 text-primary" />
+                              <p className="text-sm font-bold text-foreground">Utilize os Departamentos</p>
+                              <p className="text-[11px] opacity-70 text-center max-w-[240px] mt-2 px-4 leading-relaxed">
+                                Não foram encontrados profissionais com estes filtros. <br/>
+                                <strong>Selecione um departamento</strong> na barra lateral esquerda para enviar uma mensagem setorial.
                               </p>
+                              {myRole === 'admin' && (
+                                <Button variant="outline" size="sm" className="mt-4 h-8 text-[10px]" onClick={() => setOpenProfileCrud(true)}>
+                                  Cadastrar Profissional
+                                </Button>
+                              )}
                             </div>
                           )}
                         </div>

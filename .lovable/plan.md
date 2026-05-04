@@ -1,112 +1,77 @@
-## Problema confirmado
+Diagnóstico confirmado
 
-O bloqueio não é só visual. Há três causas objetivas no projeto atual:
+O problema não é “falta de entender o requisito”; é implementação errada em 3 pontos:
 
-1. **Os destinatários por departamento ficam vazios**
-   - A tela `src/pages/Mensagens.tsx` filtra contatos por `profiles.department_id`.
-   - No banco, os usuários atuais estão com **`department_id = null`**, então ao clicar em departamentos como Operação/Financeiro a lista fica vazia.
-   - Sem destinatário selecionável, o envio de texto e o microfone ficam inutilizáveis na prática.
+1. O clique no departamento hoje só filtra a lista. Ele não vira um destinatário real.
+2. A busca de contatos está quebrando no backend com erro 400, porque a tela tenta carregar `profiles` junto com `user_roles(role)` por um relacionamento que não existe no schema exposto. Resultado: a lista falha e aparece erro de carregamento.
+3. O CRUD não está completo no banco: `messages` não tem `updated_at`, e as políticas atuais não liberam `UPDATE/DELETE`, então editar/excluir tende a falhar ou ficar inconsistente.
 
-2. **Os próximos usuários também cairiam no mesmo problema**
-   - `src/pages/AprovacoesUsuarios.tsx` aprova usuário e define apenas a role.
-   - `src/pages/Profissionais.tsx` também altera só a role.
-   - Hoje não existe fluxo completo para salvar/editar o departamento no cadastro/aprovação.
+Também validei que já existem departamentos e perfis ativos vinculados a eles. Então isso deveria mesmo estar funcionando agora.
 
-3. **O áudio grava, mas o upload está inconsistente com o bucket**
-   - `src/pages/Mensagens.tsx` envia áudio como `audio/webm`.
-   - O bucket `os-evidences` está configurado para aceitar **imagem e vídeo**, mas **não áudio**.
-   - Resultado: mesmo com gravação concluída, o envio do áudio pode falhar no armazenamento.
+Plano de correção
 
-## O que vou implementar
+1. Corrigir o carregamento dos contatos
+- Remover a consulta quebrada que tenta embutir `user_roles` dentro de `profiles`.
+- Carregar perfis, departamentos e papéis em consultas separadas e combinar no front.
+- Eliminar o falso erro de “contatos não carregados” quando o backend retornar departamentos corretamente.
 
-### 1. Corrigir a base de departamentos e os usuários já existentes
-- Criar uma migração para:
-  - garantir que os departamentos usados pelo sistema existam;
-  - preencher `profiles.department_id` dos usuários atuais com base na role/cargo atual;
-  - incluir os setores que hoje faltam para refletir os usuários reais do sistema.
-
-Mapeamento inicial previsto:
-- `admin` → Administração
-- `gestor`, `supervisor`, `campo` → Operação
-- `financeiro` → Financeiro
-- `auditor` → Auditoria
-- `estoque` → Almoxarifado / Estoque
-
-### 2. Fazer a tela de Mensagens funcionar mesmo quando o cadastro estiver incompleto
-- Ajustar `src/pages/Mensagens.tsx` para:
-  - carregar todos os profissionais ativos com join robusto de role + departamento;
-  - exibir contatos por departamento com **fallback por role** se algum usuário ainda estiver sem `department_id`;
-  - permitir seleção real de destinatários em todos os setores;
-  - manter o composer utilizável e com estados mais claros.
-
-### 3. Liberar envio de áudio de verdade
-- Criar migração para permitir MIME types de áudio no bucket usado pelas mensagens.
-- Ajustar o fluxo de gravação/envio em `src/pages/Mensagens.tsx` para:
-  - usar formato compatível com mais navegadores (`webm` quando suportado, fallback quando necessário);
-  - exibir erro claro de permissão/microfone;
-  - garantir que o upload do áudio use um tipo aceito pelo armazenamento.
-
-### 4. Preparar futuros usuários para aparecerem e se comunicarem corretamente
-- Atualizar `src/pages/AprovacoesUsuarios.tsx` para aprovar usuário com:
-  - role
+2. Transformar departamento em destinatário real
+- Alterar a lógica da modal para trabalhar com dois tipos de destinatário:
+  - profissional
   - departamento
-  - cargo coerente, quando necessário
-- Atualizar `src/pages/Profissionais.tsx` para permitir edição posterior de:
-  - role
-  - departamento
-  - cargo
+- Ao clicar no departamento da lateral, ele passará a ser selecionável como destinatário, e não apenas filtro.
+- Exibir o departamento selecionado na área “Para:” igual aos destinatários já escolhidos.
+- Permitir mandar mensagem mesmo sem selecionar nenhum profissional, desde que um departamento esteja selecionado.
 
-Assim, novos usuários já entram prontos para aparecer no setor correto e trocar mensagens com os demais.
+3. Dar suporte real no banco para conversa por departamento
+- Criar migração para identificar conversas de departamento de forma explícita.
+- Adicionar `department_id` em `conversations` e usar um tipo próprio de conversa de departamento.
+- Criar função/RPC para “obter ou criar” a conversa do departamento.
+- Ao enviar para um departamento:
+  - a conversa do departamento é criada/recuperada
+  - o remetente entra como participante
+  - os usuários ativos já vinculados àquele departamento entram como participantes
+- Assim o envio ao departamento funciona mesmo que a grade de profissionais esteja vazia ou filtrada.
 
-### 5. Validar ponta a ponta
-- Testar o fluxo autenticado com pelo menos estes cenários:
-  - Administração → Operação: envio de texto
-  - Operação → Financeiro: envio de texto
-  - Operação → Operação: envio de áudio
-  - aprovação de novo usuário e aparição imediata na lista de destinatários
+4. Ajustar a interface da conversa
+- Na lista e no cabeçalho, conversas de departamento passarão a mostrar o nome do departamento, em vez de depender só do primeiro participante.
+- Manter a possibilidade de mandar direto para um funcionário específico.
+- Preservar os filtros por código, nome, função e cargo para seleção de profissionais quando houver usuários.
+- Separar visualmente “destinatário departamento” de “destinatário profissional”.
 
-## Arquivos e áreas que serão alterados
+5. Concluir o CRUD de mensagens de forma segura
+- Criar migração para completar o ciclo de edição/exclusão.
+- Adicionar `updated_at` em `messages` e trigger de atualização.
+- Adicionar políticas de `UPDATE` e `DELETE` para o autor da mensagem.
+- Ajustar o front para:
+  - editar mensagem com persistência real
+  - excluir mensagem corretamente
+  - marcar “editada” só quando realmente houver alteração
+- Se você quiser, posso fazer exclusão lógica em vez de apagar fisicamente, para manter histórico interno.
 
-### Banco / backend
-- nova migração para:
-  - backfill de `profiles.department_id`
-  - criação/ajuste dos departamentos faltantes
-  - liberação de MIME types de áudio no bucket
+6. Garantir texto, anexo e áudio no mesmo fluxo
+- Aplicar a nova lógica tanto no envio de texto quanto no envio de áudio/anexo.
+- Se o destino for departamento, o envio vai usar a conversa do departamento.
+- Se o destino for profissional, mantém conversa direta.
 
-### Frontend
+Detalhes técnicos
+
+Arquivos principais a mexer
 - `src/pages/Mensagens.tsx`
-- `src/pages/AprovacoesUsuarios.tsx`
-- `src/pages/Profissionais.tsx`
+- nova migração em `supabase/migrations/...`
 
-## Resultado esperado
+Mudanças de banco previstas
+- `conversations.department_id` (nullable, FK para departments)
+- ajuste do tipo da conversa para suportar departamento
+- função para get/create de conversa por departamento
+- `messages.updated_at`
+- políticas RLS de `UPDATE/DELETE` para mensagens
 
-Depois dessa implementação:
-- todos os setores cadastrados poderão se enxergar corretamente na tela de mensagens;
-- será possível selecionar destinatários por departamento;
-- o campo de mensagem deixará de ficar bloqueado por falta artificial de destinatários;
-- o áudio poderá ser gravado e enviado;
-- novos usuários aprovados também entrarão já habilitados para a comunicação.
+Resultado esperado após a implementação
+- Clicar em “Operação”, “Financeiro” etc. vai permitir enviar direto ao departamento.
+- O sistema não dependerá da lista de profissionais para autorizar esse envio.
+- O erro de carregamento dos contatos deixará de aparecer por causa da consulta quebrada.
+- Editar e excluir mensagem passarão a funcionar de verdade, com persistência no banco.
+- O filtro por funcionário continuará existindo para envios individuais.
 
-## Detalhes técnicos
-
-```text
-Causa principal atual
-Mensagens.tsx -> filtro por department_id
-                  +
-profiles sem department_id
-                  =
-lista vazia por setor
-                  =
-sem seleção de destinatário
-                  =
-envio "bloqueado"
-
-Causa adicional do áudio
-Mensagens.tsx envia audio/webm
-                  +
-bucket sem MIME de áudio
-                  =
-falha no upload
-```
-
-Se você aprovar, eu parto direto para a correção completa em código e banco, sem reduzir o escopo.
+Se você aprovar, eu implemento exatamente isso agora.

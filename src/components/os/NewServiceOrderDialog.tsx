@@ -35,6 +35,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
    const [servicoHasNoActivities, setServicoHasNoActivities] = useState(false);
    const [categorias, setCategorias] = useState<any[]>([]);
    const [servicos, setServicos] = useState<any[]>([]);
+  const [departamentos, setDepartamentos] = useState<any[]>([]);
    const [selectedServicoId, setSelectedServicoId] = useState<string>("");
    const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
@@ -44,6 +45,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
   const [formData, setFormData] = useState({
     obraId: initialObraId || "",
+    departmentId: "",
     prioridade: "media",
     data_agendada: new Date().toISOString().split('T')[0],
     hora_agendada: "08:00",
@@ -64,13 +66,14 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   }, [open, initialObraId]);
 
    async function fetchInitialData() {
-     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes] = await Promise.all([
+     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes, resDeps] = await Promise.all([
        supabase.from("obras").select("id,numero,nome").eq("ativo", true).order("numero"),
        supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
        supabase.from("categorias").select("*").order("nome"),
        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
        supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
-       supabase.from("equipes").select("id, nome").order("nome")
+       supabase.from("equipes").select("id, nome").order("nome"),
+       supabase.from("departments").select("id, name").eq("active", true).order("name")
      ]);
  
      setObras(resObras.data ?? []);
@@ -81,6 +84,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       setServicos(allServicos);
      setGestores(resGestores.data ?? []);
      setEquipes(resEquipes.data ?? []);
+     setDepartamentos(resDeps.data ?? []);
      
       if (allServicos.length) {
         const firstServId = allServicos[0].id;
@@ -130,6 +134,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      try {
        const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
          obra_id: formData.obraId,
+         department_id: formData.departmentId || null,
          servico_id: selectedServicoId || null,
          profissional_id: user!.id,
          assigned_manager_id: formData.gestorId || null,

@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
    outros: Profile[];
    ultima_msg?: string;
    unread_count?: number;
+   last_read_at?: string | null;
  };
 
 export default function Mensagens() {

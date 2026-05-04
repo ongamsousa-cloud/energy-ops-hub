@@ -19,7 +19,7 @@ import EmptyState from "@/components/EmptyState";
    DropdownMenuTrigger 
  } from "@/components/ui/dropdown-menu";
 
-const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque"];
+ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque", "developer"];
 
 export default function Profissionais() {
   const [rows, setRows] = useState<any[]>([]);
@@ -36,7 +36,7 @@ export default function Profissionais() {
   useEffect(() => { load(); }, []);
   async function setRole(uid: string, role: AppRole) {
     await supabase.from("user_roles").delete().eq("user_id", uid);
-    const { error } = await supabase.from("user_roles").insert({ user_id: uid, role });
+     const { error } = await supabase.from("user_roles").insert({ user_id: uid, role: role as any });
     if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
   }
   async function setDept(uid: string, deptId: string) {

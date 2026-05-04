@@ -15,9 +15,10 @@ const ROLE_TO_DEPT: Record<AppRole, string> = {
   supervisor: "Operação",
   campo: "Operação",
   financeiro: "Financeiro",
-  auditor: "Auditoria",
-  estoque: "Almoxarifado / Estoque",
-};
+   auditor: "Auditoria",
+   estoque: "Almoxarifado / Estoque",
+   developer: "Sistemas",
+ };
 
 export default function AprovacoesUsuarios() {
   const [rows, setRows] = useState<any[]>([]);
@@ -45,7 +46,7 @@ export default function AprovacoesUsuarios() {
     const role = roleSel[id] ?? "campo";
     const deptName = deptSel[id] ?? ROLE_TO_DEPT[role];
     const dept = departments.find(d => d.name === deptName);
-    const { error: rErr } = await supabase.from("user_roles").insert({ user_id: id, role });
+     const { error: rErr } = await supabase.from("user_roles").insert({ user_id: id, role: role as any });
     if (rErr && !rErr.message.includes("duplicate")) {
       toast.error(rErr.message); return;
     }

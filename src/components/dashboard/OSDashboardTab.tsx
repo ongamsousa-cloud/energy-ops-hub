@@ -25,7 +25,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   async function load() {
     let q = supabase
       .from("ordens_servico")
-      .select("id, numero, status, total_umd, created_at, department_id, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
+       .select("id, numero, status, operational_status, total_umd, created_at, department_id, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome), department:departments(acronym, name)")
       .gte("created_at", period.start.toISOString())
       .lte("created_at", period.end.toISOString())
       .order("created_at", { ascending: false })
@@ -41,7 +41,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   useEffect(() => {
     supabase.from("obras").select("id, numero, nome").then(({ data }) => setObras(data ?? []));
     supabase.from("profiles").select("id, nome").eq("ativo", true).then(({ data }) => setProfs(data ?? []));
-    supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
+    supabase.from("departments").select("id, name, acronym").eq("active", true).then(({ data }) => setDeps(data ?? []));
   }, []);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   const kpis = useMemo(() => {
     const k: Record<string, number> = { abertas: 0, revisao: 0, aprovadas: 0, reprovadas: 0 };
     rows.forEach((r) => {
-      if (["iniciada", "em_andamento", "corrigida"].includes(r.status)) k.abertas++;
+       if (["iniciada", "em_andamento", "corrigida", "lancada"].includes(r.status) || ["iniciada", "lancada"].includes(r.operational_status?.toLowerCase())) k.abertas++;
       else if (["aguardando_revisao", "em_revisao"].includes(r.status)) k.revisao++;
       else if (r.status === "aprovada") k.aprovadas++;
       else if (r.status === "reprovada") k.reprovadas++;
@@ -119,7 +119,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
           <SelectTrigger className="h-9 w-[150px]"><SelectValue placeholder="Setor" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos Setores</SelectItem>
-            {deps.map((d) => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+             {deps.map((d) => <SelectItem key={d.id} value={d.id}>{d.acronym ? `[${d.acronym}] ` : ""}{d.name}</SelectItem>)}
           </SelectContent>
         </Select>
         <Button onClick={() => setOpenNew(true)} className="h-9">
@@ -151,7 +151,12 @@ export default function OSDashboardTab({ period }: { period: Period }) {
                   <td className="px-3 py-2 truncate max-w-[200px]">{r.obra?.numero} — {r.obra?.nome}</td>
                   <td className="px-3 py-2 truncate max-w-[160px]">{r.profissional?.nome}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{Number(r.total_umd ?? 0).toFixed(2)}</td>
-                  <td className="px-3 py-2"><StatusBadge status={r.status} /></td>
+                   <td className="px-3 py-2">
+                     <div className="flex flex-col gap-1">
+                       <StatusBadge status={r.operational_status || r.status} />
+                       {r.department?.acronym && <span className="text-[10px] text-muted-foreground font-semibold">{r.department.acronym}</span>}
+                     </div>
+                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</td>
                 </tr>
               ))}

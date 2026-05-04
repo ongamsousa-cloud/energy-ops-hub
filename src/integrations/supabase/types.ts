@@ -643,6 +643,7 @@ export type Database = {
       }
       departments: {
         Row: {
+          acronym: string | null
           active: boolean | null
           created_at: string | null
           description: string | null
@@ -651,6 +652,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          acronym?: string | null
           active?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -659,6 +661,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          acronym?: string | null
           active?: boolean | null
           created_at?: string | null
           description?: string | null
@@ -3816,6 +3819,7 @@ export type Database = {
         | "Exceção aprovada"
         | "Exceção negada"
         | "Iniciada"
+        | "Lançada"
       os_audit_status:
         | "nao_auditada"
         | "pendente_auditoria"
@@ -3862,6 +3866,8 @@ export type Database = {
         | "aguardando_excecao"
         | "excecao_aprovada"
         | "excecao_negada"
+        | "iniciada"
+        | "lancada"
       os_status:
         | "rascunho"
         | "iniciada"
@@ -4078,6 +4084,7 @@ export const Constants = {
         "Exceção aprovada",
         "Exceção negada",
         "Iniciada",
+        "Lançada",
       ],
       os_audit_status: [
         "nao_auditada",
@@ -4127,6 +4134,8 @@ export const Constants = {
         "aguardando_excecao",
         "excecao_aprovada",
         "excecao_negada",
+        "iniciada",
+        "lancada",
       ],
       os_status: [
         "rascunho",

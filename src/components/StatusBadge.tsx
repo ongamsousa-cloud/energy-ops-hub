@@ -3,6 +3,8 @@ import { cn } from "@/lib/utils";
 const map: Record<string, string> = {
    iniciada: "bg-blue-500/10 text-blue-600 border-blue-500/20",
    Iniciada: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+   lancada: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+   Lançada: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
   em_andamento: "bg-info/10 text-info border-info/20",
   finalizada: "bg-warning/10 text-warning border-warning/20",
   aguardando_revisao: "bg-warning/10 text-warning border-warning/20",

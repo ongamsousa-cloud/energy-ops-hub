@@ -85,7 +85,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
        supabase.from("profiles").select("id, nome").in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
        supabase.from("equipes").select("id, nome").order("nome"),
-       supabase.from("departments").select("id, name").eq("active", true).order("name")
+       supabase.from("departments").select("id, name, acronym").eq("active", true).order("name")
      ]);
  
      setObras(resObras.data ?? []);
@@ -96,8 +96,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       setServicos(allServicos);
      setGestores(resGestores.data ?? []);
      setEquipes(resEquipes.data ?? []);
-     setDepartamentos(resDeps.data ?? []);
-     
+      const depsData = resDeps.data ?? [];
+      setDepartamentos(depsData);
+
       if (allServicos.length) {
         const firstServId = allServicos[0].id;
         setSelectedServicoId(firstServId);
@@ -110,9 +111,42 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      if (resGestores.data?.length === 1) {
        setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
      }
-   }
+    }
 
-  function addActivity(activity: any) {
+    async function fetchGestoresByDep(depId: string) {
+      if (!depId) {
+        setGestores([]);
+        return;
+      }
+      
+      let query = supabase.from("profiles").select("id, nome, department_id");
+      
+      // If not admin, restrict to selected department
+      if (!hasRole(['admin'])) {
+        query = query.eq("department_id", depId);
+      }
+
+      const { data: users } = await query;
+      
+      if (users && users.length > 0) {
+        const { data: roleRecords } = await supabase.from("user_roles")
+          .select("user_id")
+          .in("role", ["gestor", "supervisor", "admin"])
+          .in("user_id", users.map(u => u.id));
+        
+        const roleUserIds = roleRecords?.map(r => r.user_id) || [];
+        setGestores(users.filter(u => roleUserIds.includes(u.id)));
+      } else {
+        setGestores([]);
+      }
+    }
+
+    const handleDepartmentChange = (depId: string) => {
+      setFormData(prev => ({ ...prev, departmentId: depId, gestorId: "" }));
+      fetchGestoresByDep(depId);
+    };
+
+    function addActivity(activity: any) {
     if (formData.itens.some(i => i.id === activity.id)) {
       toast.error("Esta atividade já foi adicionada");
       return;
@@ -187,8 +221,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           profissional_id: user!.id,
           assigned_manager_id: formData.gestorId || null,
           equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-          status: "iniciada" as any,
-          operational_status: "Pendente" as any,
+           status: "iniciada" as any,
+           operational_status: "Iniciada" as any,
           prioridade: formData.prioridade,
           data_agendada: formData.data_agendada,
           hora_agendada: formData.hora_agendada,
@@ -252,13 +286,15 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                 </div>
                 <div className="space-y-2">
                   <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
-                  <Select value={formData.departmentId} onValueChange={(v) => setFormData({...formData, departmentId: v})}>
+                  <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
                     <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-                   <SelectContent className="max-h-[300px]">
-                     {departamentos.map((d) => (
-                       <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                     ))}
-                   </SelectContent>
+                    <SelectContent className="max-h-[300px]">
+                      {departamentos.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                <div className="space-y-2 md:col-span-2 border-t pt-4">

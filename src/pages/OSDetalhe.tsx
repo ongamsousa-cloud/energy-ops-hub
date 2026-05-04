@@ -33,7 +33,8 @@ export default function OSDetalhe() {
   const [evid, setEvid] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
-   const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [reviewDialog, setReviewDialog] = useState<{ open: boolean, type: 'correcao' | 'reprovar', comment: string }>({ open: false, type: 'correcao', comment: '' });
     const [busy, setBusy] = useState(false);
     const [stockLevels, setStockLevels] = useState<any[]>([]);
     const [cats, setCats] = useState<any[]>([]);
@@ -89,9 +90,14 @@ export default function OSDetalhe() {
          `)
          .eq("id", id).maybeSingle();
 
-      if (!o && !osError) {
-        toast.error("Você não possui permissão para acessar esta ordem de serviço.");
-        nav("/app/os");
+      if (!o) {
+        if (osError) {
+          console.error("Erro ao carregar OS:", osError);
+          toast.error("Erro ao carregar dados da OS");
+        } else {
+          toast.error("Você não possui permissão para acessar esta ordem de serviço.");
+          nav("/app/os");
+        }
         return;
       }
      setOS(o);
@@ -215,10 +221,26 @@ export default function OSDetalhe() {
 
   async function sendMessage() {
     if (!newMessage.trim()) return;
-    const { error } = await supabase.from("os_messages").insert({ os_id: id, sender_id: user!.id, content: newMessage });
-    if (error) return toast.error(error.message);
-    setNewMessage("");
-    load();
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("os_messages").insert({ 
+        os_id: id, 
+        sender_id: user!.id, 
+        content: newMessage 
+      });
+      if (error) throw error;
+      setNewMessage("");
+      // Update local state immediately for better UX
+      const { data: msg } = await supabase.from("os_messages")
+        .select("*, sender:profiles(nome)")
+        .eq("os_id", id)
+        .order("created_at", { ascending: true });
+      setMessages(msg ?? []);
+    } catch (err: any) {
+      toast.error("Erro ao enviar mensagem: " + err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
    function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -285,25 +307,43 @@ export default function OSDetalhe() {
    }
 
   async function finalizar() {
-    if (!items.length) return toast.error("OS sem atividades");
-    const geo = await getGeo();
-    await supabase.from("ordens_servico").update({
-      status: "aguardando_revisao", fim_em: new Date().toISOString(),
-      fim_lat: geo.lat, fim_lng: geo.lng,
-    }).eq("id", id);
-    toast.success("OS enviada para revisão");
-    load();
+    if (!items.length) return toast.error("OS sem atividades. Lance pelo menos uma atividade antes de finalizar.");
+    setBusy(true);
+    try {
+      const geo = await getGeo();
+      const { error } = await supabase.from("ordens_servico").update({
+        status: "aguardando_revisao", 
+        fim_em: new Date().toISOString(),
+        fim_lat: geo.lat, 
+        fim_lng: geo.lng,
+      }).eq("id", id);
+      
+      if (error) throw error;
+      
+      await registrarAuditoria("aguardando_revisao", "OS finalizada pelo profissional e enviada para revisão.");
+      toast.success("OS enviada para revisão com sucesso!");
+      load();
+    } catch (err: any) {
+      toast.error("Erro ao finalizar OS: " + err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
-   async function registrarAuditoria(statusNovo: string, comentario: string = "") {
-     await supabase.from("os_audit_logs").insert({
-       os_id: id,
-       user_id: user!.id,
-       status_anterior: os.status,
-       status_novo: statusNovo,
-       comentario
-     });
-   }
+    async function registrarAuditoria(statusNovo: string, comentario: string = "") {
+      try {
+        const { error } = await supabase.from("os_audit_logs").insert({
+          os_id: id,
+          user_id: user!.id,
+          status_anterior: os.status,
+          status_novo: statusNovo,
+          comentario: comentario || ""
+        });
+        if (error) console.error("Erro ao registrar auditoria:", error);
+      } catch (err) {
+        console.error("Erro excepcional na auditoria:", err);
+      }
+    }
 
    async function aprovar() {
      if (!evCheck.ok) {
@@ -334,31 +374,30 @@ export default function OSDetalhe() {
      }
    }
 
-  const [revModal, setRevModal] = useState<{ open: boolean; type: "reprovar" | "correcao" | null; comment: string }>({ 
-    open: false, type: null, comment: "" 
-  });
-
-  function openReview(type: "reprovar" | "correcao") {
-    setRevModal({ open: true, type, comment: "" });
-  }
-
   async function handleReview() {
-    if (!revModal.comment && revModal.type === "reprovar") return toast.error("Motivo é obrigatório");
-    const status = revModal.type === "reprovar" ? "reprovada" : "correcao_solicitada";
+    if (!reviewDialog.comment && reviewDialog.type === "reprovar") return toast.error("Motivo é obrigatório");
+    const status = reviewDialog.type === "reprovar" ? "reprovada" : "correcao_solicitada";
     const update: any = { status };
-    if (revModal.type === "reprovar") {
-      update.motivo_reprovacao = revModal.comment;
+    if (reviewDialog.type === "reprovar") {
+      update.motivo_reprovacao = reviewDialog.comment;
       update.aprovado_por = user!.id;
       update.aprovado_em = new Date().toISOString();
     } else {
-      update.observacao_supervisor = revModal.comment;
+      update.observacao_supervisor = reviewDialog.comment;
     }
-    const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
-    if (error) return toast.error(error.message);
-    await registrarAuditoria(status, revModal.comment);
-    toast.success(revModal.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
-    setRevModal({ open: false, type: null, comment: "" });
-    load();
+    setBusy(true);
+    try {
+      const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
+      if (error) throw error;
+      await registrarAuditoria(status, reviewDialog.comment);
+      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+      setReviewDialog(prev => ({ ...prev, open: false }));
+      load();
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
    async function salvarAtribuicao(equipeId: string | null, profId: string | null) {
@@ -1102,10 +1141,10 @@ export default function OSDetalhe() {
                  )}
                </Tooltip>
              </TooltipProvider>
-             <Button size="sm" variant="outline" onClick={() => openReview("correcao")} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5">
                <History className="h-3.5 w-3.5" /> Solicitar Correção
              </Button>
-             <Button size="sm" variant="destructive" onClick={() => openReview("reprovar")} className="gap-1.5">
+              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5">
                <XCircle className="h-3.5 w-3.5" /> Reprovar
              </Button>
              <Button size="sm" variant="secondary" className="gap-1.5" onClick={() => {
@@ -1131,6 +1170,40 @@ export default function OSDetalhe() {
           <strong>Correção solicitada:</strong> {os.observacao_supervisor}
         </div>
       )}
+
+      <Dialog open={reviewDialog.open} onOpenChange={(open) => setReviewDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{reviewDialog.type === 'reprovar' ? 'Reprovar Ordem de Serviço' : 'Solicitar Correção'}</DialogTitle>
+            <DialogDescription>
+              {reviewDialog.type === 'reprovar' 
+                ? 'A OS será marcada como reprovada. O motivo é obrigatório.' 
+                : 'Informe o que precisa ser ajustado pelo profissional.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Comentário / Motivo</Label>
+              <Textarea 
+                placeholder="Escreva aqui..." 
+                value={reviewDialog.comment} 
+                onChange={(e) => setReviewDialog(prev => ({ ...prev, comment: e.target.value }))}
+                className="min-h-[100px]"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setReviewDialog(prev => ({ ...prev, open: false }))}>Cancelar</Button>
+              <Button 
+                variant={reviewDialog.type === 'reprovar' ? 'destructive' : 'default'}
+                onClick={handleReview}
+                disabled={busy || (reviewDialog.type === 'reprovar' && !reviewDialog.comment.trim())}
+              >
+                Confirmar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1032,30 +1032,31 @@ export default function OSDetalhe() {
           )}
 
           {os.operational_status === "aceito" && isOwner && (
-         {isGestor && (
-           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
-             const newValue = !os.arquivada;
-             await supabase.from("ordens_servico").update({ arquivada: newValue }).eq("id", id);
-             toast.success(newValue ? "OS Arquivada" : "OS Reativada");
-             load();
-           }}>
-             {os.arquivada ? <RefreshCw className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
-             {os.arquivada ? "Reativar OS" : "Arquivar OS"}
-           </Button>
-         )}
-           <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
-             const geo = await getGeo();
-             await supabase.from("ordens_servico").update({ 
-               operational_status: "chegou_ao_local",
-               status: "em_andamento",
-               inicio_atendimento: new Date().toISOString()
-             }).eq("id", id);
-             toast.success("Atendimento iniciado");
-             load();
-           }}>
-             Registrar Chegada ao Local
-           </Button>
-         )}
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+              const geo = await getGeo();
+              await supabase.from("ordens_servico").update({ 
+                operational_status: "chegou_ao_local",
+                status: "em_andamento",
+                inicio_atendimento: new Date().toISOString()
+              }).eq("id", id);
+              toast.success("Atendimento iniciado");
+              load();
+            }}>
+              Registrar Chegada ao Local
+            </Button>
+          )}
+
+          {isGestor && (
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" onClick={async () => {
+              const newValue = !os.arquivada;
+              await supabase.from("ordens_servico").update({ arquivada: newValue }).eq("id", id);
+              toast.success(newValue ? "OS Arquivada" : "OS Reativada");
+              load();
+            }}>
+              {os.arquivada ? <RefreshCw className="mr-2 h-4 w-4" /> : <Archive className="mr-2 h-4 w-4" />}
+              {os.arquivada ? "Reativar OS" : "Arquivar OS"}
+            </Button>
+          )}
          {canApprove && ["aguardando_revisao", "corrigida", "em_revisao"].includes(os.status) && (
            <div className="flex flex-wrap gap-2">
              <TooltipProvider>

@@ -105,9 +105,9 @@ export default function OSList() {
     const stats = useMemo(() => {
       return {
         total: filteredRows.length,
-        pendentes: filteredRows.filter(r => (r.operational_status || r.status) === 'Pendente').length,
-        emExecucao: filteredRows.filter(r => (r.operational_status || r.status) === 'Em execução' || (r.operational_status || r.status) === 'Iniciada').length,
-        concluidas: filteredRows.filter(r => (r.operational_status || r.status) === 'Concluída').length,
+       pendentes: filteredRows.filter(r => (r.operational_status || r.status)?.toLowerCase() === 'pendente').length,
+       emExecucao: filteredRows.filter(r => ['em execução', 'iniciada', 'em_execucao'].includes((r.operational_status || r.status)?.toLowerCase())).length,
+       concluidas: filteredRows.filter(r => ['concluída', 'concluida'].includes((r.operational_status || r.status)?.toLowerCase())).length,
       };
     }, [filteredRows]);
 

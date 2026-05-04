@@ -14,14 +14,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 
-  type Profile = { 
-    id: string; 
-    nome: string; 
-    email: string; 
-    role?: AppRole; 
+  type Profile = {
+    id: string;
+    nome: string;
+    email: string;
+    role?: AppRole;
     foto_url?: string;
     department_id?: string;
     department_name?: string;
+    documento?: string;
+    cargo?: string;
   };
  type Conv = { 
    id: string; 
@@ -135,13 +137,13 @@ export default function Mensagens() {
       setDepartments(depts || []);
 
       // Carrega Perfis com seus cargos e departamentos (RELAXADO PARA PERMITIR INTER-DEPARTAMENTAL)
-       const { data: profs, error: profsError } = await supabase
-         .from("profiles")
-         .select(`
-           id, nome, email, department_id, cargo,
-           user_roles(role),
-           departments(name)
-         `)
+        const { data: profs, error: profsError } = await supabase
+          .from("profiles")
+          .select(`
+            id, nome, email, department_id, cargo, documento,
+            user_roles(role),
+            departments(name)
+          `)
          .eq("ativo", true)
          .neq("id", user.id);
 
@@ -157,7 +159,10 @@ export default function Mensagens() {
          department_id: p.department_id,
          department_name: p.departments?.name,
          cargo: p.cargo,
-         role: p.user_roles?.[0]?.role as AppRole | undefined,
+         documento: p.documento,
+         role: (p.user_roles && Array.isArray(p.user_roles) && p.user_roles.length > 0) 
+           ? (p.user_roles[0].role as AppRole) 
+           : (p.role as AppRole | undefined),
        }));
 
       // Ordena contatos por nome e remove filtros restritivos
@@ -419,7 +424,11 @@ export default function Mensagens() {
   const [isUploading, setIsUploading] = useState(false);
 
   async function enviar(anexo?: { url: string; tipo: string }, messageText?: string) {
-    if (!active) return;
+    if (!active) {
+      console.warn("Nenhuma conversa ativa selecionada");
+      return;
+    }
+    console.log("Iniciando envio de mensagem para conversa:", active);
     const finalContent = messageText !== undefined ? messageText : text.trim();
      
      // Se temos um áudio pendente e nenhum anexo foi passado explicitamente
@@ -484,37 +493,45 @@ export default function Mensagens() {
 
   const filteredContatos = useMemo(() => {
     let result = contatos;
+
+    if (filterCode) {
+      const low = filterCode.toLowerCase();
+      result = result.filter(c => 
+        (c.documento && c.documento.toLowerCase().includes(low)) || 
+        c.id.toLowerCase().includes(low)
+      );
+    }
+
     if (selectedDeptId) {
       const dept = departments.find(d => d.id === selectedDeptId);
       const deptName = dept?.name;
       result = result.filter(c => {
         if (c.department_id === selectedDeptId) return true;
         if (!deptName) return false;
-        // fallback: role-based mapping when department_id not set
         const fallback = c.role ? ROLE_TO_DEPT[c.role] : undefined;
         return fallback === deptName || c.department_name === deptName;
       });
     }
+
     if (searchTerm) {
       const low = searchTerm.toLowerCase();
       result = result.filter(c => 
         c.nome.toLowerCase().includes(low) || 
         c.email.toLowerCase().includes(low) ||
+        (c.documento && c.documento.toLowerCase().includes(low)) ||
         (c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low)) ||
         (c.department_name && c.department_name.toLowerCase().includes(low))
       );
     }
     
-    if (filterCode) {
-      result = result.filter(c => c.id.toLowerCase().includes(filterCode.toLowerCase()));
-    }
-    
     if (filterCargo) {
-      result = result.filter(c => (c as any).cargo?.toLowerCase().includes(filterCargo.toLowerCase()));
+      const low = filterCargo.toLowerCase();
+      result = result.filter(c => c.cargo?.toLowerCase().includes(low));
     }
     
     if (filterFuncao) {
-      result = result.filter(c => c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(filterFuncao.toLowerCase()));
+      const low = filterFuncao.toLowerCase();
+      result = result.filter(c => c.role && ROLE_LABEL[c.role]?.toLowerCase().includes(low));
     }
 
     return result;
@@ -584,18 +601,47 @@ export default function Mensagens() {
                           <UsersIcon className="h-3.5 w-3.5 mr-2" />
                           Todos
                         </Button>
-                        {departments.map((dept) => (
-                          <Button 
-                            key={dept.id}
-                            variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
-                            size="sm" 
-                            className="w-full justify-start text-xs"
-                            onClick={() => setSelectedDeptId(dept.id)}
-                          >
-                            <Building2 className="h-3.5 w-3.5 mr-2" />
-                            {dept.name}
-                          </Button>
-                        ))}
+                        {departments.map((dept) => {
+                          const deptContacts = contatos.filter(c => c.department_id === dept.id);
+                          const allSelected = deptContacts.length > 0 && deptContacts.every(c => selectedContacts.some(sc => sc.id === c.id));
+                          
+                          return (
+                            <div key={dept.id} className="group relative">
+                              <Button 
+                                variant={selectedDeptId === dept.id ? "secondary" : "ghost"} 
+                                size="sm" 
+                                className="w-full justify-start text-xs pr-8"
+                                onClick={() => setSelectedDeptId(dept.id)}
+                              >
+                                <Building2 className="h-3.5 w-3.5 mr-2 shrink-0" />
+                                <span className="truncate">{dept.name}</span>
+                              </Button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (allSelected) {
+                                    setSelectedContacts(prev => prev.filter(p => p.department_id !== dept.id));
+                                  } else {
+                                    setSelectedContacts(prev => {
+                                      const newContacts = [...prev];
+                                      deptContacts.forEach(c => {
+                                        if (!newContacts.some(nc => nc.id === c.id)) newContacts.push(c);
+                                      });
+                                      return newContacts;
+                                    });
+                                  }
+                                }}
+                                className={cn(
+                                  "absolute right-1 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-primary/10 transition-colors",
+                                  allSelected ? "text-primary" : "text-muted-foreground opacity-0 group-hover:opacity-100"
+                                )}
+                                title={allSelected ? "Desmarcar todos" : "Selecionar todos do departamento"}
+                              >
+                                <UsersIcon className="h-3 w-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
                      </div>
                    </div>
 
@@ -717,8 +763,17 @@ export default function Mensagens() {
                                           {p.nome.charAt(0)}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-bold truncate">{p.nome}</p>
-                                          <p className="text-[11px] text-muted-foreground truncate">{p.department_name || "Sem departamento"}</p>
+                                          <div className="flex items-center gap-2">
+                                            <p className="text-sm font-bold truncate">{p.nome}</p>
+                                            {p.documento && (
+                                              <span className="text-[9px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+                                                {p.documento}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <p className="text-[11px] text-muted-foreground truncate">
+                                            {p.cargo ? `${p.cargo} • ` : ""}{p.department_name || "Sem departamento"}
+                                          </p>
                                         </div>
                                         <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 h-8 px-2 text-[10px] font-bold uppercase tracking-tighter">
                                           Conversar
@@ -1050,7 +1105,14 @@ export default function Mensagens() {
                           isUploading && "cursor-wait"
                         )}
                       >
-                        {isUploading ? <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Send className="h-4 w-4" />}
+                        {isUploading ? (
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="text-[6px] mt-0.5 text-white uppercase font-bold">Subindo</span>
+                          </div>
+                        ) : (
+                          <Send className="h-4 w-4" />
+                        )}
                       </Button>
                    </div>
                  )}

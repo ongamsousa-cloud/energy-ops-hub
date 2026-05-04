@@ -1013,9 +1013,17 @@ export default function Mensagens() {
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
-                    {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
-                  </div>
+                  {activeConv?.outros[0]?.foto_url ? (
+                    <img 
+                      src={activeConv.outros[0].foto_url} 
+                      alt={activeConv.outros[0].nome} 
+                      className="h-8 w-8 rounded-full object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                      {activeConv?.outros[0]?.nome?.charAt(0) || "C"}
+                    </div>
+                  )}
                   <div className="flex flex-col min-w-0">
                     <div className="text-sm font-bold truncate">
                       {activeConv?.outros.map((o) => o.nome).join(", ") || "Conversa"}

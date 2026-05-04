@@ -394,9 +394,16 @@ export default function Mensagens() {
        setOpenNew(false);
        await loadConvs(); // Carrega tudo uma vez no final
        if (selectedContacts.length === 1 && lastConvId) setActive(lastConvId);
-      setIsUploading(false);
-      toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
-   }
+      } catch (err: any) {
+        console.error("Erro fatal no broadcast:", err);
+        toast.error("Falha ao processar o envio em massa.");
+      } finally {
+        setIsUploading(false);
+        if (okCount > 0) {
+          toast.success(`Mensagem enviada para ${okCount} destinatário(s).`);
+        }
+      }
+    }
 
    const isContactSelected = (id: string) => selectedContacts.some(c => c.id === id);
    const toggleContact = (c: Profile) => {

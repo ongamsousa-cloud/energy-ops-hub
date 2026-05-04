@@ -107,13 +107,14 @@
        <PageHeader 
          title="Developer Dashboard" 
          description="Controle sistêmico, auditoria e manutenção do Design System."
-       >
-         <div className="flex gap-2">
-           <Button variant="outline" size="sm" onClick={() => { loadStats(); checkHealth(); }}>
-             <RefreshCcw className="h-4 w-4 mr-2" /> Atualizar Dados
-           </Button>
-         </div>
-       </PageHeader>
+         actions={
+           <div className="flex gap-2">
+             <Button variant="outline" size="sm" onClick={() => { loadStats(); checkHealth(); }}>
+               <RefreshCcw className="h-4 w-4 mr-2" /> Atualizar Dados
+             </Button>
+           </div>
+         }
+       />
  
        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
          <Card className="bg-primary/5 border-primary/20">

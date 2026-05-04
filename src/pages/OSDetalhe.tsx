@@ -75,7 +75,7 @@ export default function OSDetalhe() {
   const isOwner = os && user && os.profissional_id === user.id;
    const canApprove = hasRole(["admin","gestor","supervisor"]);
    const isGestor = hasRole(["admin", "gestor"]);
-   const canEdit = (isOwner || isGestor) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente"].includes(os?.status);
+    const canEdit = (isOwner || isGestor) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -194,7 +194,7 @@ export default function OSDetalhe() {
       created_by: user!.id,
     });
     if (error) return toast.error(error.message);
-    if ((os.operational_status || os.status) === "iniciada") {
+    if (["iniciada", "atribuida", "pendente"].includes(os.operational_status || os.status)) {
       await supabase.from("ordens_servico").update({ 
         operational_status: "em_execucao",
         status: "em_andamento" 
@@ -1016,18 +1016,34 @@ export default function OSDetalhe() {
            </Button>
          )}
          
-          {(os.status === "iniciada" || os.operational_status === "pendente") && isOwner && (
+          {/* Fluxo de Aceite e Início */}
+          {((os.operational_status || os.status) === "Pendente" || (os.operational_status || os.status) === "pendente") && isOwner && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
+              await supabase.from("ordens_servico").update({ 
+                operational_status: "Iniciada",
+                status: "iniciada"
+              }).eq("id", id);
+              await registrarAuditoria("Iniciada", "Profissional deu o aceite na Ordem de Serviço");
+              toast.success("Ordem de Serviço Aceita e Iniciada");
+              load();
+            }}>
+              <CheckCircle className="mr-2 h-5 w-5" />
+              Dar o Aceite na OS
+            </Button>
+          )}
+
+          {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
               await supabase.from("ordens_servico").update({ 
                 operational_status: "em_deslocamento",
                 status: "em_andamento"
               }).eq("id", id);
-              await registrarAuditoria("em_andamento", "Profissional aceitou a Ordem de Serviço (Em deslocamento)");
-              toast.success("Ordem de Serviço Aceita");
+              await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
+              toast.success("Deslocamento Iniciado");
               load();
             }}>
-              <CheckCircle className="mr-2 h-5 w-5" />
-              Dar o Aceite na OS
+              <MapPin className="mr-2 h-5 w-5" />
+              Iniciar Deslocamento
             </Button>
           )}
 

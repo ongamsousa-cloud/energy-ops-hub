@@ -198,7 +198,7 @@ export default function Mensagens() {
 
       const myConvIds = myParticipations?.map(p => p.conversation_id) || [];
       
-      const { data: convData, error } = await supabase
+      const { data: convData, error } = await (supabase as any)
         .from('conversations')
         .select('id, titulo, created_at, tipo, department_id')
         .in('id', myConvIds)

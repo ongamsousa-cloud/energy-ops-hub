@@ -1862,16 +1862,19 @@ export type Database = {
         Row: {
           aprovado_em: string | null
           aprovado_por: string | null
+          archived_at: string | null
           assigned_manager_id: string | null
           assigned_supervisor_id: string | null
           audit_status: Database["public"]["Enums"]["os_audit_status"] | null
           bairro: string | null
           cep: string | null
           cidade: string | null
+          client_id: string | null
           created_at: string
           created_by: string | null
           criticality_level: string | null
           data_agendada: string | null
+          department_id: string | null
           due_at: string | null
           endereco_completo: string | null
           equipe_id: string | null
@@ -1883,6 +1886,7 @@ export type Database = {
           financial_status:
             | Database["public"]["Enums"]["os_financial_status"]
             | null
+          gestor_responsavel_id: string | null
           hora_agendada: string | null
           id: string
           inicio_atendimento: string | null
@@ -1907,6 +1911,7 @@ export type Database = {
           servico_id: string | null
           status: Database["public"]["Enums"]["os_status"]
           status_financeiro: string | null
+          status_workflow: string | null
           supervisor_id: string | null
           total_umd: number
           total_umd_aprovada: number
@@ -1919,16 +1924,19 @@ export type Database = {
         Insert: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          archived_at?: string | null
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
           data_agendada?: string | null
+          department_id?: string | null
           due_at?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
@@ -1940,6 +1948,7 @@ export type Database = {
           financial_status?:
             | Database["public"]["Enums"]["os_financial_status"]
             | null
+          gestor_responsavel_id?: string | null
           hora_agendada?: string | null
           id?: string
           inicio_atendimento?: string | null
@@ -1964,6 +1973,7 @@ export type Database = {
           servico_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
+          status_workflow?: string | null
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
@@ -1976,16 +1986,19 @@ export type Database = {
         Update: {
           aprovado_em?: string | null
           aprovado_por?: string | null
+          archived_at?: string | null
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
           data_agendada?: string | null
+          department_id?: string | null
           due_at?: string | null
           endereco_completo?: string | null
           equipe_id?: string | null
@@ -1997,6 +2010,7 @@ export type Database = {
           financial_status?:
             | Database["public"]["Enums"]["os_financial_status"]
             | null
+          gestor_responsavel_id?: string | null
           hora_agendada?: string | null
           id?: string
           inicio_atendimento?: string | null
@@ -2021,6 +2035,7 @@ export type Database = {
           servico_id?: string | null
           status?: Database["public"]["Enums"]["os_status"]
           status_financeiro?: string | null
+          status_workflow?: string | null
           supervisor_id?: string | null
           total_umd?: number
           total_umd_aprovada?: number
@@ -2039,10 +2054,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "ordens_servico_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "ordens_servico_equipe_id_fkey"
             columns: ["equipe_id"]
             isOneToOne: false
             referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_gestor_responsavel_id_fkey"
+            columns: ["gestor_responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -2071,6 +2107,48 @@ export type Database = {
             columns: ["supervisor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_approvals: {
+        Row: {
+          approver_id: string
+          comments: string | null
+          created_at: string | null
+          id: string
+          os_id: string
+          status: string
+        }
+        Insert: {
+          approver_id: string
+          comments?: string | null
+          created_at?: string | null
+          id?: string
+          os_id: string
+          status: string
+        }
+        Update: {
+          approver_id?: string
+          comments?: string | null
+          created_at?: string | null
+          id?: string
+          os_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_approvals_approver_id_fkey"
+            columns: ["approver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_approvals_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
           },
         ]
@@ -2189,6 +2267,48 @@ export type Database = {
           },
         ]
       }
+      os_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_internal: boolean | null
+          os_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          os_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          os_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_comments_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       os_evidences: {
         Row: {
           audit_verified: boolean | null
@@ -2236,6 +2356,54 @@ export type Database = {
           },
         ]
       }
+      os_history: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          new_status: string | null
+          old_status: string | null
+          os_id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          os_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          new_status?: string | null
+          old_status?: string | null
+          os_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_history_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       os_materials: {
         Row: {
           created_at: string
@@ -2277,6 +2445,61 @@ export type Database = {
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_materials_request: {
+        Row: {
+          created_at: string | null
+          id: string
+          material_id: string
+          os_id: string
+          quantity_delivered: number | null
+          quantity_requested: number
+          requested_by: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          material_id: string
+          os_id: string
+          quantity_delivered?: number | null
+          quantity_requested: number
+          requested_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          material_id?: string
+          os_id?: string
+          quantity_delivered?: number | null
+          quantity_requested?: number
+          requested_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_materials_request_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_materials_request_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_materials_request_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

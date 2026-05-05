@@ -8,19 +8,25 @@
  import { saveThemePrimary } from "@/hooks/useAppTheme";
  import { useAuth } from "@/lib/auth";
  import { useAuditLogger } from "@/hooks/useAuditLogger";
- import { Save, RotateCcw, Type, Square, RefreshCcw } from "lucide-react";
+  import { Save, RotateCcw, Type, Square, RefreshCcw, History } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { developerService } from "@/services/developerService";
 
  export default function DesignSystemManager() {
    const { user } = useAuth();
-   const { logAction } = useAuditLogger();
    const [loading, setLoading] = useState(false);
    const [primaryHsl, setPrimaryHsl] = useState({ h: 0, s: 72, l: 51 });
    const [radius, setRadius] = useState(0.5);
    const [font, setFont] = useState("Inter");
+    const [backups, setBackups] = useState<any[]>([]);
+
+    const loadBackups = async () => {
+      const data = await developerService.listBackups('design_system');
+      setBackups(data || []);
+    };
 
    useEffect(() => {
+      loadBackups();
      loadSettings();
    }, []);
 
@@ -51,8 +57,10 @@
        document.documentElement.style.setProperty('--radius', `${radius}rem`);
        document.body.style.fontFamily = font;
        
-       await logAction("UPDATE_DESIGN_SYSTEM", "DESIGN", null, { primaryHsl, radius, font });
+        await developerService.createBackup(`Design ${new Date().toLocaleString()}`, 'design_system', { primaryHsl, radius, font });
+        await developerService.logAction("UPDATE_DESIGN_SYSTEM", "DESIGN", { primaryHsl, radius, font });
        toast.success("Design System persistido e aplicado!");
+        loadBackups();
      } catch (e: any) {
        toast.error(e.message);
      } finally {
@@ -60,7 +68,14 @@
      }
    };
 
-   // Função para preview em tempo real sem salvar
+    const handleRestore = async (backup: any) => {
+      setPrimaryHsl(backup.data.primaryHsl);
+      setRadius(backup.data.radius);
+      setFont(backup.data.font);
+      toast.success("Design System restaurado do backup!");
+    };
+
+    // Função para preview em tempo real sem salvar
    useEffect(() => {
      const root = document.documentElement;
      root.style.setProperty("--primary", `${primaryHsl.h} ${primaryHsl.s}% ${primaryHsl.l}%`);
@@ -168,7 +183,38 @@
              <Save className="h-4 w-4 mr-2" /> PERSISTIR ALTERAÇÕES
            </Button>
          </div>
-       </div>
-     </div>
-   );
- }
+        </div>
+
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" /> Histórico de Backups (Design)
+            </CardTitle>
+            <CardDescription>Reverta o visual do sistema para estados anteriores.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {backups.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum backup de design encontrado.</p>
+              ) : (
+                backups.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
+                    <div className="flex flex-col">
+                      <p className="text-sm font-bold">{b.name}</p>
+                      <div className="flex gap-2 mt-1">
+                        <div className="h-4 w-4 rounded-full border" style={{ backgroundColor: `hsl(${b.data.primaryHsl.h}, ${b.data.primaryHsl.s}%, ${b.data.primaryHsl.l}%)` }} />
+                        <span className="text-[10px] text-muted-foreground">{b.data.font} · Radius {b.data.radius}</span>
+                      </div>
+                    </div>
+                    <Button size="sm" variant="ghost" className="gap-2" onClick={() => handleRestore(b)}>
+                      <RotateCcw className="h-3 w-3" /> Restaurar
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }

@@ -42,7 +42,9 @@
        const { data: { user: currentUser } } = await supabase.auth.getUser();
        if (!currentUser) return;
 
-       await developerService.forcePasswordReset(userFound.id, currentUser.id);
+        const { error } = await supabase.from("profiles").update({ must_change_password: true }).eq("id", userFound.id);
+        if (error) throw error;
+        await developerService.logAction("FORCE_PASSWORD_RESET", "SECURITY", { target_user: userFound.email });
        toast.success(`Reset de segurança para ${userFound.nome} disparado. A flag 'must_change_password' foi ativada.`);
        setUserFound(null);
        setEmail("");

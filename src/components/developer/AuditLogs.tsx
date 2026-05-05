@@ -15,7 +15,7 @@
    const fetchLogs = async () => {
      setLoading(true);
      try {
-       const data = await developerService.getAuditLogs(100);
+        const data = await developerService.getAuditLogs({ limit: 100 });
        setLogs(data || []);
      } finally {
        setLoading(false);

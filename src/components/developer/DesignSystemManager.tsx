@@ -8,8 +8,9 @@
  import { saveThemePrimary } from "@/hooks/useAppTheme";
  import { useAuth } from "@/lib/auth";
  import { useAuditLogger } from "@/hooks/useAuditLogger";
- import { Save, RotateCcw, Type, Square } from "lucide-react";
+ import { Save, RotateCcw, Type, Square, RefreshCcw } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ import { developerService } from "@/services/developerService";
 
  export default function DesignSystemManager() {
    const { user } = useAuth();
@@ -19,22 +20,52 @@
    const [radius, setRadius] = useState(0.5);
    const [font, setFont] = useState("Inter");
 
+   useEffect(() => {
+     loadSettings();
+   }, []);
+
+   const loadSettings = async () => {
+     try {
+       const settings = await developerService.getDesignSettings() as any;
+       if (settings.primaryHsl) setPrimaryHsl(settings.primaryHsl);
+       if (settings.radius) setRadius(settings.radius);
+       if (settings.font) setFont(settings.font);
+     } catch (e) {
+       console.error("Erro ao carregar configurações", e);
+     }
+   };
+
    const handleSave = async () => {
      if (!user) return;
      try {
        setLoading(true);
+       // 1. Atualizar banco de dados para persistência global
        await saveThemePrimary(primaryHsl.h, primaryHsl.s, primaryHsl.l);
-       // Also update radius globally via CSS variables
+       await developerService.saveDesignSettings({
+         primaryHsl,
+         radius,
+         font
+       });
+
+       // 2. Aplicar visualmente no cliente atual (instantâneo)
        document.documentElement.style.setProperty('--radius', `${radius}rem`);
+       document.body.style.fontFamily = font;
        
        await logAction("UPDATE_DESIGN_SYSTEM", "DESIGN", null, { primaryHsl, radius, font });
-       toast.success("Design System atualizado com sucesso!");
+       toast.success("Design System persistido e aplicado!");
      } catch (e: any) {
        toast.error(e.message);
      } finally {
        setLoading(false);
      }
    };
+
+   // Função para preview em tempo real sem salvar
+   useEffect(() => {
+     const root = document.documentElement;
+     root.style.setProperty("--primary", `${primaryHsl.h} ${primaryHsl.s}% ${primaryHsl.l}%`);
+     root.style.setProperty("--radius", `${radius}rem`);
+   }, [primaryHsl, radius]);
 
    return (
      <div className="space-y-6">
@@ -49,7 +80,7 @@
            <Card>
              <CardHeader>
                <CardTitle>Cores Globais</CardTitle>
-               <CardDescription>Ajuste as cores principais do sistema usando HSL.</CardDescription>
+               <CardDescription>O sistema atualizará automaticamente todos os componentes que usam a cor primária.</CardDescription>
              </CardHeader>
              <CardContent className="space-y-6">
                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -68,10 +99,10 @@
                    </div>
                  </div>
                  <div className="flex flex-col items-center justify-center p-8 border rounded-xl bg-muted/20">
-                   <p className="text-sm font-medium mb-4">Preview</p>
+                   <p className="text-sm font-medium mb-4">Preview do Componente</p>
                    <div className="space-y-4 w-full max-w-[200px]">
-                     <Button className="w-full" style={{ borderRadius: `${radius}rem` }}>Botão Primário</Button>
-                     <div className="h-12 w-full flex items-center justify-center text-primary-foreground font-bold" style={{ backgroundColor: `hsl(${primaryHsl.h}, ${primaryHsl.s}%, ${primaryHsl.l}%)`, borderRadius: `${radius}rem` }}>
+                     <Button className="w-full">Botão Primário</Button>
+                     <div className="h-12 w-full flex items-center justify-center text-primary-foreground font-bold bg-primary" style={{ borderRadius: `${radius}rem` }}>
                        BRAND COLOR
                      </div>
                    </div>
@@ -85,7 +116,7 @@
            <Card>
              <CardHeader>
                <CardTitle className="flex items-center gap-2"><Square className="h-5 w-5" /> Arredondamento (Border Radius)</CardTitle>
-               <CardDescription>Controle o quão arredondados são os elementos da interface.</CardDescription>
+               <CardDescription>Veja a mudança em tempo real nos botões e inputs ao redor.</CardDescription>
              </CardHeader>
              <CardContent className="space-y-6">
                <div className="space-y-2">
@@ -94,8 +125,8 @@
                </div>
                <div className="grid grid-cols-3 gap-4 mt-8">
                  <div className="p-4 border bg-card text-center" style={{ borderRadius: `${radius}rem` }}>Card Example</div>
-                 <Input placeholder="Input Example" style={{ borderRadius: `${radius}rem` }} />
-                 <Button style={{ borderRadius: `${radius}rem` }}>Button Example</Button>
+                 <Input placeholder="Input Example" />
+                 <Button>Button Example</Button>
                </div>
              </CardContent>
            </Card>
@@ -105,7 +136,7 @@
            <Card>
              <CardHeader>
                <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5" /> Fontes do Sistema</CardTitle>
-               <CardDescription>Selecione a família de fontes principal.</CardDescription>
+               <CardDescription>As fontes serão aplicadas ao salvar.</CardDescription>
              </CardHeader>
              <CardContent className="space-y-4">
                <div className="space-y-2">
@@ -114,24 +145,29 @@
                </div>
                <div className="p-6 border rounded-lg bg-muted/10 space-y-4" style={{ fontFamily: font }}>
                  <h1 className="text-2xl font-bold">Título de Exemplo</h1>
-                 <p>Este é um parágrafo de exemplo para visualizar como a fonte se comporta no sistema. O desenvolvedor tem controle total sobre a experiência visual do usuário.</p>
+                 <p>Preview da tipografia escolhida para o sistema.</p>
                </div>
              </CardContent>
            </Card>
          </TabsContent>
        </Tabs>
 
-       <div className="flex justify-end gap-3 pt-6 border-t">
-         <Button variant="outline" onClick={() => {
-           setPrimaryHsl({ h: 0, s: 72, l: 51 });
-           setRadius(0.5);
-           setFont("Inter");
-         }}>
-           <RotateCcw className="h-4 w-4 mr-2" /> Restaurar Padrão
+       <div className="flex justify-between items-center pt-6 border-t">
+         <Button variant="ghost" size="sm" onClick={loadSettings} className="text-muted-foreground">
+           <RefreshCcw className="h-4 w-4 mr-2" /> Recarregar Configurações
          </Button>
-         <Button onClick={handleSave} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
-           <Save className="h-4 w-4 mr-2" /> Aplicar em Todo o Sistema
-         </Button>
+         <div className="flex gap-3">
+           <Button variant="outline" onClick={() => {
+             setPrimaryHsl({ h: 0, s: 72, l: 51 });
+             setRadius(0.5);
+             setFont("Inter");
+           }}>
+             <RotateCcw className="h-4 w-4 mr-2" /> Restaurar Padrão
+           </Button>
+           <Button onClick={handleSave} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8">
+             <Save className="h-4 w-4 mr-2" /> PERSISTIR ALTERAÇÕES
+           </Button>
+         </div>
        </div>
      </div>
    );

@@ -21,22 +21,21 @@
  
    async getDesignSettings() {
      const { data, error } = await supabase
-       .from("design_system_settings")
-       .select("*")
-       .eq("is_active", true)
+       .from("app_settings")
+       .select("value")
+       .eq("key", "theme.settings")
        .maybeSingle();
      
      if (error) throw error;
-     return data;
+     return data?.value || {};
    },
- 
-   async saveDesignSettings(settings: any, userId: string) {
-     const { data, error } = await supabase
-       .from("design_system_settings")
-       .upsert({ ...settings, updated_by: userId, is_active: true });
+
+   async saveDesignSettings(settings: any) {
+     const { error } = await supabase
+       .from("app_settings")
+       .upsert({ key: "theme.settings", value: settings }, { onConflict: "key" });
      
      if (error) throw error;
-     return data;
    },
  
    async getAuditLogs(limit = 50) {

@@ -1,4 +1,4 @@
-  import { useState, useEffect, Suspense, lazy } from "react";
+  import { useState, useEffect, Suspense, lazy, useCallback } from "react";
   import { supabase } from "@/integrations/supabase/client";
   import { useAuth } from "@/lib/auth";
   import { developerService } from "@/services/developerService";
@@ -35,7 +35,29 @@
   );
 
   export default function DevDashboard() {
-    const { hasRole } = useAuth();
+    const { hasRole, profile } = useAuth();
+
+    const logAccess = useCallback(async () => {
+      if (profile) {
+        try {
+          const { data: ipData } = await fetch('https://api.ipify.org?format=json').then(res => res.json()).catch(() => ({ ip: 'Desconhecido' }));
+          await developerService.logAction(
+            "ACCESS_DASHBOARD",
+            "SYSTEM",
+            { 
+              user_agent: navigator.userAgent,
+              ip: ipData?.ip
+            }
+          );
+        } catch (e) {
+          console.error("Erro ao registrar acesso:", e);
+        }
+      }
+    }, [profile]);
+
+    useEffect(() => {
+      logAccess();
+    }, [logAccess]);
 
     return (
       <div className="space-y-6">

@@ -101,9 +101,9 @@
                </div>
              </div>
 
-             <Button onClick={handleSave} className="w-full bg-primary hover:opacity-90 font-bold" onClick={handleReset}>
-               CONFIRMAR RESET FORÇADO
-             </Button>
+              <Button className="w-full bg-primary hover:opacity-90 font-bold" onClick={handleReset} disabled={loading}>
+                {loading ? "Processando..." : "CONFIRMAR RESET FORÇADO"}
+              </Button>
            </div>
          )}
 

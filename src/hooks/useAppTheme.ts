@@ -11,24 +11,44 @@ function applyHsl(h: number, s: number, l: number) {
   root.style.setProperty("--destructive", `${h} ${s}% ${Math.max(l - 9, 5)}%`);
 }
 
-export function useAppTheme() {
-  useEffect(() => {
-    let mounted = true;
-    supabase
-      .from("app_settings")
-      .select("value")
-      .eq("key", "theme.primary_color")
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!mounted || !data?.value) return;
-        const v: any = data.value;
-        if (typeof v.h === "number") applyHsl(v.h, v.s, v.l);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
-}
+ export function useAppTheme() {
+   useEffect(() => {
+     let mounted = true;
+     
+     const fetchAll = async () => {
+       // 1. Primário
+       const { data: primaryData } = await supabase
+         .from("app_settings")
+         .select("value")
+         .eq("key", "theme.primary_color")
+         .maybeSingle();
+       
+       if (mounted && primaryData?.value) {
+         const v: any = primaryData.value;
+         if (typeof v.h === "number") applyHsl(v.h, v.s, v.l);
+       }
+
+       // 2. Outras configurações (Radius, Font)
+       const { data: settingsData } = await supabase
+         .from("app_settings")
+         .select("value")
+         .eq("key", "theme.settings")
+         .maybeSingle();
+
+       if (mounted && settingsData?.value) {
+         const v: any = settingsData.value;
+         if (v.radius) document.documentElement.style.setProperty('--radius', `${v.radius}rem`);
+         if (v.font) document.body.style.fontFamily = v.font;
+       }
+     };
+
+     fetchAll();
+     
+     return () => {
+       mounted = false;
+     };
+   }, []);
+ }
 
 export async function saveThemePrimary(h: number, s: number, l: number) {
   applyHsl(h, s, l);

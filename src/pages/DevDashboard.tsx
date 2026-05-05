@@ -1,16 +1,18 @@
-  import { useState, useEffect, Suspense, lazy, useCallback } from "react";
+ import { useState, useEffect, Suspense, lazy, useCallback, useMemo } from "react";
   import { supabase } from "@/integrations/supabase/client";
   import { useAuth } from "@/lib/auth";
   import { developerService } from "@/services/developerService";
- import PageHeader from "@/components/PageHeader";
- import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-  import { 
-    Activity, Palette, Terminal, ShieldAlert, FileText, Users, 
-    Lock, Settings, Bug, HardDrive, Bell, History, Database,
-     RefreshCcw, LayoutGrid
-   } from "lucide-react";
+ // Refactored to sidebar navigation pattern
+ import {
+   Activity, Palette, Terminal, ShieldAlert, FileText, Users,
+   Lock, Settings, Bug, HardDrive, Bell, History, Database,
+   RefreshCcw, LayoutGrid, ChevronRight, Menu, X
+ } from "lucide-react";
   import { Button } from "@/components/ui/button";
   import { Skeleton } from "@/components/ui/skeleton";
+ import { cn } from "@/lib/utils";
+ import { ScrollArea } from "@/components/ui/scroll-area";
+ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
   // Lazy load components
   const DeveloperOverview = lazy(() => import("@/components/developer/DeveloperOverview"));
@@ -34,8 +36,10 @@
     </div>
   );
 
-  export default function DevDashboard() {
-    const { hasRole, profile } = useAuth();
+   export default function DevDashboard() {
+     const { hasRole, profile } = useAuth();
+     const [activeTab, setActiveTab] = useState("overview");
+     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     const logAccess = useCallback(async () => {
       if (profile) {
@@ -55,55 +59,125 @@
       }
     }, [profile]);
 
-    useEffect(() => {
-      logAccess();
-    }, [logAccess]);
+     useEffect(() => {
+       logAccess();
+     }, [logAccess]);
 
-    return (
-      <div className="space-y-6">
-        <PageHeader 
-          title="Developer Dashboard" 
-          description="Centro Técnico de Controle Global do Sistema."
-          actions={
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
-              <RefreshCcw className="h-4 w-4 mr-2" /> Reiniciar Painel
-            </Button>
-          }
-        />
+     const menuItems = useMemo(() => [
+       { id: "overview", label: "Visão Geral", icon: Activity },
+       { id: "design", label: "Design System", icon: Palette },
+       { id: "files", label: "Arquivos", icon: HardDrive },
+       { id: "users", label: "Usuários", icon: Users },
+       { id: "auth", label: "Segurança", icon: Lock },
+       { id: "settings", label: "Global", icon: Settings },
+       { id: "audit", label: "Auditoria", icon: History },
+       { id: "errors", label: "Erros", icon: Bug },
+       { id: "database", label: "Banco de Dados", icon: Database },
+       { id: "modules", label: "Módulos", icon: LayoutGrid },
+       { id: "terminal", label: "Terminal", icon: Terminal },
+       { id: "diagnostics", label: "Diagnóstico", icon: ShieldAlert },
+       { id: "maintenance", label: "Manutenção", icon: Bell },
+     ], []);
 
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="flex flex-wrap h-auto p-1 mb-8 gap-1 bg-muted/50">
-            <TabsTrigger value="overview" className="gap-2"><Activity className="h-4 w-4" /> Visão Geral</TabsTrigger>
-            <TabsTrigger value="design" className="gap-2"><Palette className="h-4 w-4" /> Design System</TabsTrigger>
-            <TabsTrigger value="files" className="gap-2"><HardDrive className="h-4 w-4" /> Arquivos</TabsTrigger>
-            <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /> Usuários</TabsTrigger>
-            <TabsTrigger value="auth" className="gap-2"><Lock className="h-4 w-4" /> Segurança</TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2"><Settings className="h-4 w-4" /> Global</TabsTrigger>
-            <TabsTrigger value="audit" className="gap-2"><History className="h-4 w-4" /> Auditoria</TabsTrigger>
-            <TabsTrigger value="errors" className="gap-2"><Bug className="h-4 w-4" /> Erros</TabsTrigger>
-             <TabsTrigger value="database" className="gap-2"><Database className="h-4 w-4" /> Banco de Dados</TabsTrigger>
-             <TabsTrigger value="modules" className="gap-2"><LayoutGrid className="h-4 w-4" /> Módulos</TabsTrigger>
-             <TabsTrigger value="terminal" className="gap-2"><Terminal className="h-4 w-4" /> Terminal</TabsTrigger>
-             <TabsTrigger value="diagnostics" className="gap-2"><ShieldAlert className="h-4 w-4" /> Diagnóstico</TabsTrigger>
-             <TabsTrigger value="maintenance" className="gap-2"><Bell className="h-4 w-4" /> Manutenção</TabsTrigger>
-          </TabsList>
+     const renderContent = () => {
+       switch (activeTab) {
+         case "overview": return <DeveloperOverview />;
+         case "design": return <DesignSystemManager />;
+         case "files": return <FileManager />;
+         case "users": return <UserPermissionManager />;
+         case "auth": return <PasswordResetManager />;
+         case "settings": return <GlobalSettingsManager />;
+         case "audit": return <AuditLogs />;
+         case "errors": return <ErrorLogs />;
+         case "database": return <DatabaseManager />;
+         case "modules": return <ModulesManager />;
+         case "terminal": return <TechTerminal />;
+         case "diagnostics": return <SystemDiagnostics />;
+         case "maintenance": return <MaintenanceMode />;
+         default: return <DeveloperOverview />;
+       }
+     };
 
-          <Suspense fallback={<LoadingState />}>
-            <TabsContent value="overview"><DeveloperOverview /></TabsContent>
-            <TabsContent value="design"><DesignSystemManager /></TabsContent>
-            <TabsContent value="files"><FileManager /></TabsContent>
-            <TabsContent value="users"><UserPermissionManager /></TabsContent>
-            <TabsContent value="auth"><PasswordResetManager /></TabsContent>
-            <TabsContent value="settings"><GlobalSettingsManager /></TabsContent>
-            <TabsContent value="audit"><AuditLogs /></TabsContent>
-            <TabsContent value="errors"><ErrorLogs /></TabsContent>
-             <TabsContent value="database"><DatabaseManager /></TabsContent>
-             <TabsContent value="modules"><ModulesManager /></TabsContent>
-             <TabsContent value="terminal"><TechTerminal /></TabsContent>
-             <TabsContent value="diagnostics"><SystemDiagnostics /></TabsContent>
-             <TabsContent value="maintenance"><MaintenanceMode /></TabsContent>
-          </Suspense>
-        </Tabs>
-      </div>
-    );
-  }
+     const NavItems = () => (
+       <div className="space-y-1 p-2">
+         {menuItems.map((item) => (
+             <button
+               key={item.id}
+               onClick={() => {
+                 setActiveTab(item.id);
+                 setIsMobileNavOpen(false);
+               }}
+               className={cn(
+                 "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] text-muted-foreground transition-colors",
+                 "hover:bg-accent hover:text-foreground",
+                 activeTab === item.id && "bg-accent text-foreground font-medium"
+               )}
+             >
+               <item.icon className="h-4 w-4" strokeWidth={activeTab === item.id ? 2 : 1.5} />
+               <span className="flex-1 text-left">{item.label}</span>
+               {activeTab === item.id && <ChevronRight className="h-3 w-3 opacity-50" />}
+             </button>
+         ))}
+       </div>
+     );
+
+      return (
+        <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] -m-[10px] md:-m-8 overflow-hidden bg-background">
+          {/* Header area for mobile toggle and page title */}
+          <div className="flex items-center justify-between p-3 border-b bg-card/50 backdrop-blur-sm z-10 px-4 md:px-8 shrink-0">
+           <div className="flex items-center gap-4">
+             <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
+               <SheetTrigger asChild>
+                 <Button variant="outline" size="icon" className="md:hidden">
+                   <Menu className="h-5 w-5" />
+                 </Button>
+               </SheetTrigger>
+               <SheetContent side="left" className="w-64 p-0">
+                 <div className="p-4 border-b font-bold text-lg flex items-center gap-2">
+                   <Terminal className="h-5 w-5 text-primary" />
+                   Painel Técnico
+                 </div>
+                 <ScrollArea className="h-[calc(100vh-5rem)]">
+                   <NavItems />
+                 </ScrollArea>
+               </SheetContent>
+             </Sheet>
+             <div>
+               <h1 className="text-xl font-bold tracking-tight">Developer Dashboard</h1>
+               <p className="text-xs text-muted-foreground hidden sm:block">Controle global e infraestrutura do sistema</p>
+             </div>
+           </div>
+           <div className="flex items-center gap-2">
+             <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="h-8">
+               <RefreshCcw className="h-3.5 w-3.5 mr-2" />
+               <span className="hidden sm:inline">Reiniciar</span>
+             </Button>
+           </div>
+         </div>
+
+         <div className="flex flex-1 overflow-hidden">
+           {/* Desktop Sidebar */}
+           <aside className="hidden md:flex w-64 flex-col border-r bg-card/30 backdrop-blur-sm">
+             <ScrollArea className="flex-1">
+               <div className="py-4">
+                 <NavItems />
+               </div>
+             </ScrollArea>
+             <div className="p-4 border-t bg-muted/20">
+               <div className="flex items-center gap-3 px-2 py-1 text-xs text-muted-foreground">
+                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                 SISTEMA OPERACIONAL
+               </div>
+             </div>
+           </aside>
+
+           {/* Content Area */}
+           <main className="flex-1 overflow-y-auto p-4 md:p-8">
+             <Suspense fallback={<LoadingState />}>
+               {renderContent()}
+             </Suspense>
+           </main>
+         </div>
+       </div>
+     );
+   }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+ import { developerService } from "@/services/developerService";
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";
  import { Label } from "@/components/ui/label";
@@ -22,6 +23,20 @@ export default function Login() {
    const [forgotOpen, setForgotOpen] = useState(false);
    const [forgotEmail, setForgotEmail] = useState("");
    const [forgotLoading, setForgotLoading] = useState(false);
+   const [logoUrl, setLogoUrl] = useState("https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png");
+ 
+   const fetchLogo = useCallback(async () => {
+     try {
+       const url = await developerService.getLogo();
+       setLogoUrl(url);
+     } catch (e) {
+       console.error("Erro ao carregar logo no Login:", e);
+     }
+   }, []);
+ 
+   useEffect(() => {
+     fetchLogo();
+   }, [fetchLogo]);
  
     const testAccounts = [
       { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
@@ -98,9 +113,11 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-[10px]">
       <div className="w-full max-w-sm">
-        <div className="mb-8 flex flex-col items-center gap-4 text-center">
-          <img src="https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png" alt="Logo" className="h-16 w-auto object-contain" />
-          <div className="space-y-1">
+         <div className="mb-8 flex flex-col items-center gap-5 text-center">
+           <div className="p-4 rounded-2xl bg-card shadow-sm border border-border/50">
+             <img src={logoUrl} alt="Logo" className="h-20 w-auto object-contain" />
+           </div>
+           <div className="space-y-1.5">
             <div className="text-lg font-bold tracking-tight">Energia · Operações</div>
             <div className="text-xs text-muted-foreground">Sistema de Gestão de Ordens de Serviço</div>
           </div>

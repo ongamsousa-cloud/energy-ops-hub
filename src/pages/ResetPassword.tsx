@@ -19,7 +19,6 @@ export default function ResetPassword() {
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
       setReady(true);
     } else {
-      // Allow manual access if already signed in via recovery
       supabase.auth.getSession().then(({ data }) => {
         if (data.session) setReady(true);
         else {

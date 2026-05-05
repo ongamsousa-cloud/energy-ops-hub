@@ -8,7 +8,7 @@
  import { saveThemePrimary } from "@/hooks/useAppTheme";
  import { useAuth } from "@/lib/auth";
  import { useAuditLogger } from "@/hooks/useAuditLogger";
-  import { Save, RotateCcw, Type, Square, RefreshCcw, History } from "lucide-react";
+  import { Save, RotateCcw, Type, Square, RefreshCcw, History, Upload, Image as ImageIcon } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { developerService } from "@/services/developerService";
 
@@ -17,7 +17,9 @@
    const [loading, setLoading] = useState(false);
    const [primaryHsl, setPrimaryHsl] = useState({ h: 0, s: 72, l: 51 });
    const [radius, setRadius] = useState(0.5);
-   const [font, setFont] = useState("Inter");
+    const [font, setFont] = useState("Inter");
+    const [logoUrl, setLogoUrl] = useState("");
+    const [uploadingLogo, setUploadingLogo] = useState(false);
     const [backups, setBackups] = useState<any[]>([]);
 
     const loadBackups = async () => {
@@ -25,12 +27,13 @@
       setBackups(data || []);
     };
 
-   useEffect(() => {
+    useEffect(() => {
       loadBackups();
-     loadSettings();
-   }, []);
+      loadSettings();
+      loadLogo();
+    }, []);
 
-   const loadSettings = async () => {
+    const loadSettings = async () => {
      try {
        const settings = await developerService.getDesignSettings() as any;
        if (settings.primaryHsl) setPrimaryHsl(settings.primaryHsl);
@@ -41,25 +44,68 @@
      }
    };
 
+    const loadLogo = async () => {
+      try {
+        const url = await developerService.getLogo();
+        setLogoUrl(url);
+      } catch (e) {
+        console.error("Erro ao carregar logo", e);
+      }
+    };
+
+    const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file || !user) return;
+
+      try {
+        setUploadingLogo(true);
+        const fileExt = file.name.split('.').pop();
+        const fileName = `logo-${Date.now()}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('system-assets')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('system-assets')
+          .getPublicUrl(fileName);
+
+        setLogoUrl(publicUrl);
+        toast.success("Logo carregada com sucesso! Clique em Persistir para aplicar.");
+      } catch (e: any) {
+        toast.error(`Erro no upload: ${e.message}`);
+      } finally {
+        setUploadingLogo(false);
+      }
+    };
+
    const handleSave = async () => {
      if (!user) return;
      try {
        setLoading(true);
        // 1. Atualizar banco de dados para persistência global
-       await saveThemePrimary(primaryHsl.h, primaryHsl.s, primaryHsl.l);
-       await developerService.saveDesignSettings({
-         primaryHsl,
-         radius,
-         font
-       });
+        await saveThemePrimary(primaryHsl.h, primaryHsl.s, primaryHsl.l);
+        await developerService.saveDesignSettings({
+          primaryHsl,
+          radius,
+          font
+        });
 
-       // 2. Aplicar visualmente no cliente atual (instantâneo)
-       document.documentElement.style.setProperty('--radius', `${radius}rem`);
-       document.body.style.fontFamily = font;
-       
-        await developerService.createBackup(`Design ${new Date().toLocaleString()}`, 'design_system', { primaryHsl, radius, font });
-        await developerService.logAction("UPDATE_DESIGN_SYSTEM", "DESIGN", { primaryHsl, radius, font });
-       toast.success("Design System persistido e aplicado!");
+        if (logoUrl) {
+          await developerService.updateLogo(logoUrl);
+        }
+
+        // 2. Aplicar visualmente no cliente atual (instantâneo)
+        document.documentElement.style.setProperty('--radius', `${radius}rem`);
+        document.body.style.fontFamily = font;
+        
+        await developerService.createBackup(`Design ${new Date().toLocaleString()}`, 'design_system', { primaryHsl, radius, font, logoUrl });
+        await developerService.logAction("UPDATE_DESIGN_SYSTEM", "DESIGN", { primaryHsl, radius, font, logoUrl });
+        
+        // Force update of logo in AppShell if needed (event emitter or location reload)
+        toast.success("Design System e Logo persistidos com sucesso!");
         loadBackups();
      } catch (e: any) {
        toast.error(e.message);
@@ -88,7 +134,8 @@
          <TabsList className="mb-4">
            <TabsTrigger value="colors" className="gap-2">Cores</TabsTrigger>
            <TabsTrigger value="shapes" className="gap-2">Formas & Raio</TabsTrigger>
-           <TabsTrigger value="typography" className="gap-2">Tipografia</TabsTrigger>
+            <TabsTrigger value="typography" className="gap-2">Tipografia</TabsTrigger>
+            <TabsTrigger value="branding" className="gap-2">Branding</TabsTrigger>
          </TabsList>
 
          <TabsContent value="colors">
@@ -147,7 +194,77 @@
            </Card>
          </TabsContent>
 
-         <TabsContent value="typography">
+          <TabsContent value="branding">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><ImageIcon className="h-5 w-5" /> Identidade Visual</CardTitle>
+                <CardDescription>Gerencie a logomarca principal do sistema.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Logomarca Principal</Label>
+                      <div className="flex flex-col gap-4">
+                        <div className="p-4 border rounded-lg bg-muted/20 flex items-center justify-center min-h-[120px]">
+                          {logoUrl ? (
+                            <img src={logoUrl} alt="Logo Preview" className="max-h-20 object-contain" />
+                          ) : (
+                            <div className="text-muted-foreground text-sm">Nenhuma logo carregada</div>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            id="logo-upload" 
+                            onChange={handleLogoUpload}
+                            disabled={uploadingLogo}
+                          />
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => document.getElementById('logo-upload')?.click()}
+                            disabled={uploadingLogo}
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            {uploadingLogo ? "Enviando..." : "Substituir Logo"}
+                          </Button>
+                          {logoUrl && (
+                            <Button 
+                              variant="ghost" 
+                              className="text-destructive"
+                              onClick={() => setLogoUrl("")}
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-4 p-6 border rounded-xl bg-card">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Contexto de Aplicação</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4 p-2 border-b">
+                        <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                          <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain" />
+                        </div>
+                        <span className="text-xs font-bold">Preview na Barra Superior</span>
+                      </div>
+                      <div className="p-8 bg-muted/30 rounded-lg flex flex-col items-center justify-center gap-4">
+                        <img src={logoUrl} alt="Logo" className="h-12 object-contain" />
+                        <span className="text-sm font-medium">Tela de Login</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="typography">
            <Card>
              <CardHeader>
                <CardTitle className="flex items-center gap-2"><Type className="h-5 w-5" /> Fontes do Sistema</CardTitle>

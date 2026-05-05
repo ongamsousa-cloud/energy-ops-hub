@@ -144,11 +144,29 @@
    async getAllUsersDetailed() {
      const { data, error } = await supabase
        .from("profiles")
-       .select(`
-         *,
-         user_roles (role)
-       `);
-     if (error) throw error;
-     return data;
-   }
- };
+        .select(`
+          *,
+          user_roles (role)
+        `);
+      if (error) throw error;
+      return data;
+    },
+
+    async getLogo() {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "app.logo_url")
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.value as any)?.url || "https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png";
+    },
+
+    async updateLogo(url: string) {
+      const { error } = await supabase
+        .from("app_settings")
+        .upsert({ key: "app.logo_url", value: { url } }, { onConflict: "key" });
+      if (error) throw error;
+      await this.logAction("UPDATE_LOGO", "DESIGN", { url });
+    }
+  };

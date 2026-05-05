@@ -3,11 +3,12 @@ import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
    LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks, Terminal,
    ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck, Package, Building2,
-   Database, Palette, Activity
+   Database, Palette, Activity, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+ import { developerService } from "@/services/developerService";
 import { cn } from "@/lib/utils";
 import InstallAppButton from "@/components/InstallAppButton";
 import NotificationBell from "@/components/NotificationBell";
@@ -32,9 +33,33 @@ const NAV: Item[] = [
 ];
 
 export default function AppShell() {
-  const { profile, roles, hasRole, signOut } = useAuth();
+   const { profile, roles, hasRole, signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
   const [counts, setCounts] = useState<Record<string, number>>({});
+   const [logoUrl, setLogoUrl] = useState("https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png");
+ 
+   useEffect(() => {
+     const fetchLogo = async () => {
+       try {
+         const url = await developerService.getLogo();
+         setLogoUrl(url);
+       } catch (e) {
+         console.error("Erro ao carregar logo no AppShell:", e);
+       }
+     };
+     fetchLogo();
+ 
+     // Subscribe to logo changes
+     const channel = supabase
+       .channel('logo-changes')
+       .on('postgres_changes', 
+         { event: '*', schema: 'public', table: 'app_settings', filter: 'key=eq.app.logo_url' },
+         fetchLogo
+       )
+       .subscribe();
+ 
+     return () => { supabase.removeChannel(channel); };
+   }, []);
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -71,9 +96,11 @@ export default function AppShell() {
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
             <Menu className="h-5 w-5" />
           </Button>
-          <Link to="/app" className="flex items-center gap-2.5">
-            <img src="https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png" alt="Logo" className="h-7 w-auto object-contain" />
-            <div className="flex flex-col">
+           <Link to="/app" className="flex items-center gap-2.5 group">
+             <div className="relative h-8 w-auto">
+               <img src={logoUrl} alt="Logo" className="h-full w-auto object-contain transition-transform group-hover:scale-105" />
+             </div>
+             <div className="flex flex-col border-l border-border pl-2.5 ml-0.5">
               <span className="text-xs font-bold leading-none tracking-tight">Energia</span>
               <span className="text-[10px] font-medium leading-none text-muted-foreground uppercase tracking-widest">Operações</span>
             </div>

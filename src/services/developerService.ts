@@ -38,7 +38,7 @@
      if (error) throw error;
    },
  
-    async getAuditLogs(filters?: { search?: string; startDate?: string; endDate?: string; limit?: number }) {
+    async getAuditLogs(filters?: { limit?: number; startDate?: string; endDate?: string }) {
       let query = supabase
         .from("developer_audit_logs")
         .select(`
@@ -60,16 +60,16 @@
       }));
     },
 
-    async logAction(action: string, module: string, details: any = {}) {
+    async logAction(action: string, mod: string, details: any = {}) {
       const { error } = await supabase.rpc("log_developer_action", {
         p_action: action,
-        p_module: module,
+        p_module: mod,
         p_details: details
       });
       if (error) console.error("Erro ao registrar auditoria:", error);
     },
 
-    async getErrorLogs(filters?: { module?: string; limit?: number }) {
+    async getErrorLogs(filters?: { limit?: number }) {
       let query = supabase
         .from("system_error_logs")
         .select(`
@@ -78,7 +78,6 @@
         `)
         .order("created_at", { ascending: false });
 
-      if (filters?.module) query = query.eq("module", filters.module);
       if (filters?.limit) query = query.limit(filters.limit);
 
       const { data, error } = await query;

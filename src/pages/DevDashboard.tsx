@@ -7,8 +7,8 @@
   import { 
     Activity, Palette, Terminal, ShieldAlert, FileText, Users, 
     Lock, Settings, Bug, HardDrive, Bell, History, Database,
-    RefreshCcw
-  } from "lucide-react";
+     RefreshCcw, LayoutGrid
+   } from "lucide-react";
   import { Button } from "@/components/ui/button";
   import { Skeleton } from "@/components/ui/skeleton";
 

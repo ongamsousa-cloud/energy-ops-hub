@@ -38,16 +38,73 @@
      if (error) throw error;
    },
  
-   async getAuditLogs(limit = 50) {
-     const { data, error } = await supabase
-       .from("developer_audit_logs")
-       .select("*")
-       .order("created_at", { ascending: false })
-       .limit(limit);
-     
-     if (error) throw error;
-     return data;
-   },
+    async getAuditLogs(filters?: { search?: string; startDate?: string; endDate?: string; limit?: number }) {
+      let query = supabase
+        .from("developer_audit_logs")
+        .select(`
+          *,
+          profiles:user_id (nome, email)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (filters?.limit) query = query.limit(filters.limit);
+      if (filters?.startDate) query = query.gte("created_at", filters.startDate);
+      if (filters?.endDate) query = query.lte("created_at", filters.endDate);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data.map(log => ({
+        ...log,
+        user_email: (log.profiles as any)?.email || "Sistema",
+        user_nome: (log.profiles as any)?.nome || "Sistema"
+      }));
+    },
+
+    async logAction(action: string, module: string, details: any = {}) {
+      const { error } = await supabase.rpc("log_developer_action", {
+        p_action: action,
+        p_module: module,
+        p_details: details
+      });
+      if (error) console.error("Erro ao registrar auditoria:", error);
+    },
+
+    async getErrorLogs(filters?: { module?: string; limit?: number }) {
+      let query = supabase
+        .from("system_error_logs")
+        .select(`
+          *,
+          profiles:user_id (nome, email)
+        `)
+        .order("created_at", { ascending: false });
+
+      if (filters?.module) query = query.eq("module", filters.module);
+      if (filters?.limit) query = query.limit(filters.limit);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+
+    async createBackup(name: string, type: string, data: any) {
+      const { data: userData } = await supabase.auth.getUser();
+      const { error } = await supabase.from("system_backups").insert({
+        name,
+        config_type: type,
+        data,
+        created_by: userData.user?.id
+      });
+      if (error) throw error;
+      await this.logAction("CREATE_BACKUP", "BACKUP", { name, type });
+    },
+
+    async listBackups(type?: string) {
+      let query = supabase.from("system_backups").select("*").order("created_at", { ascending: false });
+      if (type) query = query.eq("config_type", type);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
 
    async executeSQL(query: string) {
      // This would normally call an edge function since standard supabase client can't run raw SQL

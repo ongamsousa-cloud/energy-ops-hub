@@ -122,10 +122,10 @@
        </div>
      );
 
-     return (
-       <div className="flex flex-col h-full -m-8 md:-m-8">
-         {/* Header area for mobile toggle and page title */}
-         <div className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10 md:px-8">
+      return (
+        <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] -m-[10px] md:-m-8 overflow-hidden bg-background">
+          {/* Header area for mobile toggle and page title */}
+          <div className="flex items-center justify-between p-3 border-b bg-card/50 backdrop-blur-sm z-10 px-4 md:px-8 shrink-0">
            <div className="flex items-center gap-4">
              <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
                <SheetTrigger asChild>

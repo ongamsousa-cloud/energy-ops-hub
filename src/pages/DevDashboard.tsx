@@ -2,8 +2,7 @@
   import { supabase } from "@/integrations/supabase/client";
   import { useAuth } from "@/lib/auth";
   import { developerService } from "@/services/developerService";
- import PageHeader from "@/components/PageHeader";
- // Tabs imports removed as we use custom sidebar
+ // Refactored to sidebar navigation pattern
  import {
    Activity, Palette, Terminal, ShieldAlert, FileText, Users,
    Lock, Settings, Bug, HardDrive, Bell, History, Database,

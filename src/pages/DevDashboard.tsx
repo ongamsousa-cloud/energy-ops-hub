@@ -3,7 +3,7 @@
   import { useAuth } from "@/lib/auth";
   import { developerService } from "@/services/developerService";
  import PageHeader from "@/components/PageHeader";
- import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+ // Tabs imports removed as we use custom sidebar
  import {
    Activity, Palette, Terminal, ShieldAlert, FileText, Users,
    Lock, Settings, Bug, HardDrive, Bell, History, Database,
@@ -102,23 +102,22 @@
      const NavItems = () => (
        <div className="space-y-1 p-2">
          {menuItems.map((item) => (
-           <button
-             key={item.id}
-             onClick={() => {
-               setActiveTab(item.id);
-               setIsMobileNavOpen(false);
-             }}
-             className={cn(
-               "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200",
-               activeTab === item.id
-                 ? "bg-primary text-primary-foreground shadow-sm"
-                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
-             )}
-           >
-             <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-primary-foreground" : "text-muted-foreground")} />
-             <span className="flex-1 text-left">{item.label}</span>
-             {activeTab === item.id && <ChevronRight className="h-4 w-4" />}
-           </button>
+             <button
+               key={item.id}
+               onClick={() => {
+                 setActiveTab(item.id);
+                 setIsMobileNavOpen(false);
+               }}
+               className={cn(
+                 "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px] text-muted-foreground transition-colors",
+                 "hover:bg-accent hover:text-foreground",
+                 activeTab === item.id && "bg-accent text-foreground font-medium"
+               )}
+             >
+               <item.icon className="h-4 w-4" strokeWidth={activeTab === item.id ? 2 : 1.5} />
+               <span className="flex-1 text-left">{item.label}</span>
+               {activeTab === item.id && <ChevronRight className="h-3 w-3 opacity-50" />}
+             </button>
          ))}
        </div>
      );

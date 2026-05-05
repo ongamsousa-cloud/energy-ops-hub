@@ -21,8 +21,11 @@
   const GlobalSettingsManager = lazy(() => import("@/components/developer/GlobalSettingsManager"));
   const AuditLogs = lazy(() => import("@/components/developer/AuditLogs"));
   const ErrorLogs = lazy(() => import("@/components/developer/ErrorLogs"));
-  const SystemDiagnostics = lazy(() => import("@/components/developer/SystemDiagnostics"));
-  const MaintenanceMode = lazy(() => import("@/components/developer/MaintenanceMode"));
+   const SystemDiagnostics = lazy(() => import("@/components/developer/SystemDiagnostics"));
+   const MaintenanceMode = lazy(() => import("@/components/developer/MaintenanceMode"));
+   const DatabaseManager = lazy(() => import("@/components/developer/DatabaseManager"));
+   const ModulesManager = lazy(() => import("@/components/developer/ModulesManager"));
+   const TechTerminal = lazy(() => import("@/components/developer/TechTerminal"));
 
   const LoadingState = () => (
     <div className="space-y-4">
@@ -56,8 +59,11 @@
             <TabsTrigger value="settings" className="gap-2"><Settings className="h-4 w-4" /> Global</TabsTrigger>
             <TabsTrigger value="audit" className="gap-2"><History className="h-4 w-4" /> Auditoria</TabsTrigger>
             <TabsTrigger value="errors" className="gap-2"><Bug className="h-4 w-4" /> Erros</TabsTrigger>
-            <TabsTrigger value="diagnostics" className="gap-2"><ShieldAlert className="h-4 w-4" /> Diagnóstico</TabsTrigger>
-            <TabsTrigger value="maintenance" className="gap-2"><Bell className="h-4 w-4" /> Manutenção</TabsTrigger>
+             <TabsTrigger value="database" className="gap-2"><Database className="h-4 w-4" /> Banco de Dados</TabsTrigger>
+             <TabsTrigger value="modules" className="gap-2"><LayoutGrid className="h-4 w-4" /> Módulos</TabsTrigger>
+             <TabsTrigger value="terminal" className="gap-2"><Terminal className="h-4 w-4" /> Terminal</TabsTrigger>
+             <TabsTrigger value="diagnostics" className="gap-2"><ShieldAlert className="h-4 w-4" /> Diagnóstico</TabsTrigger>
+             <TabsTrigger value="maintenance" className="gap-2"><Bell className="h-4 w-4" /> Manutenção</TabsTrigger>
           </TabsList>
 
           <Suspense fallback={<LoadingState />}>
@@ -69,8 +75,11 @@
             <TabsContent value="settings"><GlobalSettingsManager /></TabsContent>
             <TabsContent value="audit"><AuditLogs /></TabsContent>
             <TabsContent value="errors"><ErrorLogs /></TabsContent>
-            <TabsContent value="diagnostics"><SystemDiagnostics /></TabsContent>
-            <TabsContent value="maintenance"><MaintenanceMode /></TabsContent>
+             <TabsContent value="database"><DatabaseManager /></TabsContent>
+             <TabsContent value="modules"><ModulesManager /></TabsContent>
+             <TabsContent value="terminal"><TechTerminal /></TabsContent>
+             <TabsContent value="diagnostics"><SystemDiagnostics /></TabsContent>
+             <TabsContent value="maintenance"><MaintenanceMode /></TabsContent>
           </Suspense>
         </Tabs>
       </div>

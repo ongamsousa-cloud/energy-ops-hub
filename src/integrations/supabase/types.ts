@@ -3768,6 +3768,7 @@ export type Database = {
         | "financeiro"
         | "auditor"
         | "estoque"
+        | "developer"
       audit_status:
         | "Não auditada"
         | "Pendente de auditoria"
@@ -4029,6 +4030,7 @@ export const Constants = {
         "financeiro",
         "auditor",
         "estoque",
+        "developer",
       ],
       audit_status: [
         "Não auditada",

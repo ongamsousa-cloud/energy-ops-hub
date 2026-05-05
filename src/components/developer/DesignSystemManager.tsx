@@ -9,6 +9,7 @@
  import { useAuth } from "@/lib/auth";
  import { useAuditLogger } from "@/hooks/useAuditLogger";
   import { Save, RotateCcw, Type, Square, RefreshCcw, History, Upload, Image as ImageIcon } from "lucide-react";
+  import { supabase } from "@/integrations/supabase/client";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { developerService } from "@/services/developerService";
 

@@ -31,4 +31,48 @@
     </div>
   );
 
- export default function DevDashboard() {
+  export default function DevDashboard() {
+    const { hasRole } = useAuth();
+
+    return (
+      <div className="space-y-6">
+        <PageHeader 
+          title="Developer Dashboard" 
+          description="Centro Técnico de Controle Global do Sistema."
+          actions={
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+              <RefreshCcw className="h-4 w-4 mr-2" /> Reiniciar Painel
+            </Button>
+          }
+        />
+
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="flex flex-wrap h-auto p-1 mb-8 gap-1 bg-muted/50">
+            <TabsTrigger value="overview" className="gap-2"><Activity className="h-4 w-4" /> Visão Geral</TabsTrigger>
+            <TabsTrigger value="design" className="gap-2"><Palette className="h-4 w-4" /> Design System</TabsTrigger>
+            <TabsTrigger value="files" className="gap-2"><HardDrive className="h-4 w-4" /> Arquivos</TabsTrigger>
+            <TabsTrigger value="users" className="gap-2"><Users className="h-4 w-4" /> Usuários</TabsTrigger>
+            <TabsTrigger value="auth" className="gap-2"><Lock className="h-4 w-4" /> Segurança</TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2"><Settings className="h-4 w-4" /> Global</TabsTrigger>
+            <TabsTrigger value="audit" className="gap-2"><History className="h-4 w-4" /> Auditoria</TabsTrigger>
+            <TabsTrigger value="errors" className="gap-2"><Bug className="h-4 w-4" /> Erros</TabsTrigger>
+            <TabsTrigger value="diagnostics" className="gap-2"><ShieldAlert className="h-4 w-4" /> Diagnóstico</TabsTrigger>
+            <TabsTrigger value="maintenance" className="gap-2"><Bell className="h-4 w-4" /> Manutenção</TabsTrigger>
+          </TabsList>
+
+          <Suspense fallback={<LoadingState />}>
+            <TabsContent value="overview"><DeveloperOverview /></TabsContent>
+            <TabsContent value="design"><DesignSystemManager /></TabsContent>
+            <TabsContent value="files"><FileManager /></TabsContent>
+            <TabsContent value="users"><UserPermissionManager /></TabsContent>
+            <TabsContent value="auth"><PasswordResetManager /></TabsContent>
+            <TabsContent value="settings"><GlobalSettingsManager /></TabsContent>
+            <TabsContent value="audit"><AuditLogs /></TabsContent>
+            <TabsContent value="errors"><ErrorLogs /></TabsContent>
+            <TabsContent value="diagnostics"><SystemDiagnostics /></TabsContent>
+            <TabsContent value="maintenance"><MaintenanceMode /></TabsContent>
+          </Suspense>
+        </Tabs>
+      </div>
+    );
+  }

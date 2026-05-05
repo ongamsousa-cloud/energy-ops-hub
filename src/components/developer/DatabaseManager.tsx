@@ -19,12 +19,12 @@
      setLoading(true);
      setError(null);
      try {
-       const data = await developerService.executeSQL(query);
-       if (data && data.error) {
+       const data = await developerService.executeSQL(query) as any;
+       if (data && !Array.isArray(data) && data.error) {
          setError(data.error);
          setResults(null);
        } else {
-         setResults(data);
+         setResults(Array.isArray(data) ? data : []);
          toast.success("Query executada com sucesso!");
        }
      } catch (e: any) {

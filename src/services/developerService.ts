@@ -48,5 +48,52 @@
      
      if (error) throw error;
      return data;
+   },
+
+   async executeSQL(query: string) {
+     // This would normally call an edge function since standard supabase client can't run raw SQL
+     // For now, we will use a dedicated RPC if available or simulate for UI testing
+     const { data, error } = await supabase.rpc('execute_dev_sql', { sql_query: query });
+     if (error) throw error;
+     return data;
+   },
+
+   async getSystemModules() {
+     const { data, error } = await supabase
+       .from("developer_settings")
+       .select("*")
+       .eq("setting_type", "module_toggle");
+     if (error) throw error;
+     return data;
+   },
+
+   async toggleModule(id: string, active: boolean) {
+     const { error } = await supabase
+       .from("developer_settings")
+       .update({ is_active: active })
+       .eq("id", id);
+     if (error) throw error;
+   },
+
+   async forcePasswordReset(targetUserId: string, requestedBy: string) {
+     const { error } = await supabase
+       .from("password_reset_requests")
+       .insert({
+         target_user_id: targetUserId,
+         requested_by: requestedBy,
+         status: 'pending'
+       });
+     if (error) throw error;
+   },
+
+   async getAllUsersDetailed() {
+     const { data, error } = await supabase
+       .from("profiles")
+       .select(`
+         *,
+         user_roles (role)
+       `);
+     if (error) throw error;
+     return data;
    }
  };

@@ -4090,6 +4090,7 @@ export type Database = {
         Args: { os_row: Database["public"]["Tables"]["ordens_servico"]["Row"] }
         Returns: boolean
       }
+      execute_dev_sql: { Args: { sql_query: string }; Returns: Json }
       get_conversation_between_users: {
         Args: { user1: string; user2: string }
         Returns: {

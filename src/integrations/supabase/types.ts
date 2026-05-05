@@ -671,6 +671,255 @@ export type Database = {
         }
         Relationships: []
       }
+      design_system_presets: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          settings_json: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          settings_json: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          settings_json?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      design_system_settings: {
+        Row: {
+          accent_color: string | null
+          app_icon_url: string | null
+          background_color: string | null
+          border_color: string | null
+          button_radius: string | null
+          card_radius: string | null
+          created_at: string | null
+          custom_css: string | null
+          danger_color: string | null
+          favicon_url: string | null
+          font_body: string | null
+          font_buttons: string | null
+          font_heading: string | null
+          id: string
+          info_color: string | null
+          input_radius: string | null
+          is_active: boolean | null
+          login_background_url: string | null
+          logo_url: string | null
+          muted_text_color: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          sidebar_style: string | null
+          success_color: string | null
+          surface_color: string | null
+          text_color: string | null
+          theme_mode: string | null
+          updated_at: string | null
+          updated_by: string | null
+          warning_color: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          app_icon_url?: string | null
+          background_color?: string | null
+          border_color?: string | null
+          button_radius?: string | null
+          card_radius?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          danger_color?: string | null
+          favicon_url?: string | null
+          font_body?: string | null
+          font_buttons?: string | null
+          font_heading?: string | null
+          id?: string
+          info_color?: string | null
+          input_radius?: string | null
+          is_active?: boolean | null
+          login_background_url?: string | null
+          logo_url?: string | null
+          muted_text_color?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          sidebar_style?: string | null
+          success_color?: string | null
+          surface_color?: string | null
+          text_color?: string | null
+          theme_mode?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          warning_color?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          app_icon_url?: string | null
+          background_color?: string | null
+          border_color?: string | null
+          button_radius?: string | null
+          card_radius?: string | null
+          created_at?: string | null
+          custom_css?: string | null
+          danger_color?: string | null
+          favicon_url?: string | null
+          font_body?: string | null
+          font_buttons?: string | null
+          font_heading?: string | null
+          id?: string
+          info_color?: string | null
+          input_radius?: string | null
+          is_active?: boolean | null
+          login_background_url?: string | null
+          logo_url?: string | null
+          muted_text_color?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          sidebar_style?: string | null
+          success_color?: string | null
+          surface_color?: string | null
+          text_color?: string | null
+          theme_mode?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          warning_color?: string | null
+        }
+        Relationships: []
+      }
+      developer_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          module: string
+          new_value: Json | null
+          old_value: Json | null
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          module: string
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          module?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      developer_files: {
+        Row: {
+          created_at: string | null
+          file_category: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          is_public: boolean | null
+          storage_bucket: string
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_category: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+          is_public?: boolean | null
+          storage_bucket: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_category?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_public?: boolean | null
+          storage_bucket?: string
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      developer_settings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           created_at: string | null
@@ -2608,6 +2857,39 @@ export type Database = {
           },
         ]
       }
+      password_reset_requests: {
+        Row: {
+          created_at: string | null
+          force_password_change: boolean | null
+          id: string
+          requested_by: string
+          status: string | null
+          target_user_id: string
+          temporary_password_created: boolean | null
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          force_password_change?: boolean | null
+          id?: string
+          requested_by: string
+          status?: string | null
+          target_user_id: string
+          temporary_password_created?: boolean | null
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          force_password_change?: boolean | null
+          id?: string
+          requested_by?: string
+          status?: string | null
+          target_user_id?: string
+          temporary_password_created?: boolean | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       payment_webhook_logs: {
         Row: {
           created_at: string | null
@@ -3489,6 +3771,87 @@ export type Database = {
         }
         Relationships: []
       }
+      system_error_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string
+          error_stack: string | null
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          route: string | null
+          severity: string
+          source: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message: string
+          error_stack?: string | null
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          route?: string | null
+          severity?: string
+          source?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string
+          error_stack?: string | null
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          route?: string | null
+          severity?: string
+          source?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      system_maintenance: {
+        Row: {
+          allowed_roles: string[] | null
+          created_at: string | null
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          is_maintenance_mode: boolean | null
+          message: string | null
+          starts_at: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          allowed_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_maintenance_mode?: boolean | null
+          message?: string | null
+          starts_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          allowed_roles?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          is_maintenance_mode?: boolean | null
+          message?: string | null
+          starts_at?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           description: string | null
@@ -3761,6 +4124,7 @@ export type Database = {
         Args: { _conv: string; _user: string }
         Returns: boolean
       }
+      is_developer: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role:

@@ -2999,6 +2999,8 @@ export type Database = {
           supervisor_id: string | null
           team_id: string | null
           telefone: string | null
+          two_factor_enabled: boolean | null
+          two_factor_secret: string | null
           ultimo_acesso: string | null
           updated_at: string
         }
@@ -3020,6 +3022,8 @@ export type Database = {
           supervisor_id?: string | null
           team_id?: string | null
           telefone?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
         }
@@ -3041,6 +3045,8 @@ export type Database = {
           supervisor_id?: string | null
           team_id?: string | null
           telefone?: string | null
+          two_factor_enabled?: boolean | null
+          two_factor_secret?: string | null
           ultimo_acesso?: string | null
           updated_at?: string
         }
@@ -3771,6 +3777,33 @@ export type Database = {
         }
         Relationships: []
       }
+      system_backups: {
+        Row: {
+          config_type: string
+          created_at: string
+          created_by: string | null
+          data: Json
+          id: string
+          name: string
+        }
+        Insert: {
+          config_type: string
+          created_at?: string
+          created_by?: string | null
+          data: Json
+          id?: string
+          name: string
+        }
+        Update: {
+          config_type?: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       system_error_logs: {
         Row: {
           created_at: string | null
@@ -4126,6 +4159,15 @@ export type Database = {
         Returns: boolean
       }
       is_developer: { Args: never; Returns: boolean }
+      log_developer_action: {
+        Args: {
+          p_action: string
+          p_details: Json
+          p_ip?: string
+          p_module: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:

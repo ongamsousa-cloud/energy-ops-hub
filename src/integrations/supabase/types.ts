@@ -2711,6 +2711,7 @@ export type Database = {
           foto_url: string | null
           id: string
           manager_id: string | null
+          must_change_password: boolean
           nome: string
           role: string | null
           supervisor_id: string | null
@@ -2731,6 +2732,7 @@ export type Database = {
           foto_url?: string | null
           id: string
           manager_id?: string | null
+          must_change_password?: boolean
           nome: string
           role?: string | null
           supervisor_id?: string | null
@@ -2751,6 +2753,7 @@ export type Database = {
           foto_url?: string | null
           id?: string
           manager_id?: string | null
+          must_change_password?: boolean
           nome?: string
           role?: string | null
           supervisor_id?: string | null
@@ -3768,6 +3771,7 @@ export type Database = {
         | "financeiro"
         | "auditor"
         | "estoque"
+        | "developer"
       audit_status:
         | "Não auditada"
         | "Pendente de auditoria"
@@ -4029,6 +4033,7 @@ export const Constants = {
         "financeiro",
         "auditor",
         "estoque",
+        "developer",
       ],
       audit_status: [
         "Não auditada",

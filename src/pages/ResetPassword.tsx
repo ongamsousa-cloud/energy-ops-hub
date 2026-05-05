@@ -19,7 +19,6 @@ export default function ResetPassword() {
     if (hash.includes("type=recovery") || hash.includes("access_token")) {
       setReady(true);
     } else {
-      // Allow manual access if already signed in via recovery
       supabase.auth.getSession().then(({ data }) => {
         if (data.session) setReady(true);
         else {
@@ -38,6 +37,10 @@ export default function ResetPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
+      const { data: u } = await supabase.auth.getUser();
+      if (u?.user?.id) {
+        await supabase.from("profiles").update({ must_change_password: false }).eq("id", u.user.id);
+      }
       toast.success("Senha atualizada. Faça login novamente.");
       await supabase.auth.signOut();
       nav("/login", { replace: true });

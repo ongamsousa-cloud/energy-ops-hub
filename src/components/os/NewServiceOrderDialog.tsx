@@ -62,8 +62,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       cidade: "",
       estado: "",
       ponto_referencia: "",
-      solicitante_nome: "",
-      solicitante_telefone: ""
+       solicitante_nome: "",
+       solicitante_telefone: "",
+       numero_endereco: ""
    });
 
   const [selectedObra, setSelectedObra] = useState<any>(null);
@@ -200,11 +201,12 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
        ...prev, 
        obraId,
        client_name: obra?.cliente || prev.client_name,
-       cep: obra?.cep || prev.cep,
-       endereco: obra?.endereco || prev.endereco,
-       bairro: obra?.bairro || prev.bairro,
-       cidade: obra?.cidade || prev.cidade,
-       estado: obra?.estado || prev.estado
+        cep: obra?.cep || prev.cep,
+        endereco: obra?.endereco || prev.endereco,
+        numero_endereco: obra?.numero_endereco || prev.numero_endereco,
+        bairro: obra?.bairro || prev.bairro,
+        cidade: obra?.cidade || prev.cidade,
+        estado: obra?.estado || prev.estado
      }));
    };
 
@@ -230,8 +232,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
               bairro: formData.bairro,
               cidade: formData.cidade,
               estado: formData.estado,
-              cep: formData.cep,
-              status: 'aberta',
+               cep: formData.cep,
+               numero_endereco: formData.numero_endereco,
+               status: 'aberta',
               ativo: true
             })
             .select("id")
@@ -257,11 +260,12 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           descricao: formData.descricao,
           observacoes: formData.observacoes,
           created_by: user!.id,
-          cep: formData.cep,
-          endereco: formData.endereco,
-          bairro: formData.bairro,
-          cidade: formData.cidade,
-          estado: formData.estado,
+           cep: formData.cep,
+           endereco: formData.endereco,
+           numero_endereco: formData.numero_endereco,
+           bairro: formData.bairro,
+           cidade: formData.cidade,
+           estado: formData.estado,
           ponto_referencia: formData.ponto_referencia,
           solicitante_nome: formData.solicitante_nome,
           solicitante_telefone: formData.solicitante_telefone
@@ -525,70 +529,81 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                        </div>
                      </div>
  
-                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div className="md:col-span-4 space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
-                          <div className="relative">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <div className="md:col-span-2 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-3 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
+                            <div className="relative">
+                              <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                              <Input 
+                                placeholder="00000-000" 
+                                value={formData.cep} 
+                                onChange={(e) => {
+                                  setFormData({...formData, cep: e.target.value});
+                                  if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
+                                }}
+                                className="pl-7 h-10 border-primary/10 text-sm"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-6 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Endereço <span className="text-destructive">*</span></Label>
+                            <div className="relative">
+                              <MapPin className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                              <Input 
+                                className="pl-7 h-10 border-primary/10 text-sm" 
+                                value={formData.endereco} 
+                                onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
+                                placeholder="Rua, Av, etc..."
+                              />
+                            </div>
+                          </div>
+
+                          <div className="md:col-span-3 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Número</Label>
                             <Input 
-                              placeholder="00000-000" 
-                              value={formData.cep} 
-                              onChange={(e) => {
-                                setFormData({...formData, cep: e.target.value});
-                                if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
-                              }}
-                              className="pl-9 h-11 border-primary/10"
+                              className="h-10 border-primary/10 text-sm" 
+                              placeholder="Ex: 123"
+                              value={formData.numero_endereco} 
+                              onChange={(e) => setFormData({...formData, numero_endereco: e.target.value})} 
                             />
                           </div>
                         </div>
 
-                        <div className="md:col-span-8 space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço <span className="text-destructive">*</span></Label>
-                          <div className="relative">
-                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input 
-                              className="pl-9 h-11 border-primary/10" 
-                              value={formData.endereco} 
-                              onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
-                              placeholder="Rua, Av, etc..."
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                          <div className="md:col-span-4 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
+                            <Input className="h-10 border-primary/10 text-sm" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
+                          </div>
+                          <div className="md:col-span-5 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
+                            <Input className="h-10 border-primary/10 text-sm" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
+                          </div>
+                          <div className="md:col-span-3 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
+                            <Input className="h-10 border-primary/10 text-sm" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
                           </div>
                         </div>
 
-                        <div className="md:col-span-4 space-y-2">
-                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Número / Comp.</Label>
-                          <Input 
-                            className="h-11 border-primary/10" 
-                            placeholder="123, Ap 4..."
-                            value={formData.ponto_referencia} 
-                            onChange={(e) => setFormData({...formData, ponto_referencia: e.target.value})} 
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 border-t border-dashed">
+                          <div className="md:col-span-4 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Nome)</Label>
+                            <div className="relative">
+                              <User2 className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                              <Input className="pl-7 h-10 border-primary/10 text-sm" value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
+                            </div>
+                          </div>
+                          <div className="md:col-span-3 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Telefone</Label>
+                            <Input className="h-10 border-primary/10 text-sm" value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
+                          </div>
+                          <div className="md:col-span-5 space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Complemento / Ponto de Ref.</Label>
+                            <Input className="h-10 border-primary/10 text-sm" value={formData.ponto_referencia} onChange={(e) => setFormData({...formData, ponto_referencia: e.target.value})} placeholder="Ap 42, Bloco B..." />
+                          </div>
                         </div>
-
-                        <div className="md:col-span-4 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
-                         <Input className="h-11 border-primary/10" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
-                       </div>
-                        <div className="md:col-span-4 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
-                         <Input className="h-11 border-primary/10" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
-                       </div>
-                        <div className="md:col-span-4 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
-                         <Input className="h-11 border-primary/10" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
-                       </div>
-                        <div className="md:col-span-4 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Nome)</Label>
-                         <div className="relative">
-                           <User2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                           <Input className="pl-9 h-11 border-primary/10" value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
-                         </div>
-                       </div>
-                        <div className="md:col-span-4 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Telefone)</Label>
-                         <Input className="h-11 border-primary/10" value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
-                       </div>
-                     </div>
+                      </div>
                    </div>
                  </div>
                  

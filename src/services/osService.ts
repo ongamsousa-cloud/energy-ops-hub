@@ -59,14 +59,86 @@ class OSService {
        .eq("id", osId)
        .single();
 
-     if (error) throw error;
-     return data;
-   }
+    if (error) throw error;
+    return data;
+  }
+
+  async canStartWorkOrder(osId: string, userId: string): Promise<{
+    can_start: boolean;
+    blocked_by: string[];
+    message: string;
+  }> {
+    const blocked_by: string[] = [];
+    
+    // 1. Fetch OS and User data
+    const { data: os, error: osError } = await supabase
+      .from("ordens_servico")
+      .select(`
+        *,
+        department:departments(id),
+        profissional:profiles!ordens_servico_profissional_id_fkey(id, department_id)
+      `)
+      .eq("id", osId)
+      .single();
+
+    if (osError || !os) {
+      return { can_start: false, blocked_by: ["os_not_found"], message: "Ordem de Serviço não encontrada." };
+    }
+
+    // 2. Status check
+    const status = (os.operational_status || os.status || "").toLowerCase();
+    if (status !== "pronta_para_execucao") {
+      blocked_by.push("invalid_status");
+    }
+
+    // 3. User association and permissions
+    if (os.profissional_id !== userId) {
+      blocked_by.push("user_not_assigned");
+    }
+
+    // 4. Non-conformities check
+    const { data: nc } = await supabase
+      .from("non_conformities")
+      .select("id, severity")
+      .eq("os_id", osId)
+      .in("status", ["aberta", "em_correcao", "reaberta"]);
+
+    if (nc && nc.length > 0) {
+      blocked_by.push("open_non_conformities");
+      if (nc.some(n => n.severity === "critica" || n.severity === "alta")) {
+        blocked_by.push("critical_non_conformities");
+      }
+    }
+
+    // 5. Materials check (all planned must have been released)
+    const { data: reservations } = await supabase
+      .from("material_reservations")
+      .select("status")
+      .eq("os_id", osId);
+    
+    if (reservations?.some(r => r.status === "solicitado" || r.status === "reservado")) {
+      blocked_by.push("materials_not_released");
+    }
+
+    const messages: Record<string, string> = {
+      invalid_status: "A OS não está no status 'Pronta para Execução'.",
+      user_not_assigned: "Você não é o profissional atribuído a esta OS.",
+      open_non_conformities: "Existem não conformidades abertas para esta OS.",
+      critical_non_conformities: "Existem pendências críticas de conformidade.",
+      materials_not_released: "Existem materiais pendentes de liberação no estoque."
+    };
+
+    const can_start = blocked_by.length === 0;
+    
+    return {
+      can_start,
+      blocked_by,
+      message: can_start ? "Liberação confirmada. Pode iniciar o trabalho." : messages[blocked_by[0]] || "Acesso bloqueado por pendências operacionais."
+    };
+  }
 }
 
  export const osService = new OSService();
-
- export async function canStartWorkOrder(osId: string, userId: string): Promise<{
    can_start: boolean;
    blocked_by: string[];
    message: string;

@@ -41,6 +41,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
   const [gestores, setGestores] = useState<any[]>([]);
    const [equipes, setEquipes] = useState<any[]>([]);
    const [obraSearchOpen, setObraSearchOpen] = useState(false);
+   const [customObraNumero, setCustomObraNumero] = useState("");
+   const [customObraNome, setCustomObraNome] = useState("");
   const [busy, setBusy] = useState(false);
   const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
 
@@ -211,21 +213,48 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      }));
    };
 
-   async function handleSave() {
-     if (!formData.obraId) return toast.error("Selecione a obra");
-     if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
-     
-     setBusy(true);
-     try {
+    async function handleSave() {
+      if (!formData.obraId || (formData.obraId === "new" && !customObraNumero)) {
+        return toast.error("Selecione ou cadastre o código da obra");
+      }
+      if (formData.itens.length === 0) return toast.error("Adicione ao menos uma atividade");
+      
+      setBusy(true);
+      try {
+        let finalObraId = formData.obraId;
+
+        // Se for uma nova obra, cadastrar primeiro
+        if (formData.obraId === "new") {
+          const { data: newObra, error: obraError } = await supabase
+            .from("obras")
+            .insert({
+              numero: customObraNumero,
+              nome: customObraNome || `Obra ${customObraNumero}`,
+              cliente: formData.client_name,
+              endereco: formData.endereco,
+              bairro: formData.bairro,
+              cidade: formData.cidade,
+              estado: formData.estado,
+              cep: formData.cep,
+              status: 'aberta',
+              ativo: true
+            })
+            .select("id")
+            .single();
+          
+          if (obraError) throw new Error("Erro ao cadastrar nova obra: " + obraError.message);
+          finalObraId = newObra.id;
+        }
+
         const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
-          obra_id: formData.obraId,
+          obra_id: finalObraId,
           department_id: formData.departmentId || null,
           servico_id: selectedServicoId || null,
           profissional_id: user!.id,
           assigned_manager_id: formData.gestorId || null,
           equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-            status: "pendente" as any,
-            operational_status: "pendente" as any,
+          status: "pendente" as any,
+          operational_status: "pendente" as any,
           prioridade: formData.prioridade,
           data_agendada: formData.data_agendada,
           hora_agendada: formData.hora_agendada,
@@ -242,8 +271,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           solicitante_nome: formData.solicitante_nome,
           solicitante_telefone: formData.solicitante_telefone
         } as any).select("id").single();
- 
-       if (osError) throw osError;
+
+        if (osError) throw osError;
 
       const osAtividades = formData.itens.map(item => ({
         os_id: os.id,
@@ -355,91 +384,95 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
                        <div className="flex items-center justify-between">
                          <h3 className="text-sm font-semibold">Identificação da Obra</h3>
+                         {!selectedObra && formData.obraId === "new" && (
+                           <span className="text-xs text-amber-600 font-medium flex items-center">
+                             <Plus className="h-3 w-3 mr-1" /> Nova Obra sendo cadastrada
+                           </span>
+                         )}
                        </div>
-                      <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={obraSearchOpen}
-                            className="w-full justify-between"
-                          >
-                            {formData.obraId
-                              ? obras.find((o) => o.id === formData.obraId)?.numero || "Obra Selecionada"
-                              : "Buscar por código ou nome..."}
-                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[450px] p-0" align="start">
-                          <Command>
-                            <CommandInput 
-                              placeholder="Digite o código da obra..." 
-                              onValueChange={(val) => {
-                                // Keep track of search value for manual entry
-                                (window as any)._lastObraSearch = val;
-                              }}
-                            />
-                            <CommandList>
-                              <CommandEmpty className="p-4 flex flex-col gap-2">
-                                <p className="text-sm">Nenhuma obra encontrada.</p>
-                                <Button 
-                                  variant="secondary" 
-                                  size="sm" 
-                                  className="w-full"
-                                  onClick={async () => {
-                                    const numero = (window as any)._lastObraSearch;
-                                    if (!numero) return;
-                                    
-                                    try {
-                                      const { data: newObra, error } = await supabase
-                                        .from("obras")
-                                        .insert({ 
-                                          numero, 
-                                          nome: `Obra ${numero}`,
-                                          ativo: true,
-                                          status: 'aberta'
-                                        })
-                                        .select()
-                                        .single();
-                                      
-                                      if (error) throw error;
-                                      
-                                      setObras(prev => [...prev, newObra]);
-                                      handleObraChange(newObra.id);
-                                      setObraSearchOpen(false);
-                                      toast.success(`Obra ${numero} cadastrada temporariamente.`);
-                                    } catch (err: any) {
-                                      toast.error("Erro ao criar obra: " + err.message);
-                                    }
-                                  }}
-                                >
-                                  <Plus className="h-4 w-4 mr-2" />
-                                  Cadastrar "{(window as any)._lastObraSearch}" como nova obra
-                                </Button>
-                              </CommandEmpty>
-                              <CommandGroup>
-                                {obras.map((o) => (
-                                  <CommandItem
-                                    key={o.id}
-                                    value={`${o.numero} ${o.nome}`}
-                                    onSelect={() => {
-                                      handleObraChange(o.id);
-                                      setObraSearchOpen(false);
-                                    }}
-                                  >
-                                    <div className="flex flex-col">
-                                      <span className="font-bold">{o.numero}</span>
-                                      <span className="text-xs text-muted-foreground">{o.nome}</span>
-                                      {o.cliente && <span className="text-[10px] text-muted-foreground/70">{o.cliente}</span>}
-                                    </div>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                           <Label>Código da Obra <span className="text-destructive">*</span></Label>
+                           <div className="flex gap-2">
+                             <Input 
+                               placeholder="Digite o código (ex: 1234)" 
+                               value={selectedObra?.numero || customObraNumero || ""}
+                               onChange={(e) => {
+                                 const val = e.target.value;
+                                 const found = obras.find(o => o.numero === val);
+                                 if (found) {
+                                   handleObraChange(found.id);
+                                   setCustomObraNumero("");
+                                 } else {
+                                   setSelectedObra(null);
+                                   setFormData(prev => ({ ...prev, obraId: "new" }));
+                                   setCustomObraNumero(val);
+                                 }
+                               }}
+                             />
+                             <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
+                               <PopoverTrigger asChild>
+                                 <Button variant="outline" size="icon" type="button" title="Pesquisar obras cadastradas">
+                                   <Search className="h-4 w-4" />
+                                 </Button>
+                               </PopoverTrigger>
+                               <PopoverContent className="w-[300px] p-0" align="end">
+                                 <Command>
+                                   <CommandInput placeholder="Pesquisar obras..." />
+                                   <CommandList>
+                                     <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                                     <CommandGroup>
+                                       {obras.map((o) => (
+                                         <CommandItem
+                                           key={o.id}
+                                           value={`${o.numero} ${o.nome}`}
+                                           onSelect={() => {
+                                             handleObraChange(o.id);
+                                             setObraSearchOpen(false);
+                                           }}
+                                         >
+                                           <span className="font-bold mr-2">{o.numero}</span>
+                                           <span className="text-xs truncate">{o.nome}</span>
+                                         </CommandItem>
+                                       ))}
+                                     </CommandGroup>
+                                   </CommandList>
+                                 </Command>
+                               </PopoverContent>
+                             </Popover>
+                           </div>
+                         </div>
+
+                         <div className="space-y-2">
+                           <Label>Nome / Descrição da Obra <span className="text-destructive">*</span></Label>
+                           <Input 
+                             placeholder="Ex: Edifício Horizonte" 
+                             value={selectedObra?.nome || customObraNome || ""}
+                             onChange={(e) => {
+                               const val = e.target.value;
+                               if (!selectedObra) {
+                                 setCustomObraNome(val);
+                                 setFormData(prev => ({ ...prev }));
+                               }
+                             }}
+                             disabled={!!selectedObra}
+                             className={selectedObra ? "bg-muted" : ""}
+                           />
+                         </div>
+
+                         <div className="space-y-2 md:col-span-2">
+                           <Label>Nome do Cliente</Label>
+                           <Input 
+                             placeholder="Ex: Construtora Silva" 
+                             value={formData.client_name}
+                             onChange={(e) => setFormData({...formData, client_name: e.target.value})}
+                             disabled={!!selectedObra}
+                             className={selectedObra ? "bg-muted" : ""}
+                           />
+                         </div>
+                       </div>
+                     </div>
                    <div className="md:col-span-2 space-y-2">
                      <Label>Endereço <span className="text-destructive">*</span></Label>
                      <Input value={formData.endereco} onChange={(e) => setFormData({...formData, endereco: e.target.value})} />

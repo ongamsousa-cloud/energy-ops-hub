@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmptyState from "@/components/EmptyState";
-import { Plus } from "lucide-react";
+import { Plus, Users, Shield, MapPin, Search, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -98,11 +98,20 @@ export default function Equipes() {
 
   return (
     <div>
-      <PageHeader title="Equipes" actions={<Button size="sm" onClick={openNew}><Plus className="mr-1 h-3.5 w-3.5"/>Nova equipe</Button>} />
+      <PageHeader 
+        title="Gestão de Equipes Operacionais" 
+        description="Organize seus profissionais em equipes por departamento e região."
+        actions={<Button size="sm" onClick={openNew} className="gap-2"><Plus className="h-4 w-4"/>Cadastrar Nova Equipe</Button>} 
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>{selectedEquipeId ? "Editar equipe" : "Nova equipe"}</DialogTitle></DialogHeader>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                {selectedEquipeId ? "Configurar Equipe" : "Criar Nova Equipe Operacional"}
+              </DialogTitle>
+            </DialogHeader>
             <div className="grid gap-3">
               <div><Label>Nome *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})}/></div>
               <div><Label>Código</Label><Input value={form.codigo} onChange={(e)=>setForm({...form, codigo: e.target.value})}/></div>

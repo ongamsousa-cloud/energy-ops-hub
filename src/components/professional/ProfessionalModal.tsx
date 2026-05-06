@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin } from "lucide-react";
+ import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin, Search } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
@@ -499,15 +499,27 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">CEP</Label>
-                          <div className="relative">
-                            <Input 
-                              value={form.cep} 
-                              onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
-                              onBlur={handleCepBlur}
-                              placeholder="00000-000" 
-                              maxLength={9} 
-                            />
-                            {searchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Input 
+                                value={form.cep} 
+                                onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
+                                onBlur={handleCepBlur}
+                                placeholder="00000-000" 
+                                maxLength={9} 
+                              />
+                              {searchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                            </div>
+                            <Button 
+                              size="icon" 
+                              variant="outline" 
+                              type="button" 
+                              onClick={handleCepBlur} 
+                              disabled={searchingCep}
+                              className="shrink-0 h-10 w-10"
+                            >
+                              <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
+                            </Button>
                           </div>
                         </div>
                        <div className="md:col-span-2 space-y-1.5">

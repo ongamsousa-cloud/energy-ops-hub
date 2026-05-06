@@ -76,9 +76,9 @@
    medida: ["aguardando_financeiro"],
    aguardando_financeiro: ["faturavel"],
    faturavel: ["faturada"],
-   faturada: ["aguardando_auditoria", "concluida"],
-   aguardando_auditoria: ["aprovada_auditoria", "reprovada_auditoria"],
-   aprovada_auditoria: ["concluida"],
+   faturada: ["aguardando_auditoria"],
+   aguardando_auditoria: ["aprovada_auditoria", "reprovada_auditoria", "concluida"],
+   aprovada_auditoria: ["concluida", "aguardando_financeiro"],
    reprovada_auditoria: ["correcao_solicitada"],
    concluida: [],
    cancelada: []

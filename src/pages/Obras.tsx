@@ -143,7 +143,7 @@ export default function Obras() {
          cidade: String(item.cidade || item.Cidade || ""),
          estado: String(item.estado || item.Estado || ""),
          cep: String(item.cep || item.CEP || ""),
-         status: "aberta",
+         status: "aberta" as any,
          ativo: true
        })).filter(i => i.numero && i.nome);
 

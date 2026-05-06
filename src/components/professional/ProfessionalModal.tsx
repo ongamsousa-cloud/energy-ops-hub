@@ -346,11 +346,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                        </div>
                        <div className="space-y-2">
                          <Label className="text-sm font-semibold">Estado</Label>
-                       <Input className="h-11" value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
-                     </div>
-                   </div>
+                        <Input className="h-11" value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
+                      </div>
+                    </div>
+                  </div>
 
-                   <div className="space-y-4 pt-6 border-t border-border">
+                  <div className="space-y-4 pt-6 border-t border-border">
                      <h4 className="text-base font-bold flex items-center gap-2 text-primary/80">
                        <Settings className="h-4 w-4 text-muted-foreground" /> 
                        Observações Internas

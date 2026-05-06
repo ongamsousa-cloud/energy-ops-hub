@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
- import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin, Search } from "lucide-react";
+ import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin, Search, CheckCircle2 } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
@@ -16,6 +16,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Textarea } from "@/components/ui/textarea";
+ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+ import { cn } from "@/lib/utils";
  import { maskCPF, maskPhone, maskCEP, maskRG } from "@/lib/utils/masks";
  import { cepService } from "@/services/cepService";
 
@@ -611,7 +614,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                                     setForm({ ...form, supervisor_id: "" });
                                   }}
                                 >
-                                  <CheckCircle className={cn("mr-2 h-4 w-4", form.supervisor_id === "" ? "opacity-100" : "opacity-0")} />
+                                  <CheckCircle2 className={cn("mr-2 h-4 w-4", form.supervisor_id === "" ? "opacity-100" : "opacity-0")} />
                                   Sem supervisor
                                 </CommandItem>
                                 {supervisors.map((s) => (
@@ -622,7 +625,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                                       setForm({ ...form, supervisor_id: s.id });
                                     }}
                                   >
-                                    <CheckCircle className={cn("mr-2 h-4 w-4", form.supervisor_id === s.id ? "opacity-100" : "opacity-0")} />
+                                    <CheckCircle2 className={cn("mr-2 h-4 w-4", form.supervisor_id === s.id ? "opacity-100" : "opacity-0")} />
                                     {s.full_name}
                                   </CommandItem>
                                 ))}

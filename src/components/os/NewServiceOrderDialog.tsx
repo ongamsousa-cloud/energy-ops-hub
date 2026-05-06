@@ -684,27 +684,84 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             </div>
           )}
 
-          {step === 5 && (
-            <div className="space-y-4">
-              <div className="bg-muted/30 p-4 rounded-lg text-sm space-y-2">
-                <h4 className="font-bold border-b pb-1">Resumo da Ordem de Serviço</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-muted-foreground">Obra:</div> <div className="font-medium">{selectedObra?.nome}</div>
-                  <div className="text-muted-foreground">Data/Hora:</div> <div className="font-medium">{formData.data_agendada} {formData.hora_agendada}</div>
-                  <div className="text-muted-foreground">Departamento:</div> <div className="font-medium">{departamentos.find(d => d.id === formData.departmentId)?.name}</div>
-                  <div className="text-muted-foreground">Prioridade:</div> <div className="font-medium uppercase">{formData.prioridade}</div>
-                  <div className="text-muted-foreground">Total Itens:</div> <div className="font-medium">{formData.itens.length}</div>
-                </div>
-              </div>
-              <Textarea placeholder="Observações adicionais..." value={formData.observacoes} onChange={e => setFormData({...formData, observacoes: e.target.value})} />
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(4)}>Voltar</Button>
-                <Button className="flex-1" disabled={busy} onClick={handleSave}>
-                  {busy ? "Processando..." : "Finalizar e Criar OS"}
-                </Button>
-              </div>
-            </div>
-          )}
+           {step === 5 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                 <h3 className="text-lg font-bold">Revisão Final</h3>
+               </div>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="bg-muted/30 p-5 rounded-xl border border-dashed border-muted-foreground/20 space-y-4">
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+                     <Info className="h-3 w-3" /> Informações Gerais
+                   </h4>
+                   <div className="space-y-3">
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> Obra:</span>
+                       <span className="font-bold">{selectedObra?.numero || customObraNumero}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Data/Hora:</span>
+                       <span className="font-semibold">{formData.data_agendada} às {formData.hora_agendada}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><LayoutList className="h-3.5 w-3.5" /> Setor:</span>
+                       <span className="font-semibold">{departamentos.find(d => d.id === formData.departmentId)?.name}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5" /> Prioridade:</span>
+                       <Badge variant="outline" className={cn(
+                         "uppercase font-bold text-[10px]",
+                         formData.prioridade === 'urgente' ? "border-red-500 text-red-600 bg-red-50" : "border-amber-500 text-amber-600 bg-amber-50"
+                       )}>{formData.prioridade}</Badge>
+                     </div>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-muted/30 p-5 rounded-xl border border-dashed border-muted-foreground/20 flex flex-col gap-3">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <User2 className="h-3 w-3" /> Responsáveis
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="text-sm bg-background/50 p-2 rounded border border-muted-foreground/5">
+                        <span className="text-[10px] text-muted-foreground block uppercase font-bold">Gestor</span>
+                        <span className="font-semibold">{gestores.find(g => g.id === formData.gestorId)?.nome || "Não definido"}</span>
+                      </div>
+                      <div className="text-sm bg-background/50 p-2 rounded border border-muted-foreground/5">
+                        <span className="text-[10px] text-muted-foreground block uppercase font-bold">Equipe Executora</span>
+                        <span className="font-semibold">{equipes.find(e => e.id === formData.equipeId)?.nome || "A definir"}</span>
+                      </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Observações Adicionais</Label>
+                 <Textarea 
+                   placeholder="Adicione observações importantes para a execução..." 
+                   value={formData.observacoes} 
+                   onChange={e => setFormData({...formData, observacoes: e.target.value})} 
+                   className="min-h-[100px] border-primary/10"
+                 />
+               </div>
+
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(4)}>Voltar</Button>
+                 <Button 
+                   className="px-10 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200" 
+                   disabled={busy} 
+                   onClick={handleSave}
+                 >
+                   {busy ? (
+                     <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando... </>
+                   ) : (
+                     <> <CheckCircle2 className="mr-2 h-4 w-4" /> Finalizar e Gerar OS </>
+                   )}
+                 </Button>
+               </div>
+             </div>
+           )}
         </div>
       </DialogContent>
     </Dialog>

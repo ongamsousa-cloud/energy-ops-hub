@@ -197,44 +197,57 @@ export default function OSDetalhe() {
     });
   }
 
-   async function addItem(activity?: any) {
-     const activityId = activity?.id || form.atividade_id;
-     const categoryId = activity?.categoria_id || form.categoria_id;
-     
-     if (!activityId || !form.quantidade) {
-       if (!form.quantidade) toast.error("Informe a quantidade");
-       else toast.error("Selecione a atividade");
-       return;
-     }
+  async function addItem(activity?: any) {
+    const activityId = activity?.id || form.atividade_id;
+    const categoryId = activity?.categoria_id || form.categoria_id;
 
-     const targetAtv = activity || atvs.find(a => a.id === activityId);
-     const q = Number(form.quantidade);
-     if (!(q > 0)) return toast.error("Quantidade inválida");
-     const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
-
-    const { error } = await supabase.from("os_atividades").insert({
-      os_id: id,
-       atividade_id: activityId,
-       categoria_id: categoryId,
-      quantidade: q,
-       umd_unitaria: targetAtv.umd_unitaria,
-       umd_total: q * Number(targetAtv.umd_unitaria),
-       unidade: targetAtv.unidade,
-      observacao: form.observacao || null,
-      latitude: geo.lat, longitude: geo.lng,
-      created_by: user!.id,
-    });
-    if (error) return toast.error(error.message);
-    if (["iniciada", "atribuida", "pendente"].includes(os.operational_status || os.status)) {
-      await supabase.from("ordens_servico").update({ 
-        operational_status: "em_execucao",
-        status: "em_andamento" 
-      }).eq("id", id);
+    if (!activityId || !form.quantidade) {
+      if (!form.quantidade) toast.error("Informe a quantidade");
+      else toast.error("Selecione a atividade");
+      return;
     }
-    setAdd(false);
-    setForm({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "" });
-    toast.success("Atividade lançada");
-    load();
+
+    const targetAtv = activity || atvs.find(a => a.id === activityId);
+    const q = Number(form.quantidade);
+    if (!(q > 0)) return toast.error("Quantidade inválida");
+
+    setBusy(true);
+    try {
+      const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
+
+      const { error } = await supabase.from("os_atividades").insert({
+        os_id: id,
+        atividade_id: activityId,
+        categoria_id: categoryId,
+        quantidade: q,
+        umd_unitaria: targetAtv.umd_unitaria,
+        umd_total: q * Number(targetAtv.umd_unitaria),
+        unidade: targetAtv.unidade,
+        observacao: form.observacao || null,
+        latitude: geo.lat,
+        longitude: geo.lng,
+        created_by: user!.id,
+      });
+
+      if (error) throw error;
+
+      const currentStatus = (os.operational_status || os.status || "").toLowerCase();
+      if (["iniciada", "atribuida", "pendente"].includes(currentStatus)) {
+        await supabase.from("ordens_servico").update({
+          operational_status: "em_execucao",
+          status: "em_andamento"
+        }).eq("id", id);
+      }
+
+      setAdd(false);
+      setForm({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "", execution_code_id: "" });
+      toast.success("Atividade lançada");
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao lançar atividade");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function removeItem(itemId: string) {

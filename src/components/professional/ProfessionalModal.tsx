@@ -188,7 +188,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[98vw] max-h-[98vh] p-0 overflow-hidden flex flex-col">
+         <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
          <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
@@ -199,9 +199,9 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1">
-          <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-            <div className="md:col-span-3 flex flex-col items-center gap-4 border-r pr-6">
+         <ScrollArea className="flex-1 overflow-y-auto">
+           <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r border-border pr-8">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
                   <AvatarImage src={photoPreview || ""} />
@@ -218,44 +218,44 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <p className="text-xs text-muted-foreground">Clique na imagem para alterar a foto do profissional</p>
               </div>
 
-              <div className="w-full space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase text-muted-foreground">Status do Funcionário</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v, is_active: v === 'active' })}>
-                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Ativo</SelectItem>
-                      <SelectItem value="inactive">Inativo</SelectItem>
-                      <SelectItem value="blocked">Bloqueado</SelectItem>
-                      <SelectItem value="vacation">Em Férias</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                 <div className="w-full space-y-6 mt-6">
+                   <div className="space-y-2">
+                     <Label className="text-xs font-semibold uppercase text-muted-foreground">Status do Funcionário</Label>
+                     <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v, is_active: v === 'active' })}>
+                       <SelectTrigger className="h-10 w-full"><SelectValue /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="active">Ativo</SelectItem>
+                         <SelectItem value="inactive">Inativo</SelectItem>
+                         <SelectItem value="blocked">Bloqueado</SelectItem>
+                         <SelectItem value="vacation">Em Férias</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
 
-                <div className="space-y-2 pt-2 border-t">
-                  <Label className="text-xs font-semibold uppercase text-muted-foreground">Identificação Profissional</Label>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <Label className="text-[11px]">Cód. Interno Empresa</Label>
-                      <Input 
-                        className="h-8 text-xs font-mono" 
-                        placeholder="FUNC-0000" 
-                        value={form.internal_company_code} 
-                        onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[11px]">Cód. Serviço (Operacional)</Label>
-                      <Input 
-                        className="h-8 text-xs font-mono" 
-                        placeholder="TEC-000" 
-                        value={form.service_code} 
-                        onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                   <div className="space-y-3 pt-4 border-t border-border">
+                     <Label className="text-xs font-semibold uppercase text-muted-foreground">Identificação Profissional</Label>
+                     <div className="space-y-4">
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
+                         <Input 
+                           className="h-10 text-sm font-mono" 
+                           placeholder="FUNC-0000" 
+                           value={form.internal_company_code} 
+                           onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
+                         />
+                       </div>
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium">Cód. Serviço</Label>
+                         <Input 
+                           className="h-10 text-sm font-mono" 
+                           placeholder="TEC-000" 
+                           value={form.service_code} 
+                           onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 </div>
             </div>
 
             <div className="md:col-span-9">

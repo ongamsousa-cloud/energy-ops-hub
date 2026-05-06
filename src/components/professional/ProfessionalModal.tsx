@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Textarea } from "@/components/ui/textarea";
  import { maskCPF, maskPhone, maskCEP, maskRG } from "@/lib/utils/masks";
+ import { cepService } from "@/services/cepService";
 
 interface ProfessionalModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro"
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
   const { profile: currentUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [searchingCep, setSearchingCep] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
@@ -145,6 +147,32 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     ]);
     setSupervisors(emps ?? []);
     setAllServices(servs ?? []);
+  };
+
+  const handleCepBlur = async () => {
+    const cep = form.cep.replace(/\D/g, "");
+    if (cep.length !== 8) return;
+
+    setSearchingCep(true);
+    try {
+      const data = await cepService.buscarCep(cep);
+      if (data && !data.error) {
+        setForm(prev => ({
+          ...prev,
+          endereco_residencial: data.logradouro || prev.endereco_residencial,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado
+        }));
+        toast.success("Endereço preenchido automaticamente");
+      } else {
+        toast.error("CEP não encontrado");
+      }
+    } catch (error) {
+      toast.error("Erro ao buscar CEP");
+    } finally {
+      setSearchingCep(false);
+    }
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -471,7 +499,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-medium">CEP</Label>
-                          <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" maxLength={9} />
+                          <div className="relative">
+                            <Input 
+                              value={form.cep} 
+                              onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
+                              onBlur={handleCepBlur}
+                              placeholder="00000-000" 
+                              maxLength={9} 
+                            />
+                            {searchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                          </div>
                         </div>
                        <div className="md:col-span-2 space-y-1.5">
                          <Label className="text-xs font-medium">Logradouro</Label>

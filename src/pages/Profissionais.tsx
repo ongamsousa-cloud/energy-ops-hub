@@ -40,21 +40,21 @@ import EmptyState from "@/components/EmptyState";
        .order("nome");
 
      // Combinar dados dos perfis (usuários com login) e funcionários (todos profissionais)
-     const combined = (employees ?? []).map(emp => {
-       const profile = (profiles ?? []).find(p => p.id === emp.user_id || p.email === emp.email);
-       return {
-         ...emp,
-         ...profile,
-         id: profile?.id || emp.id, // Manter ID do perfil se existir
-         employee_id: emp.id,
-         nome: emp.full_name || profile?.nome,
-         email: emp.email || profile?.email,
-         cargo: emp.job_title || profile?.cargo,
-         department_id: emp.department_id || profile?.department_id,
-         foto_url: emp.photo_url || profile?.foto_url,
-         user_roles: profile?.user_roles
-       };
-     });
+      const combined = (employees ?? []).map(emp => {
+        const profile = (profiles ?? []).find(p => p.id === emp.user_id || (emp.email && p.email === emp.email));
+        return {
+          ...emp,
+          ...profile,
+          profile_id: profile?.id || null,
+          employee_id: emp.id,
+          nome: emp.full_name || profile?.nome || "",
+          email: emp.email || profile?.email || "",
+          cargo: emp.job_title || profile?.cargo || "",
+          department_id: emp.department_id || profile?.department_id || "",
+          foto_url: emp.photo_url || profile?.foto_url || null,
+          user_roles: profile?.user_roles || []
+        };
+      });
      
      setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");

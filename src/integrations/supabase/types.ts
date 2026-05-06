@@ -2986,18 +2986,26 @@ export type Database = {
       profiles: {
         Row: {
           ativo: boolean
+          bairro: string | null
           cargo: string | null
+          cep: string | null
+          cidade: string | null
           cpf: string | null
           created_at: string
+          data_admissao: string | null
+          data_nascimento: string | null
           department_id: string | null
           documento: string | null
           email: string
+          endereco_residencial: string | null
           especialidade: string | null
+          estado: string | null
           foto_url: string | null
           id: string
           manager_id: string | null
           must_change_password: boolean
           nome: string
+          rg: string | null
           role: string | null
           supervisor_id: string | null
           team_id: string | null
@@ -3009,18 +3017,26 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          bairro?: string | null
           cargo?: string | null
+          cep?: string | null
+          cidade?: string | null
           cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
+          data_nascimento?: string | null
           department_id?: string | null
           documento?: string | null
           email: string
+          endereco_residencial?: string | null
           especialidade?: string | null
+          estado?: string | null
           foto_url?: string | null
           id: string
           manager_id?: string | null
           must_change_password?: boolean
           nome: string
+          rg?: string | null
           role?: string | null
           supervisor_id?: string | null
           team_id?: string | null
@@ -3032,18 +3048,26 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          bairro?: string | null
           cargo?: string | null
+          cep?: string | null
+          cidade?: string | null
           cpf?: string | null
           created_at?: string
+          data_admissao?: string | null
+          data_nascimento?: string | null
           department_id?: string | null
           documento?: string | null
           email?: string
+          endereco_residencial?: string | null
           especialidade?: string | null
+          estado?: string | null
           foto_url?: string | null
           id?: string
           manager_id?: string | null
           must_change_password?: boolean
           nome?: string
+          rg?: string | null
           role?: string | null
           supervisor_id?: string | null
           team_id?: string | null

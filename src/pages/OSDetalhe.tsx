@@ -710,7 +710,7 @@ export default function OSDetalhe() {
         )}
 
        {/* Operational Flow Action Bar */}
-       {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor'])) && (
+        {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor', 'campo'])) && (
          <Card className="p-4 border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-4">
            <div className="flex items-center gap-3">
              <div className="p-2 bg-primary/10 rounded-full"><RefreshCw className={cn("h-4 w-4 text-primary", busy && "animate-spin")} /></div>

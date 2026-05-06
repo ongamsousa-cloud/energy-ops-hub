@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key } from "lucide-react";
+import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
-import { ROLE_LABEL, AppRole } from "@/lib/auth";
+import { ROLE_LABEL, AppRole, useAuth } from "@/lib/auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
@@ -29,6 +29,7 @@ interface ProfessionalModalProps {
 const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque", "developer"];
 
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
+  const { profile: currentUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     cpf: "",
     rg: "",
     telefone: "",
+    whatsapp: "",
     data_nascimento: "",
     endereco_residencial: "",
     bairro: "",
@@ -51,9 +53,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     department_id: "",
     role: "campo" as AppRole,
     internal_company_code: "",
+    matricula: "",
     service_code: "",
     operational_role: "",
-    employee_type: "field_worker",
+    unidade_filial: "",
+    tipo_vinculo: "CLT",
+    supervisor_id: "",
+    regiao_atuacao: "",
+    veiculo_vinculado: "",
+    horario_trabalho: "",
+    servicos_habilitados: [] as string[],
+    employee_type: "field_worker" as any,
     status: "active",
     is_active: true,
     can_access_system: false,
@@ -70,9 +80,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const [form, setForm] = useState(initialFormState);
   const [showPassword, setShowPassword] = useState(false);
+  const [supervisors, setSupervisors] = useState<any[]>([]);
+  const [allServices, setAllServices] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
+      fetchSupervisorsAndServices();
       if (professional) {
         setForm({
           nome: professional.nome || "",
@@ -82,6 +95,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cpf: professional.cpf || "",
           rg: professional.rg || "",
           telefone: professional.telefone || "",
+          whatsapp: professional.whatsapp || "",
             data_nascimento: professional.birth_date || professional.data_nascimento || "",
             endereco_residencial: professional.residential_address || professional.endereco_residencial || "",
             bairro: professional.neighborhood || professional.bairro || "",
@@ -92,8 +106,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           department_id: professional.department_id || "",
           role: (professional.user_roles?.[0]?.role as AppRole) || "campo",
           internal_company_code: professional.internal_company_code || "",
+          matricula: professional.matricula || "",
           service_code: professional.service_code || "",
           operational_role: professional.operational_role || "",
+          unidade_filial: professional.unidade_filial || "",
+          tipo_vinculo: professional.tipo_vinculo || "CLT",
+          supervisor_id: professional.supervisor_id || "",
+          regiao_atuacao: professional.regiao_atuacao || "",
+          veiculo_vinculado: professional.veiculo_vinculado || "",
+          horario_trabalho: professional.horario_trabalho || "",
+          servicos_habilitados: professional.servicos_habilitados || [],
           employee_type: professional.employee_type || "field_worker",
           status: professional.status || "active",
           is_active: professional.is_active ?? true,
@@ -115,6 +137,15 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       }
     }
   }, [open, professional]);
+
+  const fetchSupervisorsAndServices = async () => {
+    const [{ data: emps }, { data: servs }] = await Promise.all([
+      supabase.from("employees").select("id, full_name").eq("status", "active"),
+      supabase.from("servicos").select("id, nome").eq("ativo", true)
+    ]);
+    setSupervisors(emps ?? []);
+    setAllServices(servs ?? []);
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -174,6 +205,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       }
 
       const employeeData = {
+        company_id: currentUserProfile?.company_id || professional?.company_id || null,
         full_name: form.nome,
         email: form.email,
         phone: form.telefone,
@@ -203,7 +235,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         residential_address: form.endereco_residencial,
         neighborhood: form.bairro,
         city: form.cidade,
-        state: form.estado
+        state: form.estado,
+        whatsapp: form.whatsapp,
+        matricula: form.matricula,
+        unidade_filial: form.unidade_filial,
+        tipo_vinculo: form.tipo_vinculo,
+        supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
+        regiao_atuacao: form.regiao_atuacao,
+        veiculo_vinculado: form.veiculo_vinculado,
+        horario_trabalho: form.horario_trabalho,
+        servicos_habilitados: form.servicos_habilitados
       };
 
       let res;
@@ -384,317 +425,178 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
-                  <TabsTrigger value="geral">Dados Gerais</TabsTrigger>
-                  <TabsTrigger value="permissoes">Permissões</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
+                  <TabsTrigger value="geral">Pessoal</TabsTrigger>
+                  <TabsTrigger value="profissional">Profissional</TabsTrigger>
                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
-                  <TabsTrigger value="config_acesso">Acesso</TabsTrigger>
+                  <TabsTrigger value="permissoes">Acesso</TabsTrigger>
+                  <TabsTrigger value="config_acesso">Senha</TabsTrigger>
                   <TabsTrigger value="historico">Histórico</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="geral" className="space-y-6 pb-8">
+                <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Especialidade / Certificações</Label>
-                      <Input 
-                        value={form.especialidade} 
-                        onChange={(e) => setForm({ ...form, especialidade: e.target.value })} 
-                        placeholder="Ex: NR10, NR35, Redes MT" 
-                      />
-                    </div>
-                     <div className="space-y-1.5">
                        <Label className="text-xs font-medium">Email Corporativo *</Label>
-                       <Input 
-                         value={form.email} 
-                         onChange={(e) => setForm({ ...form, email: e.target.value })} 
-                         placeholder="joao@empresa.com" 
-                       />
-                     </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Telefone / WhatsApp</Label>
-                        <Input 
-                          value={form.telefone} 
-                          onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })} 
-                          placeholder="(00) 00000-0000"
-                          maxLength={15}
-                        />
-                      </div>
-                     <div className="space-y-1.5">
+                       <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="joao@empresa.com" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Telefone Principal</Label>
+                        <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">WhatsApp</Label>
+                        <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: maskPhone(e.target.value) })} placeholder="(00) 00000-0000" maxLength={15} />
+                    </div>
+                    <div className="space-y-1.5">
                        <Label className="text-xs font-medium">CPF</Label>
-                       <Input 
-                          value={form.cpf} 
-                          onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} 
-                          placeholder="000.000.000-00"
-                          maxLength={14}
-                        />
-                     </div>
+                       <Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} placeholder="000.000.000-00" maxLength={14} />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">RG</Label>
+                        <Input value={form.rg} onChange={(e) => setForm({ ...form, rg: maskRG(e.target.value) })} placeholder="00.000.000-0" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Data de Nascimento</Label>
+                        <Input type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-6 pt-6 border-t border-border">
+                     <h4 className="text-base font-bold flex items-center gap-2 text-primary/80"><MapPin className="h-4 w-4 text-muted-foreground" /> Endereço</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">CEP</Label>
+                          <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" maxLength={9} />
+                        </div>
+                       <div className="md:col-span-2 space-y-1.5">
+                         <Label className="text-xs font-medium">Logradouro</Label>
+                         <Input value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
+                       </div>
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium">Bairro</Label>
+                         <Input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} placeholder="Bairro" />
+                       </div>
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium">Cidade</Label>
+                         <Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Cidade" />
+                       </div>
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium">Estado</Label>
+                         <Input value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
+                       </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="profissional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Matrícula</Label>
+                      <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
+                    </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Data de Admissão</Label>
                       <Input type="date" value={form.admission_date} onChange={(e) => setForm({ ...form, admission_date: e.target.value })} />
                     </div>
-                     <div className="space-y-2">
-                       <Label className="text-xs font-bold uppercase text-muted-foreground">Cargo / Função Administrativa</Label>
-                       <Input 
-                         className="h-10 text-sm border-primary/20 bg-primary/5 focus:ring-primary/20 font-medium" 
-                         value={form.cargo} 
-                         onChange={(e) => setForm({ ...form, cargo: e.target.value })} 
-                         placeholder="Ex: Engenheiro de Campo" 
-                       />
-                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Departamento</Label>
-                      <Select value={form.department_id} onValueChange={(v) => setForm({ ...form, department_id: v })}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                      <Label className="text-xs font-medium">Unidade / Filial</Label>
+                      <Input value={form.unidade_filial} onChange={(e) => setForm({ ...form, unidade_filial: e.target.value })} placeholder="Sede Principal" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Tipo de Vínculo</Label>
+                      <Select value={form.tipo_vinculo} onValueChange={(v) => setForm({ ...form, tipo_vinculo: v })}>
+                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {departments.map((d) => (
-                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                          ))}
+                          <SelectItem value="CLT">CLT</SelectItem>
+                          <SelectItem value="PJ">PJ</SelectItem>
+                          <SelectItem value="Temporário">Temporário</SelectItem>
+                          <SelectItem value="Terceirizado">Terceirizado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                       <Label className="text-xs font-medium">Cargo</Label>
+                       <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Engenheiro" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Supervisor</Label>
+                      <Select value={form.supervisor_id} onValueChange={(v) => setForm({ ...form, supervisor_id: v })}>
+                        <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          {supervisors.map(s => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  
-                   <div className="space-y-6 pt-6 border-t border-border">
-                     <h4 className="text-base font-bold flex items-center gap-2 text-primary/80">
-                      <Shield className="h-4 w-4 text-muted-foreground" /> 
-                      Documentação e Endereço
-                    </h4>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold">RG</Label>
-                          <Input 
-                            className="h-11" 
-                            value={form.rg} 
-                            onChange={(e) => setForm({ ...form, rg: maskRG(e.target.value) })} 
-                            placeholder="00.000.000-0" 
-                          />
-                        </div>
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">Data de Nascimento</Label>
-                         <Input className="h-11" type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
-                       </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold">CEP</Label>
-                          <Input 
-                            className="h-11" 
-                            value={form.cep} 
-                            onChange={async (e) => {
-                              const maskedCep = maskCEP(e.target.value);
-                              setForm({ ...form, cep: maskedCep });
-                              if (maskedCep.length === 9) {
-                                try {
-                                  const response = await fetch(`https://viacep.com.br/ws/${maskedCep.replace(/\D/g, '')}/json/`);
-                                  const data = await response.json();
-                                  if (!data.erro) {
-                                    setForm(prev => ({
-                                      ...prev,
-                                      cep: maskedCep,
-                                      endereco_residencial: data.logradouro,
-                                      bairro: data.bairro,
-                                      cidade: data.localidade,
-                                      estado: data.uf
-                                    }));
-                                    toast.success("Endereço preenchido automaticamente");
-                                  }
-                                } catch (error) {
-                                  console.error("Erro ao buscar CEP:", error);
-                                }
-                              }
-                            }} 
-                            placeholder="00000-000"
-                            maxLength={9}
-                          />
-                        </div>
-                       <div className="md:col-span-2 space-y-2">
-                         <Label className="text-sm font-semibold">Endereço Residencial</Label>
-                         <Input className="h-11" value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
-                       </div>
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">Bairro</Label>
-                         <Input className="h-11" value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} placeholder="Bairro" />
-                       </div>
-                       <div className="md:col-span-2 space-y-2">
-                         <Label className="text-sm font-semibold">Cidade</Label>
-                         <Input className="h-11" value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Cidade" />
-                       </div>
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">Estado</Label>
-                        <Input className="h-11" value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
-                      </div>
+                </TabsContent>
+
+                <TabsContent value="operacional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Cód. Serviço</Label>
+                      <Input value={form.service_code} onChange={(e) => setForm({ ...form, service_code: e.target.value })} placeholder="TEC-000" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Região de Atuação</Label>
+                      <Input value={form.regiao_atuacao} onChange={(e) => setForm({ ...form, regiao_atuacao: e.target.value })} placeholder="Ex: SP Centro" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Veículo</Label>
+                      <Input value={form.veiculo_vinculado} onChange={(e) => setForm({ ...form, veiculo_vinculado: e.target.value })} placeholder="Modelo/Placa" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Horário</Label>
+                      <Input value={form.horario_trabalho} onChange={(e) => setForm({ ...form, horario_trabalho: e.target.value })} placeholder="08:00 - 18:00" />
                     </div>
                   </div>
+                  <div className="space-y-4 pt-4 border-t border-border">
+                     <Label className="text-xs font-medium">Observações</Label>
+                     <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="..." className="min-h-[100px]" />
+                  </div>
+                </TabsContent>
 
-                  <div className="space-y-4 pt-6 border-t border-border">
-                     <h4 className="text-base font-bold flex items-center gap-2 text-primary/80">
-                       <Settings className="h-4 w-4 text-muted-foreground" /> 
-                       Observações Internas
-                     </h4>
-                     <Textarea 
-                       placeholder="Anotações administrativas sobre o funcionário..." 
-                       className="min-h-[120px] text-sm bg-muted/20"
-                       value={form.notes}
-                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                     />
-                   </div>
-                 </TabsContent>
- 
-                 <TabsContent value="permissoes" className="space-y-8">
-                   <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-8">
-                     <div className="flex items-center gap-4 border-b border-border pb-6">
-                       <div className="bg-primary/10 p-3 rounded-xl">
-                         <Shield className="h-6 w-6 text-primary" />
-                       </div>
-                       <div>
-                         <h4 className="font-bold text-lg">Controle de Acesso e Segurança</h4>
-                         <p className="text-sm text-muted-foreground">Defina as permissões de acesso e o papel global deste profissional.</p>
-                       </div>
-                     </div>
- 
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                       {[
-                         { id: 'can_access_system', label: 'Acesso ao Sistema', desc: 'Permitir login no portal web e aplicativo mobile' },
-                         { id: 'can_receive_service_orders', label: 'Receber O.S.', desc: 'Pode ser vinculado como executor de ordens de serviço' },
-                         { id: 'can_manage_materials', label: 'Gerenciar Materiais', desc: 'Permissão para solicitar e movimentar itens de estoque' },
-                         { id: 'can_close_service_orders', label: 'Encerrar O.S.', desc: 'Permissão para finalizar e assinar ordens de serviço' },
-                         { id: 'can_view_financial_data', label: 'Dados Financeiros', desc: 'Visualizar custos, valores e medições de serviços' },
-                         { id: 'can_view_reports', label: 'BI e Relatórios', desc: 'Acesso ao painel de indicadores e exportação de dados' },
-                       ].map((perm) => (
-                         <div key={perm.id} className="flex items-center justify-between p-5 rounded-xl border border-border bg-muted/20 hover:bg-muted/30 transition-all group">
-                           <div className="space-y-1">
-                             <Label className="text-sm font-bold cursor-pointer" htmlFor={perm.id}>{perm.label}</Label>
-                             <p className="text-xs text-muted-foreground leading-relaxed">{perm.desc}</p>
-                           </div>
-                           <Switch 
-                             id={perm.id}
-                             checked={(form as any)[perm.id]} 
-                             onCheckedChange={(v) => setForm({ ...form, [perm.id]: v })} 
-                           />
-                         </div>
-                       ))}
-                     </div>
- 
-                     <div className="pt-8 border-t border-border space-y-4">
-                       <div className="flex flex-col gap-1">
-                         <Label className="text-sm font-bold uppercase text-primary/70 tracking-wider">Nível de Acesso Global (Role)</Label>
-                         <p className="text-xs text-muted-foreground">Este perfil determina as permissões de interface e menus principais do sistema.</p>
-                       </div>
-                       <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as AppRole })}>
-                         <SelectTrigger className="h-12 border-primary/20 bg-primary/5 focus:ring-primary/20"><SelectValue /></SelectTrigger>
-                         <SelectContent>
-                           {ROLES.map((r) => (
-                             <SelectItem key={r} value={r} className="py-3 font-medium">{ROLE_LABEL[r]}</SelectItem>
-                           ))}
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
-                 </TabsContent>
- 
-                 <TabsContent value="operacional" className="space-y-8">
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="space-y-2">
-                       <Label className="text-sm font-bold">Função Operacional Detalhada</Label>
-                       <Input className="h-12" value={form.operational_role} onChange={(e) => setForm({ ...form, operational_role: e.target.value })} placeholder="Ex: Eletricista de Redes MT/BT" />
-                     </div>
-                     <div className="space-y-2">
-                       <Label className="text-sm font-bold">Tipo de Funcionário</Label>
-                       <Select value={form.employee_type} onValueChange={(v) => setForm({ ...form, employee_type: v })}>
-                         <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="management">Gestor / Gerência</SelectItem>
-                           <SelectItem value="supervisor">Supervisor</SelectItem>
-                           <SelectItem value="field_worker">Técnico de Campo</SelectItem>
-                           <SelectItem value="auditor">Auditor</SelectItem>
-                           <SelectItem value="stock">Estoquista / Almoxarifado</SelectItem>
-                           <SelectItem value="admin">Administrativo</SelectItem>
-                           <SelectItem value="finance">Financeiro</SelectItem>
-                           <SelectItem value="purchasing">Comprador</SelectItem>
-                           <SelectItem value="engineering">Engenharia</SelectItem>
-                           <SelectItem value="quality">Qualidade / Segurança</SelectItem>
-                           <SelectItem value="rh">Recursos Humanos</SelectItem>
-                           <SelectItem value="sales">Comercial / Vendas</SelectItem>
-                           <SelectItem value="outsourced">Terceirizado</SelectItem>
-                           <SelectItem value="developer">Desenvolvedor / TI</SelectItem>
-                           <SelectItem value="other">Outros</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
- 
-                   <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 mt-8 shadow-inner">
-                     <h4 className="text-base font-bold flex items-center gap-3 mb-6 text-primary">
-                       <Activity className="h-5 w-5" /> 
-                       Métricas de Desempenho e Disponibilidade
-                     </h4>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-primary/50 transition-all">
-                         <div className="text-3xl font-black text-primary mb-1">0</div>
-                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">OS em Aberto</div>
-                       </div>
-                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-green-500/50 transition-all">
-                         <div className="text-3xl font-black text-green-600 mb-1">0</div>
-                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Concluídas (Mês)</div>
-                       </div>
-                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-amber-500/50 transition-all">
-                         <div className="text-3xl font-black text-amber-600 mb-1">--</div>
-                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Score / Produtividade</div>
-                       </div>
-                     </div>
-                   </div>
-                 </TabsContent>
- 
-                  <TabsContent value="config_acesso" className="space-y-6">
-                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-6">
-                      <div className="flex items-center gap-4 border-b border-border pb-6">
-                        <div className="bg-primary/10 p-3 rounded-xl">
-                          <Key className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-lg">Configurações de Acesso</h4>
-                          <p className="text-sm text-muted-foreground">Defina a senha provisória e regras de primeiro acesso.</p>
-                        </div>
+                <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { id: 'can_access_system', label: 'Acesso ao Sistema' },
+                      { id: 'can_receive_service_orders', label: 'Receber O.S.' },
+                      { id: 'can_manage_materials', label: 'Estoque' },
+                      { id: 'can_close_service_orders', label: 'Fechar O.S.' },
+                      { id: 'can_view_financial_data', label: 'Financeiro' },
+                      { id: 'can_view_reports', label: 'Relatórios' }
+                    ].map(p => (
+                      <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                        <Label htmlFor={p.id}>{p.label}</Label>
+                        <Switch id={p.id} checked={(form as any)[p.id]} onCheckedChange={(v) => setForm({...form, [p.id]: v})} />
                       </div>
+                    ))}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Perfil de Acesso</Label>
+                    <Select value={form.role} onValueChange={(v) => setForm({...form, role: v as AppRole})}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TabsContent>
 
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-bold">Senha Provisória</Label>
-                          <div className="relative">
-                            <Input 
-                              type={showPassword ? "text" : "password"} 
-                              className="h-12 pr-10" 
-                              value={form.password} 
-                              onChange={(e) => setForm({ ...form, password: e.target.value })} 
-                              placeholder="Digite uma senha forte"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                          <p className="text-[10px] text-muted-foreground">
-                            O profissional será obrigado a trocar esta senha no primeiro acesso ao sistema.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
+                <TabsContent value="config_acesso" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                   <div className="space-y-2">
+                      <Label>Senha Provisória</Label>
+                      <Input type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder="***" />
+                   </div>
+                </TabsContent>
 
-                  <TabsContent value="historico" className="space-y-6">
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
-                      <div className="bg-muted/20 p-4 rounded-full mb-4">
-                        <Activity className="h-12 w-12 opacity-20" />
-                      </div>
-                      <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
-                      <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
-                    </div>
-                  </TabsContent>
+                <TabsContent value="historico" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                   <p className="text-center py-10 text-muted-foreground">Sem histórico recente.</p>
+                </TabsContent>
               </Tabs>
             </div>
           </div>

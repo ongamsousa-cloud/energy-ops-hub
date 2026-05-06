@@ -8,7 +8,7 @@ import EmptyState from "@/components/EmptyState";
   import { Card, CardContent } from "@/components/ui/card";
   import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Badge } from "@/components/ui/badge";
- import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil, Download, Filter, FileSpreadsheet, FileText, CheckCircle2, XCircle, AlertCircle, Clock, ClipboardList, Activity } from "lucide-react";
+import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil, Download, Filter, FileSpreadsheet, FileText, CheckCircle2, XCircle, AlertCircle, Clock, ClipboardList, Activity, Users, UserCheck, UserX, UserMinus as UserAfastado } from "lucide-react";
   import ProfessionalModal from "@/components/professional/ProfessionalModal";
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";
@@ -127,6 +127,13 @@ import EmptyState from "@/components/EmptyState";
         toast.error("Erro ao alterar status: " + error.message);
       }
     }
+    const stats = {
+      total: rows.length,
+      active: rows.filter(r => r.status === 'active').length,
+      inactive: rows.filter(r => r.status === 'inactive').length,
+      afastado: rows.filter(r => r.status === 'afastado' || r.status === 'blocked').length
+    };
+
     const filteredRows = rows.filter(p => {
       const s = search.toLowerCase();
       return (
@@ -144,10 +151,24 @@ import EmptyState from "@/components/EmptyState";
      switch (status) {
        case 'active': return <CheckCircle2 className="h-3 w-3 text-green-500" />;
        case 'inactive': return <XCircle className="h-3 w-3 text-red-500" />;
+       case 'afastado':
        case 'blocked': return <AlertCircle className="h-3 w-3 text-amber-500" />;
+       case 'desligado': return <UserX className="h-3 w-3 text-gray-500" />;
        case 'vacation': return <Clock className="h-3 w-3 text-blue-500" />;
-       default: return null;
+       default: return <AlertCircle className="h-3 w-3 text-gray-300" />;
      }
+   };
+
+   const getStatusLabel = (status: string) => {
+     const labels: Record<string, string> = {
+       active: 'Ativo',
+       inactive: 'Inativo',
+       afastado: 'Afastado',
+       blocked: 'Bloqueado',
+       desligado: 'Desligado',
+       vacation: 'Férias'
+     };
+     return labels[status] || status;
    };
 
    const openEdit = (prof: any) => {
@@ -163,28 +184,54 @@ import EmptyState from "@/components/EmptyState";
    return (
      <div className="space-y-6">
        <PageHeader 
-         title="Profissionais" 
-         description="Equipe e papéis de acesso ao sistema." 
-          actions={
-            <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Download className="h-4 w-4" /> Exportar
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="gap-2"><FileSpreadsheet className="h-4 w-4" /> CSV</DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2"><FileSpreadsheet className="h-4 w-4" /> Excel</DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2"><FileText className="h-4 w-4" /> PDF</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button onClick={openNew} size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" /> Novo Funcionário
-              </Button>
-            </div>
-          }
-       />
+          title="Gestão de Funcionários" 
+          description="Controle central de equipe, permissões e dados profissionais." 
+           actions={
+             <div className="flex gap-2">
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <Button variant="outline" size="sm" className="gap-2">
+                     <Download className="h-4 w-4" /> Exportar
+                   </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent align="end">
+                   <DropdownMenuItem className="gap-2"><FileSpreadsheet className="h-4 w-4" /> CSV</DropdownMenuItem>
+                   <DropdownMenuItem className="gap-2"><FileText className="h-4 w-4" /> PDF</DropdownMenuItem>
+                 </DropdownMenuContent>
+               </DropdownMenu>
+               <Button onClick={openNew} size="sm" className="gap-2">
+                 <UserPlus className="h-4 w-4" /> Novo Funcionário
+               </Button>
+             </div>
+           }
+        />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-primary/5 border-primary/10">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg"><Users className="h-4 w-4 text-primary" /></div>
+              <div><p className="text-[10px] text-muted-foreground uppercase font-bold">Total</p><p className="text-xl font-bold">{stats.total}</p></div>
+            </CardContent>
+          </Card>
+          <Card className="bg-green-500/5 border-green-500/10">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="bg-green-500/10 p-2 rounded-lg"><UserCheck className="h-4 w-4 text-green-600" /></div>
+              <div><p className="text-[10px] text-muted-foreground uppercase font-bold">Ativos</p><p className="text-xl font-bold">{stats.active}</p></div>
+            </CardContent>
+          </Card>
+          <Card className="bg-red-500/5 border-red-500/10">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="bg-red-500/10 p-2 rounded-lg"><UserX className="h-4 w-4 text-red-600" /></div>
+              <div><p className="text-[10px] text-muted-foreground uppercase font-bold">Inativos</p><p className="text-xl font-bold">{stats.inactive}</p></div>
+            </CardContent>
+          </Card>
+          <Card className="bg-amber-500/5 border-amber-500/10">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="bg-amber-500/10 p-2 rounded-lg"><UserAfastado className="h-4 w-4 text-amber-600" /></div>
+              <div><p className="text-[10px] text-muted-foreground uppercase font-bold">Afastados</p><p className="text-xl font-bold">{stats.afastado}</p></div>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex flex-col md:flex-row items-center gap-4 bg-muted/20 p-4 rounded-lg border shadow-sm">
          <div className="relative flex-1">
@@ -250,7 +297,7 @@ import EmptyState from "@/components/EmptyState";
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       {getStatusIcon(p.status)}
-                      <span className="text-[11px] font-medium capitalize">{p.status === 'active' ? 'Ativo' : p.status === 'inactive' ? 'Inativo' : p.status === 'blocked' ? 'Bloqueado' : 'Férias'}</span>
+                      <span className="text-[11px] font-medium">{getStatusLabel(p.status)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">

@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmptyState from "@/components/EmptyState";
-import { Plus, Users, Shield, MapPin, Search, UserCheck, UserPlus } from "lucide-react";
+ import { Plus, Users, Shield, MapPin, Search, UserCheck, UserPlus, ChevronRight } from "lucide-react";
 import ProfessionalModal from "@/components/professional/ProfessionalModal";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+ import { Card } from "@/components/ui/card";
+ import { cn } from "@/lib/utils";
 
 export default function Equipes() {
   const [rows, setRows] = useState<any[]>([]);

@@ -157,12 +157,34 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const fetchSupervisorsAndServices = async () => {
     try {
-      const [empsRes, servsRes] = await Promise.all([
+      // Fetch both from employees and profiles to ensure all potential supervisors are listed
+      const [empsRes, rolesRes, servsRes] = await Promise.all([
         supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
+        supabase.from("user_roles").select("user_id, role").in("role", ["supervisor", "admin", "gestor", "developer"]),
         supabase.from("servicos").select("id, nome").eq("ativo", true)
       ]);
       
-      setSupervisors(empsRes.data ?? []);
+      const supervisorUserIds = rolesRes.data?.map(r => r.user_id) || [];
+      
+      // Filter employees that are supervisors/admins
+      const supervisorList = empsRes.data?.filter(emp => 
+        emp.user_id && supervisorUserIds.includes(emp.user_id)
+      ) || [];
+      
+      // Fallback: fetch names from profiles for any missing supervisors who aren't in employees table yet
+      const missingIds = supervisorUserIds.filter(id => !supervisorList.find(s => s.user_id === id));
+      if (missingIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, nome")
+          .in("id", missingIds);
+          
+        profs?.forEach(p => {
+          supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
+        });
+      }
+
+      setSupervisors(supervisorList);
       setAllServices(servsRes.data ?? []);
     } catch (err) {
       console.error("Erro ao carregar supervisores:", err);
@@ -172,8 +194,9 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const handleCepSearch = async () => {
     const cep = form.cep.replace(/\D/g, "");
+    if (!cep) return;
     if (cep.length !== 8) {
-      toast.error("CEP inválido. Digite 8 números.");
+      toast.error("CEP deve conter 8 dígitos.");
       return;
     }
 

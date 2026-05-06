@@ -3151,6 +3151,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_team_id: string | null
           ativo: boolean
           bairro: string | null
           cargo: string | null
@@ -3182,6 +3183,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_team_id?: string | null
           ativo?: boolean
           bairro?: string | null
           cargo?: string | null
@@ -3213,6 +3215,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_team_id?: string | null
           ativo?: boolean
           bairro?: string | null
           cargo?: string | null
@@ -4367,7 +4370,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_all_service_orders: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          operational_status: string | null
+          priority: string | null
+          reference_number: string | null
+          source_table: string | null
+          status: string | null
+          team_id: string | null
+          technician_id: string | null
+        }
+        Relationships: []
+      }
+      v_unified_notifications: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          message: string | null
+          read_at: string | null
+          title: string | null
+          type: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       archive_old_messages: { Args: never; Returns: undefined }

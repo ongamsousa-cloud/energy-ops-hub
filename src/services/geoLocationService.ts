@@ -53,18 +53,28 @@ class GeoLocationService {
        }
      });
 
-     // Update the OS with the current location if it's start or end
-     if (stage === 'inicio' || stage === 'fim') {
-       const updateData: any = {};
-       if (stage === 'inicio') {
-         updateData.inicio_lat = location.latitude;
-         updateData.inicio_lng = location.longitude;
-       } else {
-         updateData.fim_lat = location.latitude;
-         updateData.fim_lng = location.longitude;
-       }
-       await supabase.from("ordens_servico").update(updateData).eq("id", osId);
-     }
+      // Save to official location logs
+      await supabase.from("os_location_logs").insert({
+        os_id: osId,
+        user_id: user.id,
+        stage,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy
+      });
+
+      // Update the OS with the current location if it's start or end
+      if (stage === 'inicio' || stage === 'fim') {
+        const updateData: any = {};
+        if (stage === 'inicio') {
+          updateData.inicio_lat = location.latitude;
+          updateData.inicio_lng = location.longitude;
+        } else {
+          updateData.fim_lat = location.latitude;
+          updateData.fim_lng = location.longitude;
+        }
+        await supabase.from("ordens_servico").update(updateData).eq("id", osId);
+      }
 
     return !error;
   }

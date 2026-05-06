@@ -280,7 +280,6 @@ export default function Departamentos() {
                 <Label>Departamento Ativo</Label>
               </div>
             </div>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>

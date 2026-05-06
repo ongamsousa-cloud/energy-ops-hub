@@ -68,8 +68,18 @@ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pen
             foto_url: p.foto_url || emp?.photo_url || null,
             user_roles: userRoles,
             status: emp?.status || (p.ativo ? 'active' : 'inactive'),
+            is_active: emp?.is_active ?? p.ativo,
+            can_access_system: emp?.can_access_system ?? false,
             internal_company_code: emp?.internal_company_code || "",
-            service_code: emp?.service_code || ""
+            service_code: emp?.service_code || "",
+            matricula: emp?.matricula || "",
+            unidade_filial: emp?.unidade_filial || "",
+            tipo_vinculo: emp?.tipo_vinculo || "CLT",
+            supervisor_id: emp?.supervisor_id || null,
+            regiao_atuacao: emp?.regiao_atuacao || "",
+            veiculo_vinculado: emp?.veiculo_vinculado || "",
+            horario_trabalho: emp?.horario_trabalho || "",
+            servicos_habilitados: emp?.servicos_habilitados || []
           };
         });
         

@@ -27,15 +27,16 @@ serve(async (req) => {
       })
     }
 
-    const { data: roleData } = await supabaseClient
+    const { data: roles } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', requester.id)
-      .eq('role', 'admin')
-      .single()
+      .eq('user_id', requester.id);
 
-    if (!roleData) {
-      return new Response(JSON.stringify({ error: 'Unauthorized: Admin role required' }), {
+    const userRoles = roles?.map(r => r.role) || [];
+    const isAuthorized = userRoles.includes('admin') || userRoles.includes('gestor') || userRoles.includes('developer');
+
+    if (!isAuthorized) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: Admin or Gestor role required' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })

@@ -30,7 +30,7 @@ export default function OSList() {
       priority: "all",
       department: "all",
       search: "",
-       period: "month",
+       period: "all",
        showArchived: false,
        dateRange: undefined as DateRange | undefined
     });

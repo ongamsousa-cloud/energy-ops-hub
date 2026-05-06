@@ -314,43 +314,42 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                     </div>
                   </div>
                   
-                  <div className="space-y-4 pt-4 border-t">
-                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                   <div className="space-y-6 pt-6 border-t border-border">
+                     <h4 className="text-base font-bold flex items-center gap-2 text-primary/80">
                       <Shield className="h-4 w-4 text-muted-foreground" /> 
                       Documentação e Endereço
                     </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">RG</Label>
-                        <Input value={form.rg} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Data de Nascimento</Label>
-                        <Input type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">CEP</Label>
-                        <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Endereço Residencial</Label>
-                        <Input value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium">Bairro</Label>
-                        <Input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} placeholder="Bairro" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Cidade</Label>
-                          <Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Cidade" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">Estado</Label>
-                          <Input value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
-                        </div>
-                      </div>
-                    </div>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">RG</Label>
+                         <Input className="h-11" value={form.rg} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">Data de Nascimento</Label>
+                         <Input className="h-11" type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">CEP</Label>
+                         <Input className="h-11" value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" />
+                       </div>
+                       <div className="md:col-span-2 space-y-2">
+                         <Label className="text-sm font-semibold">Endereço Residencial</Label>
+                         <Input className="h-11" value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">Bairro</Label>
+                         <Input className="h-11" value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} placeholder="Bairro" />
+                       </div>
+                       <div className="md:col-span-2 space-y-2">
+                         <Label className="text-sm font-semibold">Cidade</Label>
+                         <Input className="h-11" value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Cidade" />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-sm font-semibold">Estado</Label>
+                         <Input className="h-11" value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
+                       </div>
+                     </div>
+                   </div>
                   </div>
 
                   <div className="space-y-4 pt-4 border-t">

@@ -71,7 +71,7 @@
    aguardando_validacao_supervisor: ["correcao_solicitada", "aprovada_supervisor"],
    correcao_solicitada: ["corrigida"],
    corrigida: ["aguardando_validacao_supervisor"],
-   aprovada_supervisor: ["aguardando_medicao", "aguardando_financeiro", "aguardando_auditoria", "concluida"],
+   aprovada_supervisor: ["aguardando_medicao", "aguardando_financeiro", "aguardando_auditoria"],
    aguardando_medicao: ["medida"],
    medida: ["aguardando_financeiro"],
    aguardando_financeiro: ["faturavel"],

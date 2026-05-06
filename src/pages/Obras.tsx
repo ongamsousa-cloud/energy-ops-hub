@@ -248,9 +248,9 @@ export default function Obras() {
               <Button variant="outline" size="sm" onClick={() => document.getElementById('import-obras')?.click()} title="Importar de CSV ou Excel">
                 <Upload className="mr-1 h-3.5 w-3.5" /> Importar
               </Button>
-              <Button variant="destructive" size="sm" onClick={clearAll} title="Limpar todas as obras">
-                <Trash className="h-3.5 w-3.5" />
-              </Button>
+               <Button variant="destructive" size="sm" onClick={clearAll} title="Limpar todas as obras" className="gap-2">
+                 <Trash className="h-3.5 w-3.5" /> Limpar Tabela
+               </Button>
              <Dialog open={open} onOpenChange={(val) => {
                setOpen(val);
                if (!val) {
@@ -263,23 +263,25 @@ export default function Obras() {
                </DialogTrigger>
                <DialogContent>
                  <DialogHeader><DialogTitle>{editingId ? "Editar obra" : "Nova obra"}</DialogTitle></DialogHeader>
-                <div className="grid gap-4 sm:grid-cols-2 max-h-[70vh] overflow-y-auto pr-2">
-                  <div className="space-y-2">
-                    <Label>Código / Número da Obra *</Label>
-                    <Input 
-                      placeholder="Ex: OB-2024-001" 
-                      value={form.numero} 
-                      onChange={(e)=>setForm({...form, numero: e.target.value})} 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nome da Obra *</Label>
-                    <Input 
-                      placeholder="Ex: Reforma Centro" 
-                      value={form.nome} 
-                      onChange={(e)=>setForm({...form, nome: e.target.value})} 
-                    />
-                  </div>
+                <div className="grid gap-6 sm:grid-cols-2 max-h-[70vh] overflow-y-auto p-2">
+                   <div className="space-y-2">
+                     <Label className="font-bold">Código / Número da Obra *</Label>
+                     <Input 
+                       className="border-primary/20 focus-visible:ring-primary"
+                       placeholder="Ex: OB-2024-001" 
+                       value={form.numero} 
+                       onChange={(e)=>setForm({...form, numero: e.target.value})} 
+                     />
+                   </div>
+                   <div className="space-y-2">
+                     <Label className="font-bold">Nome da Obra *</Label>
+                     <Input 
+                       className="border-primary/20 focus-visible:ring-primary"
+                       placeholder="Ex: Reforma Centro" 
+                       value={form.nome} 
+                       onChange={(e)=>setForm({...form, nome: e.target.value})} 
+                     />
+                   </div>
                   
                   <div className="sm:col-span-2 space-y-2">
                     <Label>CEP</Label>
@@ -376,7 +378,11 @@ export default function Obras() {
                     <Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} />
                   </div>
                 </div>
-               <Button onClick={save}>Salvar</Button>
+               <div className="pt-4 flex justify-end">
+                 <Button onClick={save} className="px-8 font-bold shadow-lg shadow-primary/20">
+                   {editingId ? "Atualizar Obra" : "Criar Obra"}
+                 </Button>
+               </div>
              </DialogContent>
            </Dialog>
          </div>
@@ -388,37 +394,43 @@ export default function Obras() {
       {filtered.length === 0 ? (
         <EmptyState title="Nenhuma obra encontrada" description="Cadastre a primeira obra para iniciar." />
       ) : (
-        <div className="overflow-hidden rounded-md border border-border bg-card">
-          <table className="w-full text-sm">
-            <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
-               <tr><th className="px-3 py-2">Número</th><th className="px-3 py-2">Nome</th><th className="px-3 py-2">Cidade</th><th className="px-3 py-2">Status</th><th className="px-3 py-2 text-right">Ações</th></tr>
-            </thead>
-            <tbody>
-              {filtered.map((o)=>(
-                <tr key={o.id} className="border-b border-border last:border-0 hover:bg-accent/50">
-                   <td className="px-3 py-2 font-mono text-xs">
-                     <Link to={`/app/obras/${o.id}`} className="hover:underline font-bold text-primary">
-                       {o.numero}
-                     </Link>
-                   </td>
-                  <td className="px-3 py-2">{o.nome}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{o.cidade}{o.estado ? ` / ${o.estado}` : ""}</td>
-                   <td className="px-3 py-2"><StatusBadge status={o.status} /></td>
-                   <td className="px-3 py-2 text-right">
-                     <div className="flex justify-end gap-1">
-                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => edit(o)}>
-                         <Edit className="h-4 w-4" />
-                       </Button>
-                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => remove(o.id)}>
-                         <Trash2 className="h-4 w-4" />
-                       </Button>
-                     </div>
-                   </td>
+         <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
+           <table className="w-full text-sm">
+             <thead>
+                <tr className="border-b bg-muted/50 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left">Código</th>
+                  <th className="px-4 py-3 text-left">Nome da Obra</th>
+                  <th className="px-4 py-3 text-left">Cidade/UF</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-right">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+             </thead>
+             <tbody className="divide-y">
+               {filtered.map((o)=>(
+                 <tr key={o.id} className="hover:bg-accent/30 transition-colors group">
+                    <td className="px-4 py-4">
+                      <Link to={`/app/obras/${o.id}`} className="hover:underline font-mono font-bold text-primary text-xs">
+                        {o.numero}
+                      </Link>
+                    </td>
+                   <td className="px-4 py-4 font-medium">{o.nome}</td>
+                   <td className="px-4 py-4 text-muted-foreground text-xs">{o.cidade}{o.estado ? ` / ${o.estado}` : "---"}</td>
+                    <td className="px-4 py-4"><StatusBadge status={o.status} /></td>
+                    <td className="px-4 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8 border-primary/10 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all" onClick={() => edit(o)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8 border-destructive/10 hover:border-destructive/50 hover:bg-destructive/5 hover:text-destructive transition-all" onClick={() => remove(o.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+         </div>
       )}
     </div>
   );

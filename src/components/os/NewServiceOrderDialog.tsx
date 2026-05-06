@@ -6,10 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
- import { Search, Plus, Trash2, X, AlertCircle, MapPin, Loader2 } from "lucide-react";
+ import { Search, Plus, Trash2, X, AlertCircle, MapPin, Loader2, ClipboardList, Clock, Info, CheckCircle2, ChevronRight, Building2, User2, LayoutList } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -317,16 +318,39 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <DialogHeader className="p-6 pb-2 border-b">
-          <DialogTitle className="text-xl font-bold">Nova Ordem de Serviço</DialogTitle>
-          <DialogDescription>Preencha os dados abaixo para iniciar uma nova OS.</DialogDescription>
-        </DialogHeader>
-        
-        <div className="p-6">
-          {step === 1 && (
+   return (
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl">
+         <DialogHeader className="p-8 pb-6 bg-primary text-primary-foreground relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+             <ClipboardList className="h-32 w-32" />
+           </div>
+           <div className="relative z-10">
+             <DialogTitle className="text-2xl font-bold mb-1">Nova Ordem de Serviço</DialogTitle>
+             <DialogDescription className="text-primary-foreground/80">
+               Siga os passos para criar uma nova solicitação de trabalho.
+             </DialogDescription>
+           </div>
+           
+           {/* Stepper Visual */}
+           <div className="flex items-center gap-2 mt-6 relative z-10">
+             {[1, 2, 3, 4, 5].map((s) => (
+               <div key={s} className="flex items-center gap-2">
+                 <div className={cn(
+                   "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
+                   step === s ? "bg-white text-primary scale-110 shadow-lg" : 
+                   step > s ? "bg-primary-foreground/40 text-primary-foreground" : "bg-primary-foreground/10 text-primary-foreground/40"
+                 )}>
+                   {step > s ? <CheckCircle2 className="h-5 w-5" /> : s}
+                 </div>
+                 {s < 5 && <div className={cn("h-0.5 w-6 rounded-full", step > s ? "bg-primary-foreground/40" : "bg-primary-foreground/10")} />}
+               </div>
+             ))}
+           </div>
+         </DialogHeader>
+         
+         <div className="flex-1 overflow-y-auto p-8 bg-background">
+           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -382,47 +406,55 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      </div>
                    </div>
                      <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
-                       <div className="flex items-center justify-between">
-                         <h3 className="text-sm font-semibold">Identificação da Obra</h3>
-                         {!selectedObra && formData.obraId === "new" && (
-                           <span className="text-xs text-amber-600 font-medium flex items-center">
-                             <Plus className="h-3 w-3 mr-1" /> Nova Obra sendo cadastrada
-                           </span>
-                         )}
-                       </div>
-                       
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                           <Label>Código da Obra <span className="text-destructive">*</span></Label>
-                           <div className="flex gap-2">
-                             <Input 
-                               placeholder="Digite o código (ex: 1234)" 
-                               value={selectedObra?.numero || customObraNumero || ""}
-                               onChange={(e) => {
-                                 const val = e.target.value;
-                                 const found = obras.find(o => o.numero === val);
-                                 if (found) {
-                                   handleObraChange(found.id);
-                                   setCustomObraNumero("");
-                                 } else {
-                                   setSelectedObra(null);
-                                   setFormData(prev => ({ ...prev, obraId: "new" }));
-                                   setCustomObraNumero(val);
-                                 }
-                               }}
-                             />
-                             <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
-                               <PopoverTrigger asChild>
-                                 <Button variant="outline" size="icon" type="button" title="Pesquisar obras cadastradas">
-                                   <Search className="h-4 w-4" />
-                                 </Button>
-                               </PopoverTrigger>
-                               <PopoverContent className="w-[300px] p-0" align="end">
-                                 <Command>
-                                   <CommandInput placeholder="Pesquisar obras..." />
-                                   <CommandList>
-                                     <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
-                                     <CommandGroup>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-primary" />
+                            <h3 className="text-sm font-bold uppercase tracking-tight">Identificação da Obra</h3>
+                          </div>
+                          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => nav('/app/obras')}>
+                            Gerenciar Obras
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-primary/10">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold">Código da Obra <span className="text-destructive">*</span></Label>
+                            <div className="relative group">
+                              <Input 
+                                placeholder="Digite o código manualmente..." 
+                                className="pr-10 border-primary/20 focus-visible:ring-primary shadow-sm"
+                                value={selectedObra?.numero || customObraNumero || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const found = obras.find(o => o.numero === val);
+                                  if (found) {
+                                    handleObraChange(found.id);
+                                    setCustomObraNumero("");
+                                  } else {
+                                    setSelectedObra(null);
+                                    setFormData(prev => ({ ...prev, obraId: "new" }));
+                                    setCustomObraNumero(val);
+                                  }
+                                }}
+                              />
+                              <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    type="button" 
+                                    className="absolute right-0 top-0 h-full text-muted-foreground hover:text-primary transition-colors"
+                                    title="Pesquisar obras cadastradas"
+                                  >
+                                    <Search className="h-4 w-4" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[350px] p-0 shadow-xl" align="end">
+                                  <Command className="rounded-lg">
+                                    <CommandInput placeholder="Pesquisar por número ou nome..." className="h-11" />
+                                    <CommandList className="max-h-[300px]">
+                                      <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                                      <CommandGroup heading="Obras Cadastradas">
                                        {obras.map((o) => (
                                          <CommandItem
                                            key={o.id}
@@ -504,18 +536,29 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                  </div>
                </div>
               </div>
-              <Button className="w-full" onClick={() => {
-                if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
-                  return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
-                }
-                setStep(2);
-              }}>Próximo Passo</Button>
-            </div>
-          )}
+               <div className="pt-4 border-t flex justify-end">
+                 <Button 
+                   className="px-8 font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all" 
+                   onClick={() => {
+                     if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
+                       return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
+                     }
+                     setStep(2);
+                   }}
+                 >
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
-          {step === 2 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+           {step === 2 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <Clock className="h-5 w-5 text-primary" />
+                 <h3 className="text-lg font-bold">Agendamento e Responsabilidade</h3>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-xl border">
                 <div className="space-y-2">
                   <Label>Data Programada</Label>
                   <Input type="date" value={formData.data_agendada} onChange={(e) => setFormData({...formData, data_agendada: e.target.value})} />
@@ -548,16 +591,23 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   </Select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Voltar</Button>
-                <Button className="flex-1" onClick={() => setStep(3)}>Próximo Passo</Button>
-              </div>
-            </div>
-          )}
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(1)}>Voltar</Button>
+                 <Button className="px-8 font-bold shadow-lg shadow-primary/20" onClick={() => setStep(3)}>
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
+           {step === 3 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <LayoutList className="h-5 w-5 text-primary" />
+                 <h3 className="text-lg font-bold">Tipo de Serviço</h3>
+               </div>
+               <div className="grid gap-6 bg-muted/20 p-6 rounded-xl border">
+                 <div className="space-y-2">
                 <Label>Serviço Principal <span className="text-destructive">*</span></Label>
                 <Select value={selectedServicoId} onValueChange={(v) => setSelectedServicoId(v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
@@ -582,12 +632,15 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   </Select>
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>Voltar</Button>
-                <Button className="flex-1" onClick={() => setStep(4)}>Próximo Passo</Button>
-              </div>
-            </div>
-          )}
+               </div>
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(2)}>Voltar</Button>
+                 <Button className="px-8 font-bold shadow-lg shadow-primary/20" onClick={() => setStep(4)}>
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
           {step === 4 && (
             <div className="space-y-4">
@@ -632,27 +685,84 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             </div>
           )}
 
-          {step === 5 && (
-            <div className="space-y-4">
-              <div className="bg-muted/30 p-4 rounded-lg text-sm space-y-2">
-                <h4 className="font-bold border-b pb-1">Resumo da Ordem de Serviço</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-muted-foreground">Obra:</div> <div className="font-medium">{selectedObra?.nome}</div>
-                  <div className="text-muted-foreground">Data/Hora:</div> <div className="font-medium">{formData.data_agendada} {formData.hora_agendada}</div>
-                  <div className="text-muted-foreground">Departamento:</div> <div className="font-medium">{departamentos.find(d => d.id === formData.departmentId)?.name}</div>
-                  <div className="text-muted-foreground">Prioridade:</div> <div className="font-medium uppercase">{formData.prioridade}</div>
-                  <div className="text-muted-foreground">Total Itens:</div> <div className="font-medium">{formData.itens.length}</div>
-                </div>
-              </div>
-              <Textarea placeholder="Observações adicionais..." value={formData.observacoes} onChange={e => setFormData({...formData, observacoes: e.target.value})} />
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(4)}>Voltar</Button>
-                <Button className="flex-1" disabled={busy} onClick={handleSave}>
-                  {busy ? "Processando..." : "Finalizar e Criar OS"}
-                </Button>
-              </div>
-            </div>
-          )}
+           {step === 5 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                 <h3 className="text-lg font-bold">Revisão Final</h3>
+               </div>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="bg-muted/30 p-5 rounded-xl border border-dashed border-muted-foreground/20 space-y-4">
+                   <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+                     <Info className="h-3 w-3" /> Informações Gerais
+                   </h4>
+                   <div className="space-y-3">
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> Obra:</span>
+                       <span className="font-bold">{selectedObra?.numero || customObraNumero}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Data/Hora:</span>
+                       <span className="font-semibold">{formData.data_agendada} às {formData.hora_agendada}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm border-b border-muted-foreground/5 pb-2">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><LayoutList className="h-3.5 w-3.5" /> Setor:</span>
+                       <span className="font-semibold">{departamentos.find(d => d.id === formData.departmentId)?.name}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm">
+                       <span className="text-muted-foreground flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5" /> Prioridade:</span>
+                       <Badge variant="outline" className={cn(
+                         "uppercase font-bold text-[10px]",
+                         formData.prioridade === 'urgente' ? "border-red-500 text-red-600 bg-red-50" : "border-amber-500 text-amber-600 bg-amber-50"
+                       )}>{formData.prioridade}</Badge>
+                     </div>
+                   </div>
+                 </div>
+                 
+                 <div className="bg-muted/30 p-5 rounded-xl border border-dashed border-muted-foreground/20 flex flex-col gap-3">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <User2 className="h-3 w-3" /> Responsáveis
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="text-sm bg-background/50 p-2 rounded border border-muted-foreground/5">
+                        <span className="text-[10px] text-muted-foreground block uppercase font-bold">Gestor</span>
+                        <span className="font-semibold">{gestores.find(g => g.id === formData.gestorId)?.nome || "Não definido"}</span>
+                      </div>
+                      <div className="text-sm bg-background/50 p-2 rounded border border-muted-foreground/5">
+                        <span className="text-[10px] text-muted-foreground block uppercase font-bold">Equipe Executora</span>
+                        <span className="font-semibold">{equipes.find(e => e.id === formData.equipeId)?.nome || "A definir"}</span>
+                      </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div className="space-y-2">
+                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Observações Adicionais</Label>
+                 <Textarea 
+                   placeholder="Adicione observações importantes para a execução..." 
+                   value={formData.observacoes} 
+                   onChange={e => setFormData({...formData, observacoes: e.target.value})} 
+                   className="min-h-[100px] border-primary/10"
+                 />
+               </div>
+
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(4)}>Voltar</Button>
+                 <Button 
+                   className="px-10 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200" 
+                   disabled={busy} 
+                   onClick={handleSave}
+                 >
+                   {busy ? (
+                     <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando... </>
+                   ) : (
+                     <> <CheckCircle2 className="mr-2 h-4 w-4" /> Finalizar e Gerar OS </>
+                   )}
+                 </Button>
+               </div>
+             </div>
+           )}
         </div>
       </DialogContent>
     </Dialog>

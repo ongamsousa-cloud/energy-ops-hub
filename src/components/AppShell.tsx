@@ -25,9 +25,9 @@ const NAV: Item[] = [
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
   { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo"] },
   { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
-  { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
-  { to: "/app/departamentos", label: "Departamentos", icon: Building2, roles: ["admin"] },
-  { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },
+   { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
+   { to: "/app/departamentos", label: "Departamentos", icon: Building2, roles: ["admin","gestor"] },
+   { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },
     { to: "/app/medicao", label: "Medição", icon: Calculator, roles: ["admin","gestor","financeiro"] },
     { to: "/app/dev", label: "Painel Developer", icon: Terminal, roles: ["developer"] },
 ];

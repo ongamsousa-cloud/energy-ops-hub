@@ -182,8 +182,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           ...prev,
           endereco_residencial: data.logradouro || prev.endereco_residencial,
           bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.city || data.localidade || prev.cidade,
-          estado: data.uf || data.state || data.uf || prev.estado
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado
         }));
         toast.success("Endereço localizado com sucesso!");
       } else {
@@ -516,7 +516,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                               <Input 
                                 value={form.cep} 
                                 onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
-                                onBlur={handleCepBlur}
+                                 onBlur={handleCepSearch}
                                 placeholder="00000-000" 
                                 maxLength={9} 
                               />
@@ -526,7 +526,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                               size="icon" 
                               variant="outline" 
                               type="button" 
-                              onClick={handleCepBlur} 
+                              onClick={handleCepSearch} 
                               disabled={searchingCep}
                               className="shrink-0 h-10 w-10"
                             >
@@ -584,14 +584,53 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                        <Label className="text-xs font-medium">Cargo</Label>
                        <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Engenheiro" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Supervisor</Label>
-                      <Select value={form.supervisor_id} onValueChange={(v) => setForm({ ...form, supervisor_id: v })}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>
-                          {supervisors.map(s => <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-1.5 flex flex-col">
+                      <Label className="text-xs font-medium">Supervisor Direto</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn("w-full justify-between h-10 font-normal px-3", !form.supervisor_id && "text-muted-foreground")}
+                          >
+                            {form.supervisor_id
+                              ? supervisors.find((s) => s.id === form.supervisor_id)?.full_name
+                              : "Selecionar supervisor..."}
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0 pointer-events-auto" align="start">
+                          <Command className="w-full">
+                            <CommandInput placeholder="Buscar por nome..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhum funcionário encontrado.</CommandEmpty>
+                              <CommandGroup>
+                                <CommandItem
+                                  value="none"
+                                  onSelect={() => {
+                                    setForm({ ...form, supervisor_id: "" });
+                                  }}
+                                >
+                                  <CheckCircle className={cn("mr-2 h-4 w-4", form.supervisor_id === "" ? "opacity-100" : "opacity-0")} />
+                                  Sem supervisor
+                                </CommandItem>
+                                {supervisors.map((s) => (
+                                  <CommandItem
+                                    key={s.id}
+                                    value={s.full_name}
+                                    onSelect={() => {
+                                      setForm({ ...form, supervisor_id: s.id });
+                                    }}
+                                  >
+                                    <CheckCircle className={cn("mr-2 h-4 w-4", form.supervisor_id === s.id ? "opacity-100" : "opacity-0")} />
+                                    {s.full_name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 </TabsContent>

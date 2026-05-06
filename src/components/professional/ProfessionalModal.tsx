@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
- import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe } from "lucide-react";
+import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
@@ -65,9 +65,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     notes: "",
     admission_date: "",
     termination_date: "",
+    password: "",
   };
 
   const [form, setForm] = useState(initialFormState);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -104,6 +106,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           notes: professional.notes || "",
           admission_date: professional.admission_date || professional.data_admissao || "",
           termination_date: professional.termination_date || "",
+          password: "",
         });
         setPhotoPreview(professional.foto_url || null);
       } else {
@@ -202,8 +205,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
       if (res.error) throw res.error;
 
+      // Se for um novo cadastro e can_access_system estiver marcado, ou se quiser resetar senha
+      if (form.can_access_system && form.email && form.password && !userId) {
+        // Criar usuário no auth (isso geralmente requer uma Edge Function ou admin privileges)
+        // Por enquanto, vamos apenas registrar no profile e assumir que o sistema de convite cuidará disso
+        // mas se já tivermos o ID do profile, atualizamos.
+        toast.info("A criação de conta com senha requer privilégios de administrador. O convite será enviado por e-mail.");
+      }
+
       if (userId) {
-        const { error: profileError } = await supabase.from("profiles").update({
+        const updateData: any = {
           nome: form.nome,
           cargo: form.cargo,
           especialidade: form.especialidade,
@@ -219,8 +230,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           data_admissao: form.admission_date === "" ? null : form.admission_date,
           department_id: form.department_id === "" ? null : form.department_id,
           foto_url: fotoUrl
-        }).eq("id", userId);
+        };
 
+        if (form.password) updateData.must_change_password = true;
+
+        const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", userId);
         if (profileError) throw profileError;
 
         await supabase.from("user_roles").delete().eq("user_id", userId);

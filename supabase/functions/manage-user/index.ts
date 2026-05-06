@@ -17,22 +17,20 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Verify if the requester is an admin
     const authHeader = req.headers.get('Authorization')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(authHeader?.replace('Bearer ', '') ?? '')
+    const { data: { user: requester }, error: authError } = await supabaseClient.auth.getUser(authHeader?.replace('Bearer ', '') ?? '')
 
-    if (authError || !user) {
+    if (authError || !requester) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       })
     }
 
-    // Check role from profiles/user_roles
     const { data: roleData } = await supabaseClient
       .from('user_roles')
       .select('role')
-      .eq('user_id', user.id)
+      .eq('user_id', requester.id)
       .eq('role', 'admin')
       .single()
 
@@ -53,6 +51,25 @@ serve(async (req) => {
         user_metadata: userData
       })
       if (error) throw error
+
+      if (data.user) {
+        // Ensure profile exists and has correct data
+        const { error: profError } = await supabaseClient.from('profiles').upsert({
+          id: data.user.id,
+          nome: userData.nome,
+          email: email,
+          cargo: userData.role
+        })
+        
+        // Assign role
+        if (userData.role) {
+          await supabaseClient.from('user_roles').upsert({
+            user_id: data.user.id,
+            role: userData.role
+          })
+        }
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -67,6 +84,14 @@ serve(async (req) => {
 
       const { data, error } = await supabaseClient.auth.admin.updateUserById(userId, updateData)
       if (error) throw error
+
+      if (userData?.role) {
+         await supabaseClient.from('user_roles').upsert({
+            user_id: userId,
+            role: userData.role
+          })
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

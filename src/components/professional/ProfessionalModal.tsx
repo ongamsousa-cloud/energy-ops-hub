@@ -153,20 +153,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all<any>([
+    const [{ data: emps }, { data: profs_inner }, { data: servs }] = await Promise.all<any>([
       supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-      supabase.from("profiles").select("id, nome, user_roles(role)"),
+      supabase.from("profiles").select("id, nome, user_roles!inner(role)").in("user_roles.role", ["admin", "gestor", "supervisor"]),
       supabase.from("servicos").select("id, nome").eq("ativo", true)
     ]);
     
-    // Get profiles with leadership roles
-    const leadershipProfs = (profs_roles ?? []).filter((p: any) => 
-      p.user_roles?.some((ur: any) => ["admin", "gestor", "supervisor"].includes(ur.role))
-    );
-
-    // Combine emps and profiles
     const supervisorList: any[] = [...(emps ?? [])];
-    leadershipProfs.forEach(p => {
+    (profs_inner ?? []).forEach(p => {
       if (!supervisorList.find(e => e.user_id === p.id)) {
         supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
       }
@@ -232,6 +226,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   const handleSave = async () => {
     if (!form.nome || !form.email) return toast.error("Nome e E-mail são obrigatórios");
     
+    if (!form.internal_company_code || !form.service_code) {
+      const proceed = window.confirm("Os códigos de identificação (Empresa e Serviço) não foram preenchidos. Deseja continuar assim mesmo?");
+      if (!proceed) return;
+    }
+    
     setLoading(true);
     try {
       // In Profissionais.tsx, professional.id is the employee ID
@@ -252,8 +251,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         fotoUrl = await uploadPhoto(actualEmployeeId || targetUserId);
       }
 
-      const employeeData = {
-        company_id: currentUserProfile?.company_id || professional?.company_id || null,
+      const employeeData: any = {
+        company_id: currentUserProfile?.company_id || professional?.company_id || '00000000-0000-0000-0000-000000000000',
         full_name: form.nome,
         email: form.email,
         phone: form.telefone,
@@ -312,44 +311,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
        if (res.error) throw res.error;
  
 
-       if (finalUserId) {
-         const updateData: any = {
-           nome: form.nome,
-           cargo: form.cargo,
-           especialidade: form.especialidade,
-           cpf: form.cpf,
-           rg: form.rg,
-           telefone: form.telefone,
-           data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
-           endereco_residencial: form.endereco_residencial,
-           bairro: form.bairro,
-           cidade: form.cidade,
-           estado: form.estado,
-           cep: form.cep,
-           data_admissao: form.admission_date === "" ? null : form.admission_date,
-           department_id: form.department_id === "" ? null : form.department_id,
-           foto_url: fotoUrl,
-           email: form.email
-         };
- 
-         if (form.password) updateData.must_change_password = true;
- 
-          const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", finalUserId);
-          
-          if (profileError) {
-             console.error("Erro ao atualizar profile:", profileError);
-             // Não travar se for apenas erro de update no profile, mas avisar
-             toast.warning("Dados do funcionário salvos, mas houve um erro ao sincronizar o perfil de acesso.");
-          }
-         if (profileError) throw profileError;
- 
-          await supabase.from("user_roles").delete().eq("user_id", finalUserId);
-          await supabase.from("user_roles").insert({ user_id: finalUserId, role: form.role as any });
-          
-          if (actualEmployeeId || res.data?.id) {
-            await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
-          }
-        }
 
        // Gerenciamento de usuário via Edge Function
        if (form.can_access_system && form.email && !finalUserId) {
@@ -376,21 +337,25 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           console.error("Erro ao gerenciar usuário:", authErr);
           toast.warning("Dados salvos, mas houve erro ao criar acesso: " + (authErr.message || "Erro desconhecido"));
         }
-      } else if (finalUserId && form.password) {
-        // Update existing user password
+       } else if (finalUserId) {
+         // Sincronizar dados do usuário existente
         try {
           const { error } = await supabase.functions.invoke('manage-user', {
             body: {
               action: 'update',
               userId: finalUserId,
-              password: form.password
+               email: form.email,
+               password: form.password || undefined,
+               userData: { 
+                 nome: form.nome, 
+                 role: form.role 
+               }
             }
           });
           if (error) throw error;
-          toast.success("Senha do usuário atualizada com sucesso!");
         } catch (authErr: any) {
-          console.error("Erro ao atualizar senha:", authErr);
-          toast.warning("Dados salvos, mas erro ao atualizar senha.");
+           console.error("Erro ao sincronizar usuário:", authErr);
+           toast.warning("Dados do funcionário salvos, mas houve erro ao atualizar o perfil de acesso.");
         }
       }
 
@@ -458,18 +423,26 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      </Select>
                    </div>
 
-                   <div className="space-y-4 pt-4 border-t border-border">
-                      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                        <p className="text-[10px] uppercase font-bold text-primary mb-2">Resumo Operacional</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Empresa</span>
-                            <span className="text-sm font-mono font-bold">{form.internal_company_code || '---'}</span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Serviço</span>
-                            <span className="text-sm font-mono font-bold text-primary">{form.service_code || '---'}</span>
-                          </div>
+                   <div className="space-y-3 pt-4 border-t border-border">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground">Códigos de Identificação</Label>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground">Código Interno Empresa</Label>
+                          <Input 
+                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
+                            placeholder="FUNC-0000" 
+                            value={form.internal_company_code} 
+                            onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground">Código de Serviço (Técnico)</Label>
+                          <Input 
+                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
+                            placeholder="TEC-000" 
+                            value={form.service_code} 
+                            onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
+                          />
                         </div>
                       </div>
                    </div>
@@ -488,10 +461,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
                 <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
-                    </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
@@ -573,10 +542,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <TabsContent value="profissional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
-                    </div>
-                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Matrícula</Label>
                       <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
                     </div>
@@ -618,10 +583,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
                 <TabsContent value="operacional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Serviço</Label>
-                      <Input value={form.service_code} onChange={(e) => setForm({ ...form, service_code: e.target.value })} placeholder="TEC-000" />
-                    </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Região de Atuação</Label>
                       <Input value={form.regiao_atuacao} onChange={(e) => setForm({ ...form, regiao_atuacao: e.target.value })} placeholder="Ex: SP Centro" />

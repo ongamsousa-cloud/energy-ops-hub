@@ -352,81 +352,141 @@ import { useAuth } from "@/lib/auth";
                   <th className="px-4 py-3 text-left">Setor</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Data</th>
-                  <th className="px-4 py-3 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredRows.map((r) => (
-                  <tr key={r.id} className="hover:bg-accent/30 transition-colors group">
-                    <td className="px-4 py-4">
-                      <div className="font-mono font-bold text-primary text-xs">{r.numero || `OS-${r.id.substring(0,6).toUpperCase()}`}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground line-clamp-1">{r.obra?.nome || r.titulo || "Sem nome"}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        <span className="text-xs line-clamp-1">
-                          {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      {r.department?.name ? (
-                        <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">
-                          {r.department.acronym || r.department.name}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic">Geral</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={r.operational_status || r.status} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {new Date(r.created_at).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to={`/app/os/${r.id}`} className="flex items-center">
-                              <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
-                              <Building2 className="mr-2 h-4 w-4" /> Ver Obra
-                            </Link>
-                          </DropdownMenuItem>
-                          {r.profissional_id && (
-                            <DropdownMenuItem className="flex items-center">
-                              <User className="mr-2 h-4 w-4" /> Profissional: {r.profissional?.nome || "Carregando..."}
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-    </div>
-  );
-}
+                   <th className="px-4 py-3 text-right">Ações</th>
+                 </tr>
+               </thead>
+               <tbody className="divide-y">
+                 {filteredRows.map((r) => (
+                   <tr key={r.id} className="hover:bg-accent/30 transition-colors group">
+                     <td className="px-4 py-4">
+                       <div className="font-mono font-bold text-primary text-xs">{r.numero || `OS-${r.id.substring(0,6).toUpperCase()}`}</div>
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex flex-col">
+                         <span className="font-semibold text-foreground line-clamp-1">{r.obra?.nome || r.titulo || "Sem nome"}</span>
+                         <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
+                       </div>
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex items-center gap-1.5 text-muted-foreground">
+                         <MapPin className="h-3.5 w-3.5 shrink-0" />
+                         <span className="text-xs line-clamp-1">
+                           {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
+                         </span>
+                       </div>
+                     </td>
+                     <td className="px-4 py-4">
+                       {r.department?.name ? (
+                         <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">
+                           {r.department.acronym || r.department.name}
+                         </Badge>
+                       ) : (
+                         <span className="text-xs text-muted-foreground italic">Geral</span>
+                       )}
+                     </td>
+                     <td className="px-4 py-4">
+                       <StatusBadge status={r.operational_status || r.status} />
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                         <Calendar className="h-3.5 w-3.5" />
+                         {new Date(r.created_at).toLocaleDateString()}
+                       </div>
+                     </td>
+                     <td className="px-4 py-4 text-right">
+                       <DropdownMenu>
+                         <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8">
+                             <MoreHorizontal className="h-4 w-4" />
+                           </Button>
+                         </DropdownMenuTrigger>
+                         <DropdownMenuContent align="end" className="w-48">
+                           <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
+                           <DropdownMenuSeparator />
+                           <DropdownMenuItem asChild>
+                             <Link to={`/app/os/${r.id}`} className="flex items-center">
+                               <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
+                             </Link>
+                           </DropdownMenuItem>
+                           <DropdownMenuItem asChild>
+                             <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
+                               <Building2 className="mr-2 h-4 w-4" /> Ver Obra
+                             </Link>
+                           </DropdownMenuItem>
+                           {r.profissional_id && (
+                             <DropdownMenuItem className="flex items-center">
+                               <User className="mr-2 h-4 w-4" /> Profissional: {r.profissional?.nome || "Carregando..."}
+                             </DropdownMenuItem>
+                           )}
+                         </DropdownMenuContent>
+                       </DropdownMenu>
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           </div>
+         )}
+           </TabsContent>
+ 
+           <TabsContent value="obras" className="space-y-4 mt-0">
+             <div className="relative mb-4">
+               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+               <Input 
+                 placeholder="Pesquisar por código ou nome da obra..." 
+                 className="pl-9"
+                 value={filters.search}
+                 onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
+               />
+             </div>
+ 
+             {filteredObras.length === 0 ? (
+               <EmptyState title="Nenhuma obra encontrada" description="Tente ajustar sua pesquisa." />
+             ) : (
+               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                 {filteredObras.map((obra) => (
+                   <div key={obra.id} className="bg-card border rounded-xl p-5 shadow-sm hover:shadow-md transition-all group border-l-4 border-l-primary/30">
+                     <div className="flex justify-between items-start mb-3">
+                       <div className="flex flex-col">
+                         <span className="font-mono font-bold text-primary text-sm uppercase tracking-wider">{obra.numero}</span>
+                         <h3 className="font-bold text-lg line-clamp-1">{obra.nome}</h3>
+                       </div>
+                       <StatusBadge status={obra.status} />
+                     </div>
+                     
+                     <div className="space-y-2 mb-4">
+                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                         <User className="h-3.5 w-3.5" />
+                         <span className="truncate">{obra.cliente || "Consumidor Final"}</span>
+                       </div>
+                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                         <MapPin className="h-3.5 w-3.5" />
+                         <span className="truncate">{obra.cidade || '---'}, {obra.bairro || '---'}</span>
+                       </div>
+                       <div className="flex items-center gap-2 text-xs font-semibold text-primary/80 bg-primary/5 px-2 py-1 rounded-md w-fit">
+                         <FileText className="h-3.5 w-3.5" />
+                         <span>{obra.os_count?.[0]?.count || 0} Ordens de Serviço</span>
+                       </div>
+                     </div>
+ 
+                     <div className="flex gap-2 pt-2 border-t border-muted">
+                       <Link to={`/app/os/nova?obraId=${obra.id}`} className="flex-1">
+                         <Button size="sm" className="w-full gap-1.5 h-9 font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors border-none shadow-none">
+                           <Plus className="h-3.5 w-3.5" /> Iniciar OS
+                         </Button>
+                       </Link>
+                       <Link to={`/app/obras/${obra.id}`}>
+                         <Button variant="outline" size="sm" className="h-9 font-medium hover:bg-accent transition-colors">
+                           Detalhes <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                         </Button>
+                       </Link>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </TabsContent>
+         </Tabs>
+       </div>
+     );
+   }

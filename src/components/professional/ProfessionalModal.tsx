@@ -153,20 +153,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all<any>([
+    const [{ data: emps }, { data: profs_inner }, { data: servs }] = await Promise.all<any>([
       supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-      supabase.from("profiles").select("id, nome, user_roles(role)"),
+      supabase.from("profiles").select("id, nome, user_roles!inner(role)").in("user_roles.role", ["admin", "gestor", "supervisor"]),
       supabase.from("servicos").select("id, nome").eq("ativo", true)
     ]);
     
-    // Get profiles with leadership roles
-    const leadershipProfs = (profs_roles ?? []).filter((p: any) => 
-      p.user_roles?.some((ur: any) => ["admin", "gestor", "supervisor"].includes(ur.role))
-    );
-
-    // Combine emps and profiles
     const supervisorList: any[] = [...(emps ?? [])];
-    leadershipProfs.forEach(p => {
+    (profs_inner ?? []).forEach(p => {
       if (!supervisorList.find(e => e.user_id === p.id)) {
         supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
       }

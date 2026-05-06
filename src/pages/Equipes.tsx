@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmptyState from "@/components/EmptyState";
-import { Plus, Users, Shield, MapPin, Search, UserCheck } from "lucide-react";
+import { Plus, Users, Shield, MapPin, Search, UserCheck, UserPlus } from "lucide-react";
+import ProfessionalModal from "@/components/professional/ProfessionalModal";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +18,7 @@ export default function Equipes() {
   const [open, setOpen] = useState(false);
   const [deps, setDeps] = useState<any[]>([]);
   const [profs, setProfs] = useState<any[]>([]);
+  const [profModalOpen, setProfModalOpen] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({ nome: "", codigo: "", regiao: "", department_id: "" });
@@ -128,8 +130,18 @@ export default function Equipes() {
                  </Select>
                </div>
 
-                <div className="space-y-2">
-                  <Label>Membros da Equipe</Label>
+                 <div className="space-y-2">
+                   <div className="flex items-center justify-between">
+                     <Label>Membros da Equipe</Label>
+                     <Button 
+                       variant="ghost" 
+                       size="sm" 
+                       className="h-7 text-[10px] gap-1 px-2"
+                       onClick={() => setProfModalOpen(true)}
+                     >
+                       <UserPlus className="h-3 w-3" /> Novo Profissional
+                     </Button>
+                   </div>
                   <ScrollArea className="h-[200px] rounded-md border p-2">
                     <div className="space-y-2">
                       {profs.length === 0 ? (
@@ -166,6 +178,16 @@ export default function Equipes() {
           </table>
         </div>
       )}
+
+      <ProfessionalModal 
+        open={profModalOpen}
+        onOpenChange={setProfModalOpen}
+        onSuccess={() => {
+          load();
+          setProfModalOpen(false);
+        }}
+        departments={deps}
+      />
     </div>
   );
 }

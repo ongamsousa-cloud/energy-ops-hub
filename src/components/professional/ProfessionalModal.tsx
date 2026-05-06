@@ -573,6 +573,10 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <TabsContent value="profissional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
+                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
+                    </div>
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Matrícula</Label>
                       <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
                     </div>

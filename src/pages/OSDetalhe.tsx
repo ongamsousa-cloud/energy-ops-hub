@@ -1211,8 +1211,9 @@ export default function OSDetalhe() {
                <Tooltip>
                  <TooltipTrigger asChild>
                    <span>
-                     <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
-                       <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+              <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
+                {busy ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                {busy ? "Processando..." : "Aprovar OS"}
                      </Button>
                    </span>
                  </TooltipTrigger>
@@ -1228,10 +1229,10 @@ export default function OSDetalhe() {
                  )}
                </Tooltip>
              </TooltipProvider>
-              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5" disabled={busy}>
                <History className="h-3.5 w-3.5" /> Solicitar Correção
              </Button>
-              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5">
+              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5" disabled={busy}>
                <XCircle className="h-3.5 w-3.5" /> Reprovar
              </Button>
              <Button size="sm" variant="secondary" className="gap-1.5" onClick={() => {

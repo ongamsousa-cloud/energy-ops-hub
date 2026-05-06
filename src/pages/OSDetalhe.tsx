@@ -366,14 +366,15 @@ export default function OSDetalhe() {
     }
   }
 
-    async function registrarAuditoria(statusNovo: string, comentario: string = "") {
+    async function registrarAuditoria(statusNovo: string, action: string = "status_change", details: any = {}) {
       try {
-        const { error } = await supabase.from("os_audit_logs").insert({
+        const { error } = await (supabase.from("os_audit_logs") as any).insert({
           os_id: id,
           user_id: user!.id,
-          status_anterior: os.status,
-          status_novo: statusNovo,
-          comentario: comentario || ""
+          action: action,
+          old_value: os.operational_status || os.status,
+          new_value: statusNovo,
+          details: { ...details, timestamp: new Date().toISOString() }
         });
         if (error) console.error("Erro ao registrar auditoria:", error);
       } catch (err) {
@@ -412,12 +413,10 @@ export default function OSDetalhe() {
 
   async function handleReview() {
     if (!reviewDialog.comment && reviewDialog.type === "reprovar") return toast.error("Motivo é obrigatório");
-    const status = reviewDialog.type === "reprovar" ? "reprovada" : "correcao_solicitada";
-    const update: any = { status };
+    const status = reviewDialog.type === "reprovar" ? "reprovada_auditoria" : "correcao_solicitada";
+    const update: any = { operational_status: status };
     if (reviewDialog.type === "reprovar") {
       update.motivo_reprovacao = reviewDialog.comment;
-      update.aprovado_por = user!.id;
-      update.aprovado_em = new Date().toISOString();
     } else {
       update.observacao_supervisor = reviewDialog.comment;
     }
@@ -425,7 +424,7 @@ export default function OSDetalhe() {
     try {
       const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
       if (error) throw error;
-      await registrarAuditoria(status, reviewDialog.comment);
+      await registrarAuditoria(status, reviewDialog.type === "reprovar" ? "reprovacao" : "solicitacao_correcao", { comment: reviewDialog.comment });
       toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
       setReviewDialog(prev => ({ ...prev, open: false }));
       load();

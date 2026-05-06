@@ -154,24 +154,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const fetchSupervisorsAndServices = async () => {
     try {
-      const [empsRes, profsRes, servsRes] = await Promise.all([
+      const [empsRes, servsRes] = await Promise.all([
         supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-        supabase.from("profiles").select("id, nome"),
         supabase.from("servicos").select("id, nome").eq("ativo", true)
       ]);
       
-      const supervisorList: any[] = empsRes.data ? [...empsRes.data] : [];
-      
-      // Fallback: Se a lista de funcionários estiver pequena ou vazia, use perfis do sistema
-      if (profsRes.data) {
-        profsRes.data.forEach(p => {
-          if (!supervisorList.find(e => e.id === p.id || e.user_id === p.id)) {
-            supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
-          }
-        });
-      }
-
-      setSupervisors(supervisorList);
+      setSupervisors(empsRes.data ?? []);
       setAllServices(servsRes.data ?? []);
     } catch (err) {
       console.error("Erro ao carregar supervisores:", err);

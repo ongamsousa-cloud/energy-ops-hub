@@ -41,14 +41,28 @@ export default function Departamentos() {
      setLoading(false);
    };
 
-   const fetchManagers = async () => {
-     const { data, error } = await supabase
-       .from("profiles")
-       .select("id, nome")
-       .in("role", ["admin", "gestor", "developer"])
-       .order("nome");
-     if (!error) setManagers(data || []);
-   };
+    const fetchManagers = async () => {
+      try {
+        const { data: roleRecords } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["admin", "gestor", "developer"]);
+        
+        if (roleRecords && roleRecords.length > 0) {
+          const userIds = roleRecords.map(r => r.user_id);
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("id, nome")
+            .in("id", userIds)
+            .eq("ativo", true)
+            .order("nome");
+          
+          if (!error) setManagers(data || []);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar gestores:", err);
+      }
+    };
 
    useEffect(() => {
      fetchDeps();

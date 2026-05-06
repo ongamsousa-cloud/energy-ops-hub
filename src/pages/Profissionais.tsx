@@ -102,13 +102,18 @@ import EmptyState from "@/components/EmptyState";
        toast.error("Erro ao alterar status: " + error.message);
      }
    }
-   const filteredRows = rows.filter(p => 
-     p.nome?.toLowerCase().includes(search.toLowerCase()) || 
-     p.email?.toLowerCase().includes(search.toLowerCase()) ||
-     p.cargo?.toLowerCase().includes(search.toLowerCase()) ||
-     p.internal_company_code?.toLowerCase().includes(search.toLowerCase()) ||
-     p.service_code?.toLowerCase().includes(search.toLowerCase())
-   );
+    const filteredRows = rows.filter(p => {
+      const s = search.toLowerCase();
+      return (
+        p.nome?.toLowerCase().includes(s) || 
+        p.email?.toLowerCase().includes(s) ||
+        p.cargo?.toLowerCase().includes(s) ||
+        p.cpf?.toLowerCase().includes(s) ||
+        p.rg?.toLowerCase().includes(s) ||
+        p.internal_company_code?.toLowerCase().includes(s) ||
+        p.service_code?.toLowerCase().includes(s)
+      );
+    });
 
    const getStatusIcon = (status: string) => {
      switch (status) {

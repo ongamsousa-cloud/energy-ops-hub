@@ -244,8 +244,8 @@ import EmptyState from "@/components/EmptyState";
                         <DropdownMenuItem onClick={() => openEdit(p)} className="gap-2">
                           <Pencil className="h-4 w-4" /> Ver Perfil / Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2 text-destructive">
-                          <UserMinus className="h-4 w-4" /> Desativar Acesso
+                         <DropdownMenuItem onClick={() => handleDelete(p)} className="gap-2 text-destructive">
+                           <UserMinus className="h-4 w-4" /> Excluir Profissional
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="gap-2">

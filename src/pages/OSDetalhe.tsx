@@ -1175,82 +1175,21 @@ export default function OSDetalhe() {
 
       {/* Ações de fluxo */}
        <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
-         {canEdit && os.status !== "aguardando_revisao" && (
-           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
-             {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
-             {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
-           </Button>
-         )}
-         
-          {/* Fluxo de Aceite e Início */}
-            {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
-              <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={busy} onClick={async () => {
-                setBusy(true);
-                try {
-                  const update: any = { 
-                    operational_status: "Iniciada" as any,
-                    status: "iniciada"
-                  };
-                  if (!os.profissional_id || os.profissional_id !== user!.id) {
-                    update.profissional_id = user!.id;
-                  }
-                  await supabase.from("ordens_servico").update(update).eq("id", id);
-                  await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
-                  toast.success("Ordem de Serviço Aceita e Iniciada");
-                  load();
-                } catch (e: any) {
-                  toast.error(e.message || "Erro ao iniciar OS");
-                } finally {
-                  setBusy(false);
-                }
-              }}>
-               {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
-               Dar o Aceite na OS
-             </Button>
-           )}
-
-          {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
-            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" disabled={busy} onClick={async () => {
-              setBusy(true);
-              try {
-                await supabase.from("ordens_servico").update({ 
-                  operational_status: "em_deslocamento",
-                  status: "em_andamento"
-                }).eq("id", id);
-                await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
-                toast.success("Deslocamento Iniciado");
-                load();
-              } catch (e: any) {
-                toast.error(e.message || "Erro no deslocamento");
-              } finally {
-                setBusy(false);
-              }
-            }}>
-              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
-              Iniciar Deslocamento
-            </Button>
+          {/* Gate check message */}
+          {startValidation && !startValidation.can_start && (os.operational_status || os.status)?.toLowerCase() === "pronta_para_execucao" && (
+            <div className="w-full p-4 rounded-lg border-2 border-amber-500 bg-amber-50 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+              <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
+              <div>
+                <p className="font-bold text-amber-800 text-sm">Trabalho Bloqueado</p>
+                <p className="text-amber-700 text-xs">{startValidation.message}</p>
+              </div>
+            </div>
           )}
 
-          {os.operational_status === "em_deslocamento" && isOwner && (
-            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" disabled={busy} onClick={async () => {
-              setBusy(true);
-              try {
-                const geo = await getGeo();
-                await supabase.from("ordens_servico").update({ 
-                  operational_status: "chegou_ao_local",
-                  status: "em_andamento",
-                  inicio_atendimento: new Date().toISOString()
-                }).eq("id", id);
-                toast.success("Atendimento iniciado");
-                load();
-              } catch (e: any) {
-                toast.error(e.message || "Erro ao registrar chegada");
-              } finally {
-                setBusy(false);
-              }
-            }}>
-              {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Registrar Chegada ao Local
+          {canEdit && (os.operational_status || os.status)?.toLowerCase() === "em_execucao" && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
+              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+              {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
             </Button>
           )}
 

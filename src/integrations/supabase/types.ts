@@ -4704,6 +4704,8 @@ export type Database = {
         | "aguardando_auditoria"
         | "aprovada_auditoria"
         | "reprovada_auditoria"
+        | "material_reservado"
+        | "aguardando_confirmacao_retirada"
       os_status:
         | "rascunho"
         | "iniciada"
@@ -4988,6 +4990,8 @@ export const Constants = {
         "aguardando_auditoria",
         "aprovada_auditoria",
         "reprovada_auditoria",
+        "material_reservado",
+        "aguardando_confirmacao_retirada",
       ],
       os_status: [
         "rascunho",

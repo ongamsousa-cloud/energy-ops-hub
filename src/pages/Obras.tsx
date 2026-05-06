@@ -26,16 +26,23 @@ export default function Obras() {
    const [open, setOpen] = useState(false);
    const [editingId, setEditingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
-   const [form, setForm] = useState<any>({ 
-     numero: "", 
-     nome: "", 
-     cidade: "", 
-     estado: "", 
-     status: "aberta",
-     cep: "",
-     bairro: "",
-     endereco: ""
-   });
+  const [supervisors, setSupervisors] = useState<any[]>([]);
+  const [form, setForm] = useState<any>({
+    numero: "",
+    nome: "",
+    cliente: "",
+    cep: "",
+    endereco: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    status: "aberta",
+    descricao: "",
+    data_inicio: "",
+    previsao_conclusao: "",
+    responsavel_tecnico: "",
+    supervisor_id: "none"
+  });
    const [searchingCep, setSearchingCep] = useState(false);
 
    async function clearAll() {
@@ -71,30 +78,63 @@ export default function Obras() {
      }
    }
  
-   async function load() {
-    const { data } = await supabase.from("obras").select("*").order("created_at", { ascending: false });
-    setRows(data ?? []);
+  async function load() {
+    const [{ data: obrasData }, { data: supervisorsData }] = await Promise.all([
+      supabase.from("obras").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, nome").eq("role", "supervisor").order("nome")
+    ]);
+    setRows(obrasData ?? []);
+    setSupervisors(supervisorsData ?? []);
   }
   useEffect(() => { load(); }, []);
 
-   async function save() {
-     if (!form.numero || !form.nome) return toast.error("Número e nome são obrigatórios");
-     
-     if (editingId) {
-       const { error } = await supabase.from("obras").update(form).eq("id", editingId);
-       if (error) return toast.error(error.message);
-       toast.success("Obra atualizada");
-     } else {
-       const { error } = await supabase.from("obras").insert(form);
-       if (error) return toast.error(error.message);
-       toast.success("Obra criada");
-     }
-     
-     setOpen(false);
-     setEditingId(null);
-     setForm({ numero: "", nome: "", cidade: "", estado: "", status: "aberta", cep: "", bairro: "", endereco: "", cliente: "", descricao: "" });
-     load();
-   }
+  async function save() {
+    if (!form.numero?.trim() || !form.nome?.trim()) return toast.error("Número e nome são obrigatórios");
+
+    const dataToSave = {
+      ...form,
+      numero: form.numero.trim(),
+      nome: form.nome.trim(),
+      supervisor_id: form.supervisor_id === "none" || !form.supervisor_id ? null : form.supervisor_id,
+      data_inicio: form.data_inicio || null,
+      previsao_conclusao: form.previsao_conclusao || null
+    };
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from("obras").update(dataToSave).eq("id", editingId);
+        if (error) throw error;
+        toast.success("Obra atualizada com sucesso");
+      } else {
+        const { error } = await supabase.from("obras").insert(dataToSave);
+        if (error) throw error;
+        toast.success("Obra criada com sucesso");
+      }
+
+      setOpen(false);
+      setEditingId(null);
+      setForm({
+        numero: "",
+        nome: "",
+        cliente: "",
+        cep: "",
+        endereco: "",
+        bairro: "",
+        cidade: "",
+        estado: "",
+        status: "aberta",
+        descricao: "",
+        data_inicio: "",
+        previsao_conclusao: "",
+        responsavel_tecnico: "",
+        supervisor_id: "none"
+      });
+      load();
+    } catch (error: any) {
+      console.error("Erro ao salvar obra:", error);
+      toast.error(error.message || "Erro ao salvar obra");
+    }
+  }
 
    async function remove(id: string) {
      if (!confirm("Tem certeza que deseja excluir esta obra?")) return;
@@ -104,22 +144,26 @@ export default function Obras() {
      load();
    }
 
-   function edit(obra: any) {
-     setForm({
-       numero: obra.numero,
-       nome: obra.nome,
-       cliente: obra.cliente || "",
-       cep: obra.cep || "",
-       endereco: obra.endereco || "",
-       bairro: obra.bairro || "",
-       cidade: obra.cidade || "",
-       estado: obra.estado || "",
-       status: obra.status,
-       descricao: obra.descricao || ""
-     });
-     setEditingId(obra.id);
-     setOpen(true);
-   }
+  function edit(obra: any) {
+    setForm({
+      numero: obra.numero,
+      nome: obra.nome,
+      cliente: obra.cliente || "",
+      cep: obra.cep || "",
+      endereco: obra.endereco || "",
+      bairro: obra.bairro || "",
+      cidade: obra.cidade || "",
+      estado: obra.estado || "",
+      status: obra.status,
+      descricao: obra.descricao || "",
+      data_inicio: obra.data_inicio || "",
+      previsao_conclusao: obra.previsao_conclusao || "",
+      responsavel_tecnico: obra.responsavel_tecnico || "",
+      supervisor_id: obra.supervisor_id || "none"
+    });
+    setEditingId(obra.id);
+    setOpen(true);
+  }
 
    async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
      const file = e.target.files?.[0];

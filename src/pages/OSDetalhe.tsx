@@ -643,9 +643,9 @@ export default function OSDetalhe() {
 
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-   return (
-     <div className="space-y-6">
-       <PageHeader
+    return (
+      <div className="space-y-6">
+        <PageHeader
          title={
            <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-2">
@@ -697,8 +697,17 @@ export default function OSDetalhe() {
               </Dialog>
             )}
           </div>
-        }
-      />
+          }
+        />
+
+        {os.descricao && (
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-semibold mb-2">Descrição da OS</h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{os.descricao}</p>
+            </CardContent>
+          </Card>
+        )}
 
        {/* Operational Flow Action Bar */}
        {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor'])) && (

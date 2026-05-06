@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-export default function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+export default function PageHeader({ title, description, actions }: { title: ReactNode; description?: string; actions?: ReactNode }) {
   return (
     <div className="mb-6 border-b border-border pb-4">
       {/* Print-only Logo */}

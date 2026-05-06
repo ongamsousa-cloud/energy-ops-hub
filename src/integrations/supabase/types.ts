@@ -4689,6 +4689,21 @@ export type Database = {
         | "excecao_negada"
         | "iniciada"
         | "lancada"
+        | "aguardando_aprovacao_departamento"
+        | "aguardando_liberacao_estoque"
+        | "material_liberado"
+        | "pronta_para_execucao"
+        | "aguardando_validacao_supervisor"
+        | "corrigida"
+        | "aprovada_supervisor"
+        | "aguardando_medicao"
+        | "medida"
+        | "aguardando_financeiro"
+        | "faturavel"
+        | "faturada"
+        | "aguardando_auditoria"
+        | "aprovada_auditoria"
+        | "reprovada_auditoria"
       os_status:
         | "rascunho"
         | "iniciada"
@@ -4958,6 +4973,21 @@ export const Constants = {
         "excecao_negada",
         "iniciada",
         "lancada",
+        "aguardando_aprovacao_departamento",
+        "aguardando_liberacao_estoque",
+        "material_liberado",
+        "pronta_para_execucao",
+        "aguardando_validacao_supervisor",
+        "corrigida",
+        "aprovada_supervisor",
+        "aguardando_medicao",
+        "medida",
+        "aguardando_financeiro",
+        "faturavel",
+        "faturada",
+        "aguardando_auditoria",
+        "aprovada_auditoria",
+        "reprovada_auditoria",
       ],
       os_status: [
         "rascunho",

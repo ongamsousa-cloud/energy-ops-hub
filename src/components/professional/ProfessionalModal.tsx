@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
- import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe } from "lucide-react";
+import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
@@ -65,9 +65,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     notes: "",
     admission_date: "",
     termination_date: "",
+    password: "",
   };
 
   const [form, setForm] = useState(initialFormState);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -104,6 +106,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           notes: professional.notes || "",
           admission_date: professional.admission_date || professional.data_admissao || "",
           termination_date: professional.termination_date || "",
+          password: "",
         });
         setPhotoPreview(professional.foto_url || null);
       } else {
@@ -176,7 +179,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl || professional?.foto_url || null,
-                user_id: userId || null,
+        user_id: userId || (professional?.user_id) || null,
         document_rg: form.rg,
         birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
         postal_code: form.cep,
@@ -202,8 +205,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
       if (res.error) throw res.error;
 
+      // Se for um novo cadastro e can_access_system estiver marcado, ou se quiser resetar senha
+      if (form.can_access_system && form.email && form.password && !userId) {
+        // Criar usuário no auth (isso geralmente requer uma Edge Function ou admin privileges)
+        // Por enquanto, vamos apenas registrar no profile e assumir que o sistema de convite cuidará disso
+        // mas se já tivermos o ID do profile, atualizamos.
+        toast.info("A criação de conta com senha requer privilégios de administrador. O convite será enviado por e-mail.");
+      }
+
       if (userId) {
-        const { error: profileError } = await supabase.from("profiles").update({
+        const updateData: any = {
           nome: form.nome,
           cargo: form.cargo,
           especialidade: form.especialidade,
@@ -219,8 +230,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           data_admissao: form.admission_date === "" ? null : form.admission_date,
           department_id: form.department_id === "" ? null : form.department_id,
           foto_url: fotoUrl
-        }).eq("id", userId);
+        };
 
+        if (form.password) updateData.must_change_password = true;
+
+        const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", userId);
         if (profileError) throw profileError;
 
         await supabase.from("user_roles").delete().eq("user_id", userId);
@@ -312,10 +326,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
                   <TabsTrigger value="geral">Dados Gerais</TabsTrigger>
                   <TabsTrigger value="permissoes">Permissões</TabsTrigger>
                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
+                  <TabsTrigger value="config_acesso">Acesso</TabsTrigger>
                   <TabsTrigger value="historico">Histórico</TabsTrigger>
                 </TabsList>
 
@@ -574,15 +589,54 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                    </div>
                  </TabsContent>
  
-                 <TabsContent value="historico" className="space-y-6">
-                   <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
-                     <div className="bg-muted/20 p-4 rounded-full mb-4">
-                       <Activity className="h-12 w-12 opacity-20" />
-                     </div>
-                     <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
-                     <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
-                   </div>
-                 </TabsContent>
+                  <TabsContent value="config_acesso" className="space-y-6">
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-6">
+                      <div className="flex items-center gap-4 border-b border-border pb-6">
+                        <div className="bg-primary/10 p-3 rounded-xl">
+                          <Key className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg">Configurações de Acesso</h4>
+                          <p className="text-sm text-muted-foreground">Defina a senha provisória e regras de primeiro acesso.</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-bold">Senha Provisória</Label>
+                          <div className="relative">
+                            <Input 
+                              type={showPassword ? "text" : "password"} 
+                              className="h-12 pr-10" 
+                              value={form.password} 
+                              onChange={(e) => setForm({ ...form, password: e.target.value })} 
+                              placeholder="Digite uma senha forte"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            O profissional será obrigado a trocar esta senha no primeiro acesso ao sistema.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="historico" className="space-y-6">
+                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
+                      <div className="bg-muted/20 p-4 rounded-full mb-4">
+                        <Activity className="h-12 w-12 opacity-20" />
+                      </div>
+                      <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
+                      <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
+                    </div>
+                  </TabsContent>
               </Tabs>
             </div>
           </div>

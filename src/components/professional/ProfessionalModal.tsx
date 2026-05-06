@@ -141,7 +141,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all([
+    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all<any>([
       supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
       supabase.from("profiles").select("id, nome, user_roles(role)"),
       supabase.from("servicos").select("id, nome").eq("ativo", true)

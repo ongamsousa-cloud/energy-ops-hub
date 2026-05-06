@@ -60,15 +60,47 @@ import EmptyState from "@/components/EmptyState";
     setDepartments(depts ?? []);
   }
   useEffect(() => { load(); }, []);
-  async function setRole(uid: string, role: AppRole) {
-    await supabase.from("user_roles").delete().eq("user_id", uid);
+   async function setRole(uid: string, role: AppRole) {
+     const { error: deleteError } = await supabase.from("user_roles").delete().eq("user_id", uid);
+     if (deleteError) {
+       toast.error("Erro ao remover cargo anterior");
+       return;
+     }
      const { error } = await supabase.from("user_roles").insert({ user_id: uid, role: role as any });
-    if (error) toast.error(error.message); else { toast.success("Perfil atualizado"); load(); }
-  }
-  async function setDept(uid: string, deptId: string) {
-    const { error } = await supabase.from("profiles").update({ department_id: deptId }).eq("id", uid);
-    if (error) toast.error(error.message); else { toast.success("Departamento atualizado"); load(); }
-  }
+     if (error) toast.error(error.message); else { toast.success("Perfil de acesso atualizado"); load(); }
+   }
+
+   async function handleDelete(p: any) {
+     const confirmDelete = window.confirm(`Deseja realmente excluir o profissional ${p.nome}? Esta ação não pode ser desfeita.`);
+     if (!confirmDelete) return;
+
+     try {
+       const { error: empError } = await supabase.from("employees").delete().eq("id", p.employee_id);
+       if (empError) throw empError;
+       
+       toast.success("Profissional excluído com sucesso");
+       load();
+     } catch (error: any) {
+       console.error("Erro ao deletar:", error);
+       toast.error("Erro ao excluir profissional: " + error.message);
+     }
+   }
+
+   async function toggleStatus(p: any) {
+     const newStatus = p.status === 'active' ? 'inactive' : 'active';
+     try {
+       const { error } = await supabase
+         .from("employees")
+         .update({ status: newStatus, is_active: newStatus === 'active' })
+         .eq("id", p.employee_id);
+       
+       if (error) throw error;
+       toast.success(`Status alterado para ${newStatus === 'active' ? 'Ativo' : 'Inativo'}`);
+       load();
+     } catch (error: any) {
+       toast.error("Erro ao alterar status: " + error.message);
+     }
+   }
    const filteredRows = rows.filter(p => 
      p.nome?.toLowerCase().includes(search.toLowerCase()) || 
      p.email?.toLowerCase().includes(search.toLowerCase()) ||

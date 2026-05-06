@@ -4,33 +4,63 @@ import PageHeader from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
- import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
- import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmptyState from "@/components/EmptyState";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Equipes() {
   const [rows, setRows] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-   const [deps, setDeps] = useState<any[]>([]);
-   const [form, setForm] = useState<any>({ nome: "", codigo: "", regiao: "", department_id: "" });
-   async function load() { 
-     const { data } = await supabase.from("equipes").select("*, department:departments(name)").order("nome"); 
-     setRows(data ?? []); 
-     const { data: d } = await supabase.from("departments").select("id, name").eq("active", true);
-     setDeps(d ?? []);
-   }
+  const [deps, setDeps] = useState<any[]>([]);
+  const [profs, setProfs] = useState<any[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [form, setForm] = useState<any>({ nome: "", codigo: "", regiao: "", department_id: "" });
+
+  async function load() { 
+    const { data } = await supabase.from("equipes").select("*, department:departments(name)").order("nome"); 
+    setRows(data ?? []); 
+    const { data: d } = await supabase.from("departments").select("id, name").eq("active", true);
+    setDeps(d ?? []);
+    const { data: p } = await supabase.from("employees").select("id, full_name").eq("status", "active").order("full_name");
+    setProfs(p ?? []);
+  }
+
   useEffect(() => { load(); }, []);
   async function save() {
     if (!form.nome) return toast.error("Nome obrigatório");
-     const { error } = await supabase.from("equipes").insert({
-       ...form,
-       department_id: form.department_id === "" ? null : form.department_id
-     });
-     if (error) return toast.error(error.message);
-     setOpen(false); setForm({ nome: "", codigo: "", regiao: "", department_id: "" }); load();
+    const { data: equipe, error } = await supabase.from("equipes").insert({
+      ...form,
+      department_id: form.department_id === "" ? null : form.department_id
+    }).select().single();
+
+    if (error) return toast.error(error.message);
+
+    if (selectedMembers.length > 0 && equipe) {
+      const members = selectedMembers.map(pid => ({
+        equipe_id: equipe.id,
+        profissional_id: pid
+      }));
+      const { error: mErr } = await supabase.from("equipe_membros").insert(members);
+      if (mErr) toast.error("Erro ao adicionar membros: " + mErr.message);
+    }
+
+    setOpen(false); 
+    setForm({ nome: "", codigo: "", regiao: "", department_id: "" });
+    setSelectedMembers([]);
+    load();
+    toast.success("Equipe criada com sucesso!");
   }
+
+  const toggleMember = (id: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div>
       <PageHeader title="Equipes" actions={

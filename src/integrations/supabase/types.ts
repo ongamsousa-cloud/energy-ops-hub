@@ -564,6 +564,33 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          document_cnpj: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          document_cnpj?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          document_cnpj?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -645,6 +672,7 @@ export type Database = {
         Row: {
           acronym: string | null
           active: boolean | null
+          company_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -655,6 +683,7 @@ export type Database = {
         Insert: {
           acronym?: string | null
           active?: boolean | null
+          company_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -665,6 +694,7 @@ export type Database = {
         Update: {
           acronym?: string | null
           active?: boolean | null
+          company_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -672,7 +702,15 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "departments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       design_system_presets: {
         Row: {
@@ -1024,23 +1062,32 @@ export type Database = {
           email: string | null
           employee_type: string | null
           full_name: string
+          horario_trabalho: string | null
           id: string
           internal_company_code: string | null
           is_active: boolean | null
           job_title: string | null
+          matricula: string | null
           neighborhood: string | null
           notes: string | null
           operational_role: string | null
           phone: string | null
           photo_url: string | null
           postal_code: string | null
+          regiao_atuacao: string | null
           residential_address: string | null
           service_code: string | null
+          servicos_habilitados: string[] | null
           state: string | null
           status: string | null
+          supervisor_id: string | null
           termination_date: string | null
+          tipo_vinculo: string | null
+          unidade_filial: string | null
           updated_at: string | null
           user_id: string | null
+          veiculo_vinculado: string | null
+          whatsapp: string | null
         }
         Insert: {
           access_level?: string | null
@@ -1062,23 +1109,32 @@ export type Database = {
           email?: string | null
           employee_type?: string | null
           full_name: string
+          horario_trabalho?: string | null
           id?: string
           internal_company_code?: string | null
           is_active?: boolean | null
           job_title?: string | null
+          matricula?: string | null
           neighborhood?: string | null
           notes?: string | null
           operational_role?: string | null
           phone?: string | null
           photo_url?: string | null
           postal_code?: string | null
+          regiao_atuacao?: string | null
           residential_address?: string | null
           service_code?: string | null
+          servicos_habilitados?: string[] | null
           state?: string | null
           status?: string | null
+          supervisor_id?: string | null
           termination_date?: string | null
+          tipo_vinculo?: string | null
+          unidade_filial?: string | null
           updated_at?: string | null
           user_id?: string | null
+          veiculo_vinculado?: string | null
+          whatsapp?: string | null
         }
         Update: {
           access_level?: string | null
@@ -1100,23 +1156,32 @@ export type Database = {
           email?: string | null
           employee_type?: string | null
           full_name?: string
+          horario_trabalho?: string | null
           id?: string
           internal_company_code?: string | null
           is_active?: boolean | null
           job_title?: string | null
+          matricula?: string | null
           neighborhood?: string | null
           notes?: string | null
           operational_role?: string | null
           phone?: string | null
           photo_url?: string | null
           postal_code?: string | null
+          regiao_atuacao?: string | null
           residential_address?: string | null
           service_code?: string | null
+          servicos_habilitados?: string[] | null
           state?: string | null
           status?: string | null
+          supervisor_id?: string | null
           termination_date?: string | null
+          tipo_vinculo?: string | null
+          unidade_filial?: string | null
           updated_at?: string | null
           user_id?: string | null
+          veiculo_vinculado?: string | null
+          whatsapp?: string | null
         }
         Relationships: [
           {
@@ -1124,6 +1189,13 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_supervisor_id_fkey"
+            columns: ["supervisor_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -1171,6 +1243,7 @@ export type Database = {
         Row: {
           ativo: boolean
           codigo: string | null
+          company_id: string | null
           created_at: string
           department_id: string | null
           id: string
@@ -1184,6 +1257,7 @@ export type Database = {
         Insert: {
           ativo?: boolean
           codigo?: string | null
+          company_id?: string | null
           created_at?: string
           department_id?: string | null
           id?: string
@@ -1197,6 +1271,7 @@ export type Database = {
         Update: {
           ativo?: boolean
           codigo?: string | null
+          company_id?: string | null
           created_at?: string
           department_id?: string | null
           id?: string
@@ -1208,6 +1283,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "equipes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "equipes_department_id_fkey"
             columns: ["department_id"]
@@ -2311,6 +2393,7 @@ export type Database = {
           cidade: string | null
           client_id: string | null
           client_name: string | null
+          company_id: string | null
           created_at: string
           created_by: string | null
           criticality_level: string | null
@@ -2380,6 +2463,7 @@ export type Database = {
           cidade?: string | null
           client_id?: string | null
           client_name?: string | null
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
@@ -2449,6 +2533,7 @@ export type Database = {
           cidade?: string | null
           client_id?: string | null
           client_name?: string | null
+          company_id?: string | null
           created_at?: string
           created_by?: string | null
           criticality_level?: string | null
@@ -2517,6 +2602,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -3174,6 +3266,7 @@ export type Database = {
           cargo: string | null
           cep: string | null
           cidade: string | null
+          company_id: string | null
           cpf: string | null
           created_at: string
           data_admissao: string | null
@@ -3206,6 +3299,7 @@ export type Database = {
           cargo?: string | null
           cep?: string | null
           cidade?: string | null
+          company_id?: string | null
           cpf?: string | null
           created_at?: string
           data_admissao?: string | null
@@ -3238,6 +3332,7 @@ export type Database = {
           cargo?: string | null
           cep?: string | null
           cidade?: string | null
+          company_id?: string | null
           cpf?: string | null
           created_at?: string
           data_admissao?: string | null
@@ -3264,6 +3359,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_department_id_fkey"
             columns: ["department_id"]
@@ -4435,6 +4537,7 @@ export type Database = {
         Args: { _department_id: string }
         Returns: string
       }
+      get_user_company_id: { Args: never; Returns: string }
       get_users_without_roles: {
         Args: never
         Returns: {

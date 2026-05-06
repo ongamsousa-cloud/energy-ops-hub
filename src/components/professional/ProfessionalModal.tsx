@@ -149,14 +149,10 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       const employeeId = professional?.employee_id;
       let fotoUrl = professional?.foto_url;
 
-      // Se for um novo funcionário ou se uma nova foto foi selecionada
-      if (photoFile) {
-        // Usamos o employeeId existente ou aguardamos o insert para novos
-        if (employeeId) {
-          fotoUrl = await uploadPhoto(employeeId);
-        }
+      if (photoFile && employeeId) {
+        fotoUrl = await uploadPhoto(employeeId);
       }
-      
+
       const employeeData = {
         full_name: form.nome,
         email: form.email,

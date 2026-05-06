@@ -460,18 +460,38 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-         <DialogContent className="max-w-4xl w-[95vw] h-[90vh] p-0 overflow-hidden flex flex-col gap-0">
-         <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
-          <DialogTitle className="flex items-center gap-2">
-            {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-            {professional ? "Perfil do Funcionário" : "Cadastrar Novo Funcionário"}
-          </DialogTitle>
-          <DialogDescription>
-            Informações completas, permissões e códigos de identificação.
-          </DialogDescription>
-        </DialogHeader>
+   return (
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent className="max-w-5xl w-[95vw] h-[92vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl rounded-2xl">
+         <DialogHeader className="p-0 relative overflow-hidden border-b shrink-0">
+           <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 text-primary-foreground relative">
+             <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">
+               <UserPlus className="h-40 w-40" />
+             </div>
+             <div className="relative z-10 flex items-center justify-between">
+               <div>
+                 <div className="flex items-center gap-3 mb-2">
+                   <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                     <UserPlus className="h-5 w-5 text-white" />
+                   </div>
+                   <DialogTitle className="text-3xl font-extrabold tracking-tight">
+                     {professional ? "Editar Colaborador" : "Novo Colaborador"}
+                   </DialogTitle>
+                 </div>
+                 <DialogDescription className="text-primary-foreground/90 text-base font-medium">
+                   {professional ? "Gestão completa de dados e acessos operacionais." : "Registre um novo membro na equipe operacional."}
+                 </DialogDescription>
+               </div>
+               <div className="flex gap-3">
+                 <Button variant="ghost" className="text-white hover:bg-white/10 px-6 font-bold" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                 <Button className="bg-white text-primary hover:bg-white/90 px-8 font-extrabold shadow-xl shadow-black/10" onClick={handleSave} disabled={loading}>
+                   {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                   Salvar Cadastro
+                 </Button>
+               </div>
+             </div>
+           </div>
+         </DialogHeader>
 
          <ScrollArea className="flex-1 overflow-y-auto">
             <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-8">

@@ -125,14 +125,19 @@ export default function StockMovementDialog({ open, onOpenChange, onSuccess, mat
 
   const balance = form.from_warehouse_id && form.material_id ? stockLevels[`${form.material_id}-${form.from_warehouse_id}`] : null;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Movimentação de Estoque</DialogTitle>
-          <DialogDescription>Registre entradas, saídas, devoluções, transferências ou ajustes de inventário.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="space-y-3 pt-2">
+   return (
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+         <DialogHeader className="p-8 bg-primary text-primary-foreground relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+             <Loader2 className="h-32 w-32 text-white animate-spin-slow" />
+           </div>
+           <div className="relative z-10">
+             <DialogTitle className="text-2xl font-bold">Movimentação de Estoque</DialogTitle>
+             <p className="text-primary-foreground/70 text-sm mt-1">Registre o fluxo de entrada e saída de materiais.</p>
+           </div>
+         </DialogHeader>
+         <form id="stock-mov-form" onSubmit={submit} className="p-8 space-y-5 bg-background overflow-y-auto max-h-[65vh]">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Tipo</Label>
               <Select value={form.type} onValueChange={(v: MovType)=>setForm({...form, type: v, from_warehouse_id: "", to_warehouse_id: ""})}>
@@ -223,11 +228,13 @@ export default function StockMovementDialog({ open, onOpenChange, onSuccess, mat
           <div className="space-y-1.5"><Label>Observações</Label>
             <Textarea value={form.notes} onChange={e=>setForm({...form, notes: e.target.value})} rows={2}/></div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={()=>onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Confirmar</Button>
-          </DialogFooter>
-        </form>
+         </form>
+         <DialogFooter className="p-8 bg-muted/10 border-t flex gap-3">
+           <Button type="button" variant="ghost" className="px-6 font-semibold" onClick={()=>onOpenChange(false)}>Cancelar</Button>
+           <Button type="submit" form="stock-mov-form" className="px-10 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={loading}>
+             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Confirmar Movimentação
+           </Button>
+         </DialogFooter>
       </DialogContent>
     </Dialog>
   );

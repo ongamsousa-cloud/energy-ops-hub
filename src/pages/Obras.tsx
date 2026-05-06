@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
-    import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
+     import { Plus, Search, Upload, Trash2, Edit, Trash, Briefcase, User, MapPin } from "lucide-react";
  import { useAuth } from "@/lib/auth";
  import { cepService } from "@/services";
  import * as XLSX from 'xlsx';
@@ -261,129 +261,128 @@ export default function Obras() {
                <DialogTrigger asChild>
                  <Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Nova obra</Button>
                </DialogTrigger>
-               <DialogContent>
-                 <DialogHeader><DialogTitle>{editingId ? "Editar obra" : "Nova obra"}</DialogTitle></DialogHeader>
-                <div className="grid gap-6 sm:grid-cols-2 max-h-[70vh] overflow-y-auto p-2">
-                   <div className="space-y-2">
-                     <Label className="font-bold">Código / Número da Obra *</Label>
-                     <Input 
-                       className="border-primary/20 focus-visible:ring-primary"
-                       placeholder="Ex: OB-2024-001" 
-                       value={form.numero} 
-                       onChange={(e)=>setForm({...form, numero: e.target.value})} 
-                     />
+               <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+                 <DialogHeader className="p-8 bg-primary text-primary-foreground relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+                     <Briefcase className="h-32 w-32 text-white" />
                    </div>
-                   <div className="space-y-2">
-                     <Label className="font-bold">Nome da Obra *</Label>
-                     <Input 
-                       className="border-primary/20 focus-visible:ring-primary"
-                       placeholder="Ex: Reforma Centro" 
-                       value={form.nome} 
-                       onChange={(e)=>setForm({...form, nome: e.target.value})} 
-                     />
+                   <div className="relative z-10">
+                     <DialogTitle className="text-2xl font-bold">{editingId ? "Editar Obra" : "Nova Obra Operacional"}</DialogTitle>
+                     <p className="text-primary-foreground/70 text-sm mt-1">Registre ou atualize as informações técnicas da obra.</p>
                    </div>
-                  
-                  <div className="sm:col-span-2 space-y-2">
-                    <Label>CEP</Label>
-                    <div className="flex gap-2">
-                      <Input 
-                        placeholder="00000-000" 
-                        value={form.cep} 
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setForm({...form, cep: val});
-                          if (val.replace(/\D/g, "").length === 8) {
-                            // Auto-search if 8 digits
-                            setTimeout(() => {
-                              const currentCep = val.replace(/\D/g, "");
-                              if (currentCep.length === 8) handleCepSearch(currentCep);
-                            }, 500);
-                          }
-                        }} 
-                      />
-                      <Button size="icon" variant="outline" type="button" onClick={() => handleCepSearch()} disabled={searchingCep}>
-                        <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-2 space-y-2">
-                    <Label>Cliente</Label>
-                    <Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} />
-                  </div>
-
-                  <div className="sm:col-span-2 space-y-2">
-                    <Label>Endereço</Label>
-                    <Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Bairro</Label>
-                    <Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Cidade</Label>
-                    <Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Estado</Label>
-                    <Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Status</Label>
-                    <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
-                      <SelectTrigger><SelectValue/></SelectTrigger>
-                      <SelectContent>
-                        {STATUS.map((s)=>(
-                          <SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Supervisor Responsável</Label>
-                    <Select 
-                      value={form.supervisor_id} 
-                      onValueChange={(v)=>setForm({...form, supervisor_id: v})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um supervisor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sem supervisor</SelectItem>
-                        {supervisors.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Responsável Técnico</Label>
-                    <Input value={form.responsavel_tecnico ?? ""} onChange={(e)=>setForm({...form, responsavel_tecnico: e.target.value})} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Data de Início</Label>
-                    <Input type="date" value={form.data_inicio ?? ""} onChange={(e)=>setForm({...form, data_inicio: e.target.value})} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Previsão de Conclusão</Label>
-                    <Input type="date" value={form.previsao_conclusao ?? ""} onChange={(e)=>setForm({...form, previsao_conclusao: e.target.value})} />
-                  </div>
-
-                  <div className="sm:col-span-2 space-y-2">
-                    <Label>Descrição / Observações</Label>
-                    <Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} />
-                  </div>
-                </div>
-               <div className="pt-4 flex justify-end">
-                 <Button onClick={save} className="px-8 font-bold shadow-lg shadow-primary/20">
-                   {editingId ? "Atualizar Obra" : "Criar Obra"}
-                 </Button>
-               </div>
-             </DialogContent>
+                 </DialogHeader>
+                 
+                 <div className="p-8 space-y-6 max-h-[65vh] overflow-y-auto bg-background">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código / Número *</Label>
+                       <Input 
+                         className="h-11 border-primary/10 focus-visible:ring-primary/20 font-mono font-bold uppercase"
+                         placeholder="Ex: OB-2024-001" 
+                         value={form.numero} 
+                         onChange={(e)=>setForm({...form, numero: e.target.value})} 
+                       />
+                     </div>
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nome da Obra *</Label>
+                       <Input 
+                         className="h-11 border-primary/10 focus-visible:ring-primary/20"
+                         placeholder="Ex: Reforma Centro" 
+                         value={form.nome} 
+                         onChange={(e)=>setForm({...form, nome: e.target.value})} 
+                       />
+                     </div>
+                   </div>
+ 
+                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-4 border-t border-dashed">
+                     <div className="md:col-span-4 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
+                       <div className="relative">
+                         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                         <Input 
+                           placeholder="00000-000" 
+                           className="pl-9 h-11 border-primary/10"
+                           value={form.cep} 
+                           onChange={(e) => {
+                             const val = e.target.value;
+                             setForm({...form, cep: val});
+                             if (val.replace(/\D/g, "").length === 8) {
+                               setTimeout(() => {
+                                 const currentCep = val.replace(/\D/g, "");
+                                 if (currentCep.length === 8) handleCepSearch(currentCep);
+                               }, 500);
+                             }
+                           }} 
+                         />
+                       </div>
+                     </div>
+                     <div className="md:col-span-8 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</Label>
+                       <div className="relative">
+                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                         <Input className="pl-9 h-11 border-primary/10" value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} placeholder="Nome do Cliente/Empresa" />
+                       </div>
+                     </div>
+                     <div className="md:col-span-12 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</Label>
+                       <div className="relative">
+                         <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                         <Input className="pl-9 h-11 border-primary/10" value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} placeholder="Rua, número, complemento..." />
+                       </div>
+                     </div>
+                     <div className="md:col-span-4 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
+                       <Input className="h-11 border-primary/10" value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
+                     </div>
+                     <div className="md:col-span-5 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
+                       <Input className="h-11 border-primary/10" value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
+                     </div>
+                     <div className="md:col-span-3 space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
+                       <Input className="h-11 border-primary/10" value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
+                     </div>
+                   </div>
+ 
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-dashed">
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status da Obra</Label>
+                       <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
+                         <SelectTrigger className="h-11 border-primary/10"><SelectValue/></SelectTrigger>
+                         <SelectContent>
+                           {STATUS.map((s)=>(
+                             <SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Supervisor</Label>
+                       <Select value={form.supervisor_id} onValueChange={(v)=>setForm({...form, supervisor_id: v})}>
+                         <SelectTrigger className="h-11 border-primary/10"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="none">Sem supervisor</SelectItem>
+                           {supervisors.map((s) => (
+                             <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+ 
+                   <div className="space-y-2 pt-2">
+                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Descrição / Observações</Label>
+                     <Textarea className="min-h-[80px] border-primary/10 resize-none" value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} />
+                   </div>
+                 </div>
+ 
+                 <DialogFooter className="p-8 bg-muted/10 border-t flex gap-3">
+                   <Button variant="ghost" className="px-6 font-semibold" onClick={() => setOpen(false)}>Cancelar</Button>
+                   <Button onClick={save} className="px-10 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                     {editingId ? "Atualizar Obra" : "Criar Obra"}
+                   </Button>
+                 </DialogFooter>
+               </DialogContent>
            </Dialog>
          </div>
        )}

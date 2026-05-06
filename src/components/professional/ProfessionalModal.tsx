@@ -152,6 +152,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       // Identificadores consistentes
       const employeeId = professional?.employee_id || (professional?.id && !professional?.profile_id ? professional.id : null);
       const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id && professional?.profile_id === undefined ? null : professional.id);
+
+      // Resolve finalUserId early for use in both updates
+      let finalUserId = targetUserId;
+      if (!finalUserId && form.email) {
+        const { data: profileByEmail } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", form.email)
+          .maybeSingle();
+        if (profileByEmail) finalUserId = profileByEmail.id;
+      }
       let fotoUrl = professional?.foto_url;
 
       if (photoFile && (employeeId || targetUserId)) {
@@ -207,16 +218,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
        if (res.error) throw res.error;
  
-       // If we don't have a targetUserId, try to find one by email
-       let finalUserId = targetUserId;
-       if (!finalUserId && form.email) {
-         const { data: profileByEmail } = await supabase
-           .from("profiles")
-           .select("id")
-           .eq("email", form.email)
-           .maybeSingle();
-         if (profileByEmail) finalUserId = profileByEmail.id;
-       }
 
        if (finalUserId) {
          const updateData: any = {

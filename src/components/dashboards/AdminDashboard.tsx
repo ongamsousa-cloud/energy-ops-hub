@@ -61,8 +61,11 @@ import { useState } from "react";
   const statusColors: Record<string, string> = {
     "aprovada": "#10b981",
     "reprovada": "#ef4444",
-    "aguardando revisao": "#f59e0b",
-    "em revisao": "#3b82f6",
+    "aguardando_aprovacao_departamento": "#f59e0b",
+    "aguardando_liberacao_estoque": "#f97316",
+    "material_reservado": "#fbbf24",
+    "material_liberado": "#3b82f6",
+    "aguardando_validacao_supervisor": "#f59e0b",
     "corrigida": "#8b5cf6",
     "aberta": "#6b7280",
   };

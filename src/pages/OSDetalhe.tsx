@@ -19,7 +19,7 @@ import { toast } from "sonner";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
  import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
- import { OS_STATUS_FLOW, type OSStatus } from "@/lib/os-status";
+ import { OS_STATUS_FLOW, type OSStatus } from "@/shared/status/os-status";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
@@ -573,7 +573,7 @@ export default function OSDetalhe() {
     load();
   }
 
-   const nextPossibleStatuses = OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || [];
+    const nextPossibleStatuses = (OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || []) as OSStatus[];
 
    async function handleStatusTransition(newStatus: OSStatus) {
      setBusy(true);

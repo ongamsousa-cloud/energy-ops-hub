@@ -68,8 +68,11 @@ export default function GestorDashboard({ stats, byStatus, umdHistory = [] }: Ge
   const statusColors: Record<string, string> = {
     aprovada: "hsl(var(--success))",
     reprovada: "hsl(var(--destructive))",
-    "aguardando revisao": "hsl(var(--warning))",
-    "em revisao": "hsl(var(--info))",
+    "aguardando_aprovacao_departamento": "hsl(var(--warning))",
+    "aguardando_liberacao_estoque": "hsl(var(--orange-500))",
+    "material_reservado": "hsl(var(--amber-400))",
+    "material_liberado": "hsl(var(--blue-400))",
+    "aguardando_validacao_supervisor": "hsl(var(--warning))",
     corrigida: "hsl(var(--primary))",
     aberta: "hsl(var(--muted-foreground))",
   };

@@ -1,29 +1,6 @@
  import { supabase } from "@/integrations/supabase/client";
  
- export type OSStatus = 
-   | 'pendente'
-   | 'aguardando_aprovacao_departamento'
-   | 'aguardando_liberacao_estoque'
-   | 'material_liberado'
-   | 'pronta_para_execucao'
-   | 'iniciada'
-   | 'em_deslocamento'
-   | 'chegou_ao_local'
-   | 'em_execucao'
-   | 'aguardando_validacao_supervisor'
-   | 'correcao_solicitada'
-   | 'corrigida'
-   | 'aprovada_supervisor'
-   | 'aguardando_medicao'
-   | 'medida'
-   | 'aguardando_financeiro'
-   | 'faturavel'
-   | 'faturada'
-   | 'aguardando_auditoria'
-   | 'aprovada_auditoria'
-   | 'reprovada_auditoria'
-   | 'concluida'
-   | 'cancelada';
+ import { OSStatus } from "@/lib/os-status";
 
 class OSService {
    async updateStatus(osId: string, status: OSStatus, userId: string, details?: any) {

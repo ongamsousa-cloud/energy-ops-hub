@@ -239,10 +239,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           .maybeSingle();
         if (profileByEmail) finalUserId = profileByEmail.id;
       }
-      let fotoUrl = professional?.foto_url;
+      let fotoUrl = professional?.foto_url || professional?.photo_url;
 
-      if (photoFile && (actualEmployeeId || targetUserId)) {
-        fotoUrl = await uploadPhoto(actualEmployeeId || targetUserId);
+      if (photoFile) {
+        // Use employee ID if available, otherwise target user ID, otherwise temporary path
+        const uploadId = actualEmployeeId || targetUserId || `temp_${Date.now()}`;
+        fotoUrl = await uploadPhoto(uploadId);
       }
 
       const employeeData: any = {
@@ -292,18 +294,39 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       if (actualEmployeeId) {
         res = await supabase.from("employees").update(employeeData).eq("id", actualEmployeeId);
       } else {
-        res = await supabase.from("employees").insert(employeeData).select().single();
-        if (res.data && photoFile) {
-          const newFotoUrl = await uploadPhoto(res.data.id);
-          await supabase.from("employees").update({ photo_url: newFotoUrl }).eq("id", res.data.id);
-          fotoUrl = newFotoUrl;
-        } else if (res.data) {
-          fotoUrl = res.data.photo_url;
+        // Try to find if employee already exists by email if we don't have the ID
+        const { data: existingEmp } = await supabase.from("employees").select("id").eq("email", form.email).maybeSingle();
+        if (existingEmp) {
+          res = await supabase.from("employees").update(employeeData).eq("id", existingEmp.id);
+        } else {
+          res = await supabase.from("employees").insert(employeeData).select().single();
         }
       }
 
        if (res.error) throw res.error;
- 
+
+       // Also update profile to keep them in sync
+       if (finalUserId) {
+         const profileData: any = {
+           nome: form.nome,
+           email: form.email,
+           telefone: form.telefone,
+           cpf: form.cpf,
+           rg: form.rg,
+           cargo: form.cargo,
+           data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
+           data_admissao: (form.admission_date || form.data_admissao) === "" ? null : (form.admission_date || form.data_admissao),
+           cep: form.cep,
+           endereco_residencial: form.endereco_residencial,
+           bairro: form.bairro,
+           cidade: form.cidade,
+           estado: form.estado,
+           foto_url: fotoUrl,
+           department_id: form.department_id === "" ? null : form.department_id,
+           ativo: form.is_active
+         };
+         await supabase.from("profiles").update(profileData).eq("id", finalUserId);
+       }
 
 
        // Gerenciamento de usuário via Edge Function

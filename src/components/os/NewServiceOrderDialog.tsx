@@ -525,51 +525,66 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                        </div>
                      </div>
  
-                     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                       <div className="md:col-span-2 space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço Completo <span className="text-destructive">*</span></Label>
-                         <div className="relative">
-                           <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                           <Input 
-                             className="pl-9 h-11 border-primary/10" 
-                             value={formData.endereco} 
-                             onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
-                             placeholder="Rua, número, complemento..."
-                           />
-                         </div>
-                       </div>
-                       <div className="space-y-2">
-                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
-                         <Input 
-                           placeholder="00000-000" 
-                           value={formData.cep} 
-                           onChange={(e) => {
-                             setFormData({...formData, cep: e.target.value});
-                             if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
-                           }}
-                           className="h-11 border-primary/10"
-                         />
-                       </div>
-                       <div className="space-y-2">
+                      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="md:col-span-4 space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
+                          <div className="relative">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              placeholder="00000-000" 
+                              value={formData.cep} 
+                              onChange={(e) => {
+                                setFormData({...formData, cep: e.target.value});
+                                if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
+                              }}
+                              className="pl-9 h-11 border-primary/10"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-8 space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço <span className="text-destructive">*</span></Label>
+                          <div className="relative">
+                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                              className="pl-9 h-11 border-primary/10" 
+                              value={formData.endereco} 
+                              onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
+                              placeholder="Rua, Av, etc..."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="md:col-span-4 space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Número / Comp.</Label>
+                          <Input 
+                            className="h-11 border-primary/10" 
+                            placeholder="123, Ap 4..."
+                            value={formData.ponto_referencia} 
+                            onChange={(e) => setFormData({...formData, ponto_referencia: e.target.value})} 
+                          />
+                        </div>
+
+                        <div className="md:col-span-4 space-y-2">
                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
                          <Input className="h-11 border-primary/10" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
                        </div>
-                       <div className="space-y-2">
+                        <div className="md:col-span-4 space-y-2">
                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
                          <Input className="h-11 border-primary/10" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
                        </div>
-                       <div className="space-y-2">
+                        <div className="md:col-span-4 space-y-2">
                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
                          <Input className="h-11 border-primary/10" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
                        </div>
-                       <div className="space-y-2">
+                        <div className="md:col-span-4 space-y-2">
                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Nome)</Label>
                          <div className="relative">
                            <User2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                            <Input className="pl-9 h-11 border-primary/10" value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
                          </div>
                        </div>
-                       <div className="space-y-2">
+                        <div className="md:col-span-4 space-y-2">
                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Telefone)</Label>
                          <Input className="h-11 border-primary/10" value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
                        </div>

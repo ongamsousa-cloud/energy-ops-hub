@@ -157,7 +157,7 @@ export default function Obras() {
 
        if (toInsert.length === 0) return toast.error("Nenhum dado válido encontrado na planilha. Verifique se as colunas 'numero' e 'nome' existem.");
 
-       const { error } = await supabase.from("obras").insert(toInsert);
+        const { error } = await supabase.from("obras").upsert(toInsert, { onConflict: 'numero' });
        if (error) return toast.error(error.message);
 
        toast.success(`${toInsert.length} obras importadas com sucesso!`);

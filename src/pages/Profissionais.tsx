@@ -51,7 +51,7 @@ import EmptyState from "@/components/EmptyState";
           email: emp.email || profile?.email || "",
           cargo: emp.job_title || profile?.cargo || "",
           department_id: emp.department_id || profile?.department_id || "",
-          foto_url: emp.photo_url || profile?.foto_url || null,
+           foto_url: profile?.foto_url || emp.photo_url || null,
           user_roles: profile?.user_roles || []
         };
       });
@@ -200,7 +200,7 @@ import EmptyState from "@/components/EmptyState";
                 <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors group">
                   <td className="px-4 py-3">
                     <Avatar className="h-10 w-10 border shadow-sm mx-auto">
-                      <AvatarImage src={p.foto_url} className="object-cover" />
+                       <AvatarImage src={p.foto_url || p.photo_url} className="object-cover" />
                       <AvatarFallback className="bg-primary/5 text-primary text-xs font-bold">
                         {p.nome?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>

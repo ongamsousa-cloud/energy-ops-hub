@@ -290,8 +290,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         </DialogHeader>
 
          <ScrollArea className="flex-1 overflow-y-auto">
-           <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
-             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r border-border pr-8">
+            <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+              <div className="md:col-span-3 flex flex-col items-center gap-4 border-b md:border-b-0 md:border-r border-border pb-8 md:pb-0 md:pr-8">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
                   <AvatarImage src={photoPreview || ""} />

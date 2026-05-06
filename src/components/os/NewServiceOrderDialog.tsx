@@ -366,79 +366,90 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
             </div>
           </DialogHeader>
          
-         <div className="flex-1 overflow-y-auto p-8 bg-background">
-           {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Título da OS <span className="text-destructive">*</span></Label>
-                  <Input 
-                    placeholder="Ex: Manutenção Preventiva - Torre A" 
-                    value={formData.titulo} 
-                    onChange={(e) => setFormData({...formData, titulo: e.target.value})} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Descrição Detalhada <span className="text-destructive">*</span></Label>
-                  <Textarea 
-                    placeholder="Descreva o que precisa ser feito..." 
-                    value={formData.descricao} 
-                    onChange={(e) => setFormData({...formData, descricao: e.target.value})}
-                    className="min-h-[80px]"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Profissional Solicitante</Label>
-                  <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
-                  <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
-                    <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {departamentos.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-               <div className="space-y-2 md:col-span-2 border-t pt-4">
-                 <h3 className="text-sm font-semibold">Localização e Contato</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                   <div className="space-y-2">
-                     <Label>CEP</Label>
-                     <div className="flex gap-2">
-                       <Input 
-                         placeholder="00000-000" 
-                         value={formData.cep} 
-                         onChange={(e) => {
-                           setFormData({...formData, cep: e.target.value});
-                           if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
-                         }} 
-                       />
-                     </div>
-                   </div>
-                     <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-primary" />
-                            <h3 className="text-sm font-bold uppercase tracking-tight">Identificação da Obra</h3>
+          <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
+            {step === 1 && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="md:col-span-2 space-y-6">
+                    <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 mb-2 border-b pb-3">
+                        <LayoutList className="h-5 w-5 text-primary" />
+                        <h3 className="font-bold text-lg">Informações Básicas</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold text-muted-foreground">Título da OS <span className="text-destructive">*</span></Label>
+                        <Input 
+                          placeholder="Ex: Manutenção Preventiva - Torre A" 
+                          value={formData.titulo} 
+                          onChange={(e) => setFormData({...formData, titulo: e.target.value})}
+                          className="h-12 text-lg focus-visible:ring-primary/30"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold text-muted-foreground">Descrição Detalhada <span className="text-destructive">*</span></Label>
+                        <Textarea 
+                          placeholder="Descreva o que precisa ser feito..." 
+                          value={formData.descricao} 
+                          onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                          className="min-h-[120px] resize-none focus-visible:ring-primary/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+ 
+                  <div className="space-y-6">
+                    <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 mb-2 border-b pb-3">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <h3 className="font-bold text-lg">Responsável</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Setor Executor <span className="text-destructive">*</span></Label>
+                        <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
+                          <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {departamentos.map((d) => (
+                              <SelectItem key={d.id} value={d.id}>
+                                {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante</Label>
+                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-dashed">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User2 className="h-4 w-4 text-primary" />
                           </div>
-                          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => nav('/app/obras')}>
-                            Gerenciar Obras
-                          </Button>
+                          <span className="text-sm font-bold">{profile?.nome ?? "---"}</span>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-primary/10">
-                          <div className="space-y-2">
-                            <Label className="text-xs font-bold">Código da Obra <span className="text-destructive">*</span></Label>
-                            <div className="relative group">
-                              <Input 
-                                placeholder="Digite o código manualmente..." 
+                      </div>
+                    </div>
+                  </div>
+                </div>
+ 
+                <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-6">
+                  <div className="flex items-center justify-between border-b pb-4">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      <h3 className="font-bold text-lg">Localização e Obra</h3>
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-auto p-2 text-primary font-bold hover:bg-primary/5" onClick={() => nav('/app/obras')}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Gerenciar Todas Obras
+                    </Button>
+                  </div>
+ 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-4">
+                      <div className="bg-muted/30 p-4 rounded-xl border border-primary/10 space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código da Obra <span className="text-destructive">*</span></Label>
+                          <div className="relative group">
+                            <Input 
+                              placeholder="Digite ou pesquise..." 
+                              className="h-11 pr-10 border-primary/20 focus-visible:ring-primary shadow-sm font-mono font-bold"
+                              value={selectedObra?.numero || customObraNumero || ""}
                                 className="pr-10 border-primary/20 focus-visible:ring-primary shadow-sm"
                                 value={selectedObra?.numero || customObraNumero || ""}
                                 onChange={(e) => {

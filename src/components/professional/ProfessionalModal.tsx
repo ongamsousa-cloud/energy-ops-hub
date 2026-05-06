@@ -98,7 +98,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     setLoading(true);
     try {
       const userId = professional?.id;
-      const fotoUrl = userId ? await uploadPhoto(userId) : photoPreview;
+      let fotoUrl = professional?.foto_url || photoPreview;
 
       const employeeData = {
         full_name: form.nome,
@@ -133,11 +133,19 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         state: form.estado
       };
 
-      let res;
+            let res;
       if (professional?.employee_id) {
+        fotoUrl = await uploadPhoto(professional.employee_id);
+        employeeData.photo_url = fotoUrl;
         res = await supabase.from("employees").update(employeeData).eq("id", professional.employee_id);
       } else {
-        res = await supabase.from("employees").insert(employeeData);
+        // First insert without photo to get ID
+        res = await supabase.from("employees").insert(employeeData).select().single();
+        if (res.data && photoFile) {
+          const newFotoUrl = await uploadPhoto(res.data.id);
+          await supabase.from("employees").update({ photo_url: newFotoUrl }).eq("id", res.data.id);
+          fotoUrl = newFotoUrl;
+        }
       }
 
       if (res.error) throw res.error;

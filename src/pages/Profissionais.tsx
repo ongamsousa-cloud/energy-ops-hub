@@ -246,7 +246,7 @@ import EmptyState from "@/components/EmptyState";
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-foreground bg-muted/50 border shadow-sm">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

@@ -268,7 +268,8 @@
      if (hasRole("gestor") || hasRole("supervisor")) return <GestorDashboard stats={stats} byStatus={byStatus} />;
      if (hasRole("financeiro")) return <FinanceiroDashboard stats={stats} umdHistory={umdHistory} />;
       if (hasRole("auditor")) return <AuditorDashboard stats={stats} auditHistory={auditHistory} />;
-     if (hasRole("campo")) return <CampoDashboard stats={stats} profile={profile} />;
+      if (hasRole("estoque")) return <AdminDashboard stats={stats} byStatus={byStatus} umdHistory={umdHistory} stockStats={stockStats} materials={materials} movements={movements} warehouses={warehouses} />;
+      if (hasRole("campo")) return <CampoDashboard stats={stats} profile={profile} />;
      
      return <AdminDashboard stats={stats} byStatus={byStatus} umdHistory={umdHistory} />;
    };

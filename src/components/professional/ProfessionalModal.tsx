@@ -346,23 +346,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           }
         }
 
-       // Tentar criar usuário se solicitado e não existir
-       if (form.can_access_system && form.email && form.password && !finalUserId) {
-         try {
-           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-             email: form.email,
-             password: form.password,
-             options: {
-               data: {
-                 nome: form.nome,
-                 role: form.role
-               }
-             }
-           });
-           
-           if (signUpError) throw signUpError;
-           
-      if (form.can_access_system && form.email && !finalUserId) {
+       // Gerenciamento de usuário via Edge Function
+       if (form.can_access_system && form.email && !finalUserId) {
         try {
           const { data, error } = await supabase.functions.invoke('manage-user', {
             body: {

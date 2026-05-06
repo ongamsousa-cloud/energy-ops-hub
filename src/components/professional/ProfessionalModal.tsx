@@ -150,8 +150,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     try {
       // In Profissionais.tsx, professional.id is the employee ID
       // Identificadores consistentes
-      const employeeId = professional?.employee_id || (professional?.id && !professional?.profile_id ? professional.id : null);
-      const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id && professional?.profile_id === undefined ? null : professional.id);
+      // Identificadores consistentes baseados no objeto recebido do Profissionais.tsx
+      const employeeId = professional?.employee_id || (professional?.id?.length > 30 ? null : professional?.id); 
+      const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id?.length > 30 ? professional.id : null);
+
+      // Se não temos employeeId mas temos professional.id, e ele não é um UUID de profile, ele é o employeeId
+      const actualEmployeeId = employeeId || (professional?.id && !targetUserId ? professional.id : null);
 
       // Resolve finalUserId early for use in both updates
       let finalUserId = targetUserId;
@@ -165,8 +169,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       }
       let fotoUrl = professional?.foto_url;
 
-      if (photoFile && (employeeId || targetUserId)) {
-        fotoUrl = await uploadPhoto(employeeId || targetUserId);
+      if (photoFile && (actualEmployeeId || targetUserId)) {
+        fotoUrl = await uploadPhoto(actualEmployeeId || targetUserId);
       }
 
       const employeeData = {
@@ -188,7 +192,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         can_close_service_orders: form.can_close_service_orders,
         can_view_financial_data: form.can_view_financial_data,
         can_view_reports: form.can_view_reports,
-        admission_date: form.admission_date === "" ? null : form.admission_date,
+        admission_date: (form.admission_date || form.data_admissao) === "" ? null : (form.admission_date || form.data_admissao),
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl || professional?.foto_url || null,
@@ -203,8 +207,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       };
 
       let res;
-      if (employeeId) {
-        res = await supabase.from("employees").update(employeeData).eq("id", employeeId);
+      if (actualEmployeeId) {
+        res = await supabase.from("employees").update(employeeData).eq("id", actualEmployeeId);
       } else {
         res = await supabase.from("employees").insert(employeeData).select().single();
         if (res.data && photoFile) {
@@ -253,24 +257,54 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           await supabase.from("user_roles").delete().eq("user_id", finalUserId);
           await supabase.from("user_roles").insert({ user_id: finalUserId, role: form.role as any });
           
-          if (employeeId || res.data?.id) {
-            await supabase.from("employees").update({ user_id: finalUserId }).eq("id", employeeId || res.data.id);
+          if (actualEmployeeId || res.data?.id) {
+            await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
           }
         }
 
-        if (form.can_access_system && form.email && form.password && !finalUserId) {
-       }
- 
-       if (form.can_access_system && form.email && form.password && !targetUserId) {
-         toast.info("A criação de conta com senha requer convite por e-mail para novos usuários sem perfil.");
+       // Tentar criar usuário se solicitado e não existir
+       if (form.can_access_system && form.email && form.password && !finalUserId) {
+         try {
+           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+             email: form.email,
+             password: form.password,
+             options: {
+               data: {
+                 nome: form.nome,
+                 role: form.role
+               }
+             }
+           });
+           
+           if (signUpError) throw signUpError;
+           
+           if (signUpData.user) {
+             finalUserId = signUpData.user.id;
+             // Vincular o novo usuário ao funcionário
+             if (actualEmployeeId || res.data?.id) {
+               await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
+             }
+             toast.success("Conta de acesso criada com sucesso! O usuário recebeu um e-mail de confirmação.");
+           }
+         } catch (authErr: any) {
+           console.error("Erro ao criar conta Auth:", authErr);
+           toast.warning("Dados do funcionário salvos, mas não foi possível criar a conta de acesso: " + authErr.message);
+         }
        }
 
-      toast.success(professional ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");
+      toast.success(actualEmployeeId ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");
       
       onSuccess();
       onOpenChange(false);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (err: any) {
+      console.error("Erro no handleSave:", err);
+      let msg = err.message;
+      if (msg.includes("employees_document_cpf_key")) msg = "Este CPF já está cadastrado para outro funcionário.";
+      if (msg.includes("employees_email_key")) msg = "Este E-mail já está cadastrado para outro funcionário.";
+      if (msg.includes("employees_internal_company_code_key")) msg = "Este Código Interno já está em uso.";
+      if (msg.includes("employees_service_code_key")) msg = "Este Código de Serviço já está em uso.";
+      
+      toast.error("Erro ao salvar: " + msg);
     } finally {
       setLoading(false);
     }

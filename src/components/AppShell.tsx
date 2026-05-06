@@ -23,7 +23,7 @@ const NAV: Item[] = [
   { to: "/app/profissionais", label: "Profissionais", icon: UserCircle, roles: ["admin","gestor"] },
   { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
-  { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo"] },
+   { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo","estoque"] },
   { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
    { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
    { to: "/app/departamentos", label: "Departamentos", icon: Building2, roles: ["admin","gestor"] },

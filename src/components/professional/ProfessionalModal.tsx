@@ -304,6 +304,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
                   
                   <div className="space-y-4 pt-4 border-t">
                     <h4 className="text-sm font-semibold flex items-center gap-2">

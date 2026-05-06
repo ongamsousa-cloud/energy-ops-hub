@@ -18,10 +18,11 @@ export default function Equipes() {
   const [deps, setDeps] = useState<any[]>([]);
   const [profs, setProfs] = useState<any[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({ nome: "", codigo: "", regiao: "", department_id: "" });
 
   async function load() { 
-    const { data } = await supabase.from("equipes").select("*, department:departments(name)").order("nome"); 
+    const { data } = await supabase.from("equipes").select("*, department:departments(name), equipe_membros(profissional_id)").order("nome"); 
     setRows(data ?? []); 
     const { data: d } = await supabase.from("departments").select("id, name").eq("active", true);
     setDeps(d ?? []);
@@ -32,16 +33,30 @@ export default function Equipes() {
   useEffect(() => { load(); }, []);
   async function save() {
     if (!form.nome) return toast.error("Nome obrigatório");
-    const { data: equipe, error } = await supabase.from("equipes").insert({
-      ...form,
-      department_id: form.department_id === "" ? null : form.department_id
-    }).select().single();
+    
+    let equipeId = selectedEquipeId;
+    
+    if (equipeId) {
+      const { error } = await supabase.from("equipes").update({
+        ...form,
+        department_id: form.department_id === "" ? null : form.department_id
+      }).eq("id", equipeId);
+      if (error) return toast.error(error.message);
+      
+      // Atualizar membros
+      await supabase.from("equipe_membros").delete().eq("equipe_id", equipeId);
+    } else {
+      const { data: equipe, error } = await supabase.from("equipes").insert({
+        ...form,
+        department_id: form.department_id === "" ? null : form.department_id
+      }).select().single();
+      if (error) return toast.error(error.message);
+      equipeId = equipe.id;
+    }
 
-    if (error) return toast.error(error.message);
-
-    if (selectedMembers.length > 0 && equipe) {
+    if (selectedMembers.length > 0 && equipeId) {
       const members = selectedMembers.map(pid => ({
-        equipe_id: equipe.id,
+        equipe_id: equipeId,
         profissional_id: pid
       }));
       const { error: mErr } = await supabase.from("equipe_membros").insert(members);
@@ -51,9 +66,29 @@ export default function Equipes() {
     setOpen(false); 
     setForm({ nome: "", codigo: "", regiao: "", department_id: "" });
     setSelectedMembers([]);
+    setSelectedEquipeId(null);
     load();
-    toast.success("Equipe criada com sucesso!");
+    toast.success(selectedEquipeId ? "Equipe atualizada!" : "Equipe criada!");
   }
+
+  const openNew = () => {
+    setSelectedEquipeId(null);
+    setForm({ nome: "", codigo: "", regiao: "", department_id: "" });
+    setSelectedMembers([]);
+    setOpen(true);
+  };
+
+  const openEdit = (equipe: any) => {
+    setSelectedEquipeId(equipe.id);
+    setForm({ 
+      nome: equipe.nome, 
+      codigo: equipe.codigo || "", 
+      regiao: equipe.regiao || "", 
+      department_id: equipe.department_id || "" 
+    });
+    setSelectedMembers(equipe.equipe_membros?.map((m: any) => m.profissional_id) || []);
+    setOpen(true);
+  };
 
   const toggleMember = (id: string) => {
     setSelectedMembers(prev => 
@@ -63,11 +98,11 @@ export default function Equipes() {
 
   return (
     <div>
-      <PageHeader title="Equipes" actions={
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Nova equipe</Button></DialogTrigger>
+      <PageHeader title="Equipes" actions={<Button size="sm" onClick={openNew}><Plus className="mr-1 h-3.5 w-3.5"/>Nova equipe</Button>} />
+
+      <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-md">
-            <DialogHeader><DialogTitle>Nova equipe</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{selectedEquipeId ? "Editar equipe" : "Nova equipe"}</DialogTitle></DialogHeader>
             <div className="grid gap-3">
               <div><Label>Nome *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})}/></div>
               <div><Label>Código</Label><Input value={form.codigo} onChange={(e)=>setForm({...form, codigo: e.target.value})}/></div>
@@ -114,12 +149,11 @@ export default function Equipes() {
             <Button onClick={save}>Salvar</Button>
           </DialogContent>
         </Dialog>
-      } />
       {rows.length === 0 ? <EmptyState title="Sem equipes cadastradas" /> : (
         <div className="overflow-hidden rounded-md border border-border bg-card">
           <table className="w-full text-sm">
-             <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-3 py-2">Nome</th><th className="px-3 py-2">Código</th><th className="px-3 py-2">Região</th><th className="px-3 py-2">Departamento</th></tr></thead>
-             <tbody>{rows.map((r)=>(<tr key={r.id} className="border-b border-border last:border-0"><td className="px-3 py-2">{r.nome}</td><td className="px-3 py-2 font-mono text-xs">{r.codigo}</td><td className="px-3 py-2 text-muted-foreground">{r.regiao}</td><td className="px-3 py-2 text-muted-foreground">{r.department?.name || "-"}</td></tr>))}</tbody>
+             <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-3 py-2">Nome</th><th className="px-3 py-2">Código</th><th className="px-3 py-2">Região</th><th className="px-3 py-2">Departamento</th><th className="px-3 py-2 w-20">Ações</th></tr></thead>
+             <tbody>{rows.map((r)=>(<tr key={r.id} className="border-b border-border last:border-0"><td className="px-3 py-2">{r.nome}</td><td className="px-3 py-2 font-mono text-xs">{r.codigo}</td><td className="px-3 py-2 text-muted-foreground">{r.regiao}</td><td className="px-3 py-2 text-muted-foreground">{r.department?.name || "-"}</td><td className="px-3 py-2"><Button variant="ghost" size="sm" onClick={() => openEdit(r)}>Editar</Button></td></tr>))}</tbody>
           </table>
         </div>
       )}

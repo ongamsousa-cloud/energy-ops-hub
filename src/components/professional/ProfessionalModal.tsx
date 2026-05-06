@@ -213,7 +213,19 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         toast.info("A criação de conta com senha requer privilégios de administrador. O convite será enviado por e-mail.");
       }
 
-      if (userId) {
+      // Procura o profile por e-id ou e-mail se userId não estiver presente
+      let targetUserId = userId || (professional?.user_id);
+      
+      if (!targetUserId && form.email) {
+        const { data: profileByEmail } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", form.email)
+          .maybeSingle();
+        if (profileByEmail) targetUserId = profileByEmail.id;
+      }
+
+      if (targetUserId) {
         const updateData: any = {
           nome: form.nome,
           cargo: form.cargo,
@@ -229,16 +241,22 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cep: form.cep,
           data_admissao: form.admission_date === "" ? null : form.admission_date,
           department_id: form.department_id === "" ? null : form.department_id,
-          foto_url: fotoUrl
+          foto_url: fotoUrl,
+          email: form.email
         };
 
         if (form.password) updateData.must_change_password = true;
 
-        const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", userId);
+        const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", targetUserId);
         if (profileError) throw profileError;
 
-        await supabase.from("user_roles").delete().eq("user_id", userId);
-        await supabase.from("user_roles").insert({ user_id: userId, role: form.role as any });
+        await supabase.from("user_roles").delete().eq("user_id", targetUserId);
+        await supabase.from("user_roles").insert({ user_id: targetUserId, role: form.role as any });
+        
+        // Garantir que o employee também esteja vinculado a este user_id
+        if (employeeId) {
+          await supabase.from("employees").update({ user_id: targetUserId }).eq("id", employeeId);
+        }
       }
 
       toast.success(professional ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");

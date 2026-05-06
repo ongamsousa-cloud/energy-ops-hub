@@ -52,7 +52,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      hora_agendada: "08:00",
      gestorId: "",
      equipeId: "",
-     observacoes: "",
+      titulo: "",
+      descricao: "",
+      observacoes: "",
      itens: [] as any[],
      allAtvSelected: false,
       client_name: "",
@@ -226,6 +228,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           prioridade: formData.prioridade,
           data_agendada: formData.data_agendada,
           hora_agendada: formData.hora_agendada,
+          titulo: formData.titulo,
+          descricao: formData.descricao,
           observacoes: formData.observacoes,
           created_by: user!.id,
           cep: formData.cep,
@@ -294,6 +298,25 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
         <div className="p-6">
           {step === 1 && (
             <div className="space-y-4">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Título da OS <span className="text-destructive">*</span></Label>
+                  <Input 
+                    placeholder="Ex: Manutenção Preventiva - Torre A" 
+                    value={formData.titulo} 
+                    onChange={(e) => setFormData({...formData, titulo: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição Detalhada <span className="text-destructive">*</span></Label>
+                  <Textarea 
+                    placeholder="Descreva o que precisa ser feito..." 
+                    value={formData.descricao} 
+                    onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                    className="min-h-[80px]"
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Profissional Solicitante</Label>
@@ -376,7 +399,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                </div>
               </div>
               <Button className="w-full" onClick={() => {
-                if(!formData.departmentId || !formData.obraId) return toast.error("Preencha os campos obrigatórios");
+                if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
+                  return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
+                }
                 setStep(2);
               }}>Próximo Passo</Button>
             </div>

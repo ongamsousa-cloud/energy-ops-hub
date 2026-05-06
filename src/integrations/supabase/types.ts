@@ -1007,17 +1007,20 @@ export type Database = {
         Row: {
           access_level: string | null
           admission_date: string | null
+          birth_date: string | null
           can_access_system: boolean | null
           can_close_service_orders: boolean | null
           can_manage_materials: boolean | null
           can_receive_service_orders: boolean | null
           can_view_financial_data: boolean | null
           can_view_reports: boolean | null
+          city: string | null
           company_id: string
           created_at: string | null
           department_id: string | null
           department_name: string | null
           document_cpf: string | null
+          document_rg: string | null
           email: string | null
           employee_type: string | null
           full_name: string
@@ -1025,11 +1028,15 @@ export type Database = {
           internal_company_code: string | null
           is_active: boolean | null
           job_title: string | null
+          neighborhood: string | null
           notes: string | null
           operational_role: string | null
           phone: string | null
           photo_url: string | null
+          postal_code: string | null
+          residential_address: string | null
           service_code: string | null
+          state: string | null
           status: string | null
           termination_date: string | null
           updated_at: string | null
@@ -1038,17 +1045,20 @@ export type Database = {
         Insert: {
           access_level?: string | null
           admission_date?: string | null
+          birth_date?: string | null
           can_access_system?: boolean | null
           can_close_service_orders?: boolean | null
           can_manage_materials?: boolean | null
           can_receive_service_orders?: boolean | null
           can_view_financial_data?: boolean | null
           can_view_reports?: boolean | null
+          city?: string | null
           company_id?: string
           created_at?: string | null
           department_id?: string | null
           department_name?: string | null
           document_cpf?: string | null
+          document_rg?: string | null
           email?: string | null
           employee_type?: string | null
           full_name: string
@@ -1056,11 +1066,15 @@ export type Database = {
           internal_company_code?: string | null
           is_active?: boolean | null
           job_title?: string | null
+          neighborhood?: string | null
           notes?: string | null
           operational_role?: string | null
           phone?: string | null
           photo_url?: string | null
+          postal_code?: string | null
+          residential_address?: string | null
           service_code?: string | null
+          state?: string | null
           status?: string | null
           termination_date?: string | null
           updated_at?: string | null
@@ -1069,17 +1083,20 @@ export type Database = {
         Update: {
           access_level?: string | null
           admission_date?: string | null
+          birth_date?: string | null
           can_access_system?: boolean | null
           can_close_service_orders?: boolean | null
           can_manage_materials?: boolean | null
           can_receive_service_orders?: boolean | null
           can_view_financial_data?: boolean | null
           can_view_reports?: boolean | null
+          city?: string | null
           company_id?: string
           created_at?: string | null
           department_id?: string | null
           department_name?: string | null
           document_cpf?: string | null
+          document_rg?: string | null
           email?: string | null
           employee_type?: string | null
           full_name?: string
@@ -1087,11 +1104,15 @@ export type Database = {
           internal_company_code?: string | null
           is_active?: boolean | null
           job_title?: string | null
+          neighborhood?: string | null
           notes?: string | null
           operational_role?: string | null
           phone?: string | null
           photo_url?: string | null
+          postal_code?: string | null
+          residential_address?: string | null
           service_code?: string | null
+          state?: string | null
           status?: string | null
           termination_date?: string | null
           updated_at?: string | null

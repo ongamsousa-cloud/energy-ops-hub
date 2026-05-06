@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Textarea } from "@/components/ui/textarea";
+import { maskCPF, maskPhone, maskCEP } from "@/lib/utils/masks";
 
 interface ProfessionalModalProps {
   open: boolean;
@@ -97,7 +98,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     setLoading(true);
     try {
       const userId = professional?.id;
-      const fotoUrl = userId ? await uploadPhoto(userId) : photoPreview;
+      let fotoUrl = professional?.foto_url || photoPreview;
 
       const employeeData = {
         full_name: form.nome,
@@ -122,14 +123,29 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl,
-        user_id: userId || null
+                user_id: userId || null,
+        document_rg: form.rg,
+        birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
+        postal_code: form.cep,
+        residential_address: form.endereco_residencial,
+        neighborhood: form.bairro,
+        city: form.cidade,
+        state: form.estado
       };
 
-      let res;
+            let res;
       if (professional?.employee_id) {
+        fotoUrl = await uploadPhoto(professional.employee_id);
+        employeeData.photo_url = fotoUrl;
         res = await supabase.from("employees").update(employeeData).eq("id", professional.employee_id);
       } else {
-        res = await supabase.from("employees").insert(employeeData);
+        // First insert without photo to get ID
+        res = await supabase.from("employees").insert(employeeData).select().single();
+        if (res.data && photoFile) {
+          const newFotoUrl = await uploadPhoto(res.data.id);
+          await supabase.from("employees").update({ photo_url: newFotoUrl }).eq("id", res.data.id);
+          fotoUrl = newFotoUrl;
+        }
       }
 
       if (res.error) throw res.error;
@@ -173,7 +189,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-         <DialogHeader className="p-[20px] pb-2 border-b bg-muted/30">
+         <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
             {professional ? "Perfil do Funcionário" : "Cadastrar Novo Funcionário"}
@@ -184,7 +200,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         </DialogHeader>
 
         <ScrollArea className="flex-1">
-          <div className="p-[20px] grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r pr-6">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
@@ -263,11 +279,19 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Telefone / WhatsApp</Label>
-                      <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(00) 00000-0000" />
+                      <Input 
+                         value={form.telefone} 
+                         onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })} 
+                         placeholder="+55 (00) 00000-0000" 
+                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">CPF</Label>
-                      <Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+                      <Input 
+                         value={form.cpf} 
+                         onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} 
+                         placeholder="000.000.000-00" 
+                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Data de Admissão</Label>
@@ -287,6 +311,45 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 pt-4 border-t">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-muted-foreground" /> 
+                      Documentação e Endereço
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">RG</Label>
+                        <Input value={form.rg} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Data de Nascimento</Label>
+                        <Input type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">CEP</Label>
+                        <Input value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Endereço Residencial</Label>
+                        <Input value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Bairro</Label>
+                        <Input value={form.bairro} onChange={(e) => setForm({ ...form, bairro: e.target.value })} placeholder="Bairro" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Cidade</Label>
+                          <Input value={form.cidade} onChange={(e) => setForm({ ...form, cidade: e.target.value })} placeholder="Cidade" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Estado</Label>
+                          <Input value={form.estado} onChange={(e) => setForm({ ...form, estado: e.target.value })} placeholder="UF" maxLength={2} />
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -450,7 +513,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-[15px] border-t bg-muted/30">
+        <DialogFooter className="p-6 border-t bg-muted/30">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancelar
           </Button>

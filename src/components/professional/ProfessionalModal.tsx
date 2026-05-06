@@ -493,10 +493,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                       <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Matrícula</Label>
-                      <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
-                    </div>
-                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
                     </div>

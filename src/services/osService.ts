@@ -106,11 +106,9 @@ class OSService {
      }
 
      // 3.3 Role check (must have 'campo' or be admin/supervisor)
-     if (!userRoles.some(r => ['campo', 'supervisor', 'admin', 'gestor', 'developer'].includes(r))) {
-       blocked_by.push("no_field_permission");
-     }
-       invalid_department: "Você não pertence ao departamento responsável por esta OS.",
-       no_field_permission: "Seu perfil não possui permissão para execução de campo.",
+      if (!userRoles.some(r => ['campo', 'supervisor', 'admin', 'gestor', 'developer'].includes(r))) {
+        blocked_by.push("no_field_permission");
+      }
 
     // 4. Non-conformities check
     const { data: nc } = await supabase

@@ -653,66 +653,64 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
         <TabsContent value="liberacao" className="mt-4 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             <Card className="p-4 bg-amber-500/5 border-amber-500/10">
-              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Liberado Hoje</div>
-              <div className="text-2xl font-black text-amber-700">{summary.outToday.length}</div>
-              <div className="text-[10px] text-amber-600/70">Saídas para campo</div>
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Pendentes de Liberação</div>
+              <div className="text-2xl font-black text-amber-700">{waitingReleaseOS.length}</div>
+              <div className="text-[10px] text-amber-600/70">Aguardando estoque</div>
             </Card>
-            <Card className="p-4 bg-primary/5 border-primary/10">
-              <div className="text-[10px] font-bold text-primary uppercase tracking-widest">OS Atendidas</div>
-              <div className="text-2xl font-black text-primary/80">{new Set(summary.outToday.map(m => m.os_id).filter(Boolean)).size}</div>
-              <div className="text-[10px] text-primary/60">Obras em execução</div>
+            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Liberado Hoje</div>
+              <div className="text-2xl font-black text-emerald-700">{summary.outToday.length}</div>
+              <div className="text-[10px] text-emerald-600/70">Saídas para campo</div>
             </Card>
           </div>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowUpFromLine className="h-5 w-5 text-amber-500" />
-              <h3 className="text-lg font-bold">Liberação p/ Serviços Externos</h3>
+              <h3 className="text-lg font-bold">Ordens Aguardando Material</h3>
             </div>
-            <Button onClick={() => openMovement("saida")} className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Plus className="h-4 w-4 mr-2" /> Nova Liberação (Saída)
-            </Button>
           </div>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>OS Vinculada</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
-                  <TableHead>Origem</TableHead>
-                  <TableHead>Retirado por</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {movements.filter(m => m.type === "saida").map(m => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
-                    <TableCell>
-                      {m.ordens_servico?.numero ? (
-                        <Badge variant="outline" className="font-mono text-[10px]">OS {m.ordens_servico.numero}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-[10px]">Sem OS</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-xs">{m.materials?.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-amber-600 font-bold">-{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.from_wh?.name || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.profiles?.nome || "—"}</TableCell>
-                    <TableCell><Badge className="bg-blue-500/10 text-blue-600 border-none text-[10px]">LIBERADO</Badge></TableCell>
-                  </TableRow>
-                ))}
-                {movements.filter(m => m.type === "saida").length === 0 && (
-                  <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">Nenhuma liberação registrada recentemente.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+
+          {waitingReleaseOS.length === 0 ? (
+            <EmptyState title="Nenhuma OS pendente" description="Não há ordens de serviço aguardando liberação de estoque no momento." />
+          ) : (
+            <div className="grid gap-4">
+              {waitingReleaseOS.map((o) => (
+                <Card key={o.id} className="p-4 border-l-4 border-l-amber-500">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-primary">OS {o.numero}</span>
+                        <Badge variant="outline" className="text-[10px]">{o.prioridade || 'MÉDIA'}</Badge>
+                      </div>
+                      <h4 className="font-semibold text-sm">{o.obra?.nome}</h4>
+                      <div className="text-xs text-muted-foreground">Solicitado em {format(new Date(o.created_at), "dd/MM/yy HH:mm")}</div>
+                      
+                      <div className="mt-3">
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Materiais Planejados:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {o.materials?.map((m: any) => (
+                            <Badge key={m.id} variant="secondary" className="text-[10px] font-normal">
+                              {m.materials?.name}: {m.quantity_planned} {m.materials?.unit}
+                            </Badge>
+                          ))}
+                          {(!o.materials || o.materials.length === 0) && <span className="text-[10px] text-muted-foreground italic">Nenhum material listado</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button size="sm" onClick={() => releaseMaterials(o.id)} className="bg-amber-600 hover:bg-amber-700">
+                        Liberar Materiais
+                      </Button>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/app/os/${o.id}`}>Ver Detalhes</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="materials" className="space-y-3 mt-4">

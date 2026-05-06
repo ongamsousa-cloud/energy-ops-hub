@@ -54,6 +54,12 @@ export default function AprovacoesUsuarios() {
     if (dept?.id) updates.department_id = dept.id;
     const { error } = await supabase.from("profiles").update(updates).eq("id", id);
     if (error) { toast.error(error.message); return; }
+    await notificationService.criarNotificacao({
+      user_id: id,
+      title: "Conta aprovada",
+      message: "Seu cadastro foi liberado pelo administrador. Você já pode acessar o sistema.",
+      type: "success"
+    });
     toast.success("Usuário aprovado");
     load();
   }

@@ -223,11 +223,12 @@ export default function Obras() {
                  </div>
                  <div className="sm:col-span-2"><Label>Descrição</Label><Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} /></div>
               </div>
-              <Button onClick={save}>Salvar</Button>
-            </DialogContent>
-          </Dialog>
-        )}
-      />
+               <Button onClick={save}>Salvar</Button>
+             </DialogContent>
+           </Dialog>
+         </div>
+       )}
+     />
       <div className="mb-3 max-w-sm">
         <Input placeholder="Buscar por número ou nome…" value={q} onChange={(e)=>setQ(e.target.value)} />
       </div>

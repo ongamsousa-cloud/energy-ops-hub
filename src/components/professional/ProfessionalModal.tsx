@@ -326,10 +326,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
                   <TabsTrigger value="geral">Dados Gerais</TabsTrigger>
                   <TabsTrigger value="permissoes">Permissões</TabsTrigger>
                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
+                  <TabsTrigger value="config_acesso">Acesso</TabsTrigger>
                   <TabsTrigger value="historico">Histórico</TabsTrigger>
                 </TabsList>
 
@@ -588,15 +589,54 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                    </div>
                  </TabsContent>
  
-                 <TabsContent value="historico" className="space-y-6">
-                   <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
-                     <div className="bg-muted/20 p-4 rounded-full mb-4">
-                       <Activity className="h-12 w-12 opacity-20" />
-                     </div>
-                     <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
-                     <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
-                   </div>
-                 </TabsContent>
+                  <TabsContent value="config_acesso" className="space-y-6">
+                    <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-6">
+                      <div className="flex items-center gap-4 border-b border-border pb-6">
+                        <div className="bg-primary/10 p-3 rounded-xl">
+                          <Key className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg">Configurações de Acesso</h4>
+                          <p className="text-sm text-muted-foreground">Defina a senha provisória e regras de primeiro acesso.</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-bold">Senha Provisória</Label>
+                          <div className="relative">
+                            <Input 
+                              type={showPassword ? "text" : "password"} 
+                              className="h-12 pr-10" 
+                              value={form.password} 
+                              onChange={(e) => setForm({ ...form, password: e.target.value })} 
+                              placeholder="Digite uma senha forte"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground">
+                            O profissional será obrigado a trocar esta senha no primeiro acesso ao sistema.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="historico" className="space-y-6">
+                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
+                      <div className="bg-muted/20 p-4 rounded-full mb-4">
+                        <Activity className="h-12 w-12 opacity-20" />
+                      </div>
+                      <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
+                      <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
+                    </div>
+                  </TabsContent>
               </Tabs>
             </div>
           </div>

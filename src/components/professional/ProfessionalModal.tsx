@@ -233,11 +233,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   };
 
   const handleSave = async () => {
-    if (!form.nome || !form.email) return toast.error("Nome e E-mail são obrigatórios");
-    
-    if (!form.internal_company_code || !form.service_code) {
-      const proceed = window.confirm("Os códigos de identificação (Empresa e Serviço) não foram preenchidos. Deseja continuar assim mesmo?");
-      if (!proceed) return;
+    if (!form.nome || !form.email || !form.internal_company_code || !form.service_code) {
+      return toast.error("Nome, E-mail, Cód. Interno e Cód. Serviço são obrigatórios para um cadastro profissional.");
     }
     
     setLoading(true);

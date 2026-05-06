@@ -647,6 +647,35 @@ export default function OSDetalhe() {
         }
       />
 
+       {/* Operational Flow Action Bar */}
+       {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor'])) && (
+         <Card className="p-4 border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-4">
+           <div className="flex items-center gap-3">
+             <div className="p-2 bg-primary/10 rounded-full"><RefreshCw className={cn("h-4 w-4 text-primary", busy && "animate-spin")} /></div>
+             <div>
+               <p className="text-xs font-bold uppercase tracking-widest text-primary/70">Fluxo Operacional</p>
+               <p className="text-[10px] text-muted-foreground">Mova a OS para a próxima etapa do processo</p>
+             </div>
+           </div>
+           <div className="flex flex-wrap gap-2">
+             {nextPossibleStatuses.map((status) => (
+               <Button 
+                 key={status} 
+                 size="sm" 
+                 disabled={busy}
+                 onClick={() => handleStatusTransition(status as OSStatus)}
+                 className={cn(
+                   "text-[10px] font-bold uppercase",
+                   status === 'cancelada' ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary/90"
+                 )}
+               >
+                 {OS_STATUS_FLOW[status as OSStatus].label}
+               </Button>
+             ))}
+           </div>
+         </Card>
+       )}
+
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/50 shadow-inner">
         <span><strong>Setor:</strong> <Badge variant="secondary" className="ml-1 text-[9px] h-4">{os.department?.name || "Geral"}</Badge></span>
         <span><strong>Serviço:</strong> {os.servico?.nome || "Geral"}</span>

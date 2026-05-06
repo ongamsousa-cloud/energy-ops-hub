@@ -452,18 +452,26 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      </Select>
                    </div>
 
-                   <div className="space-y-4 pt-4 border-t border-border">
-                      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                        <p className="text-[10px] uppercase font-bold text-primary mb-2">Resumo Operacional</p>
-                        <div className="grid grid-cols-1 gap-2">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Empresa</span>
-                            <span className="text-sm font-mono font-bold">{form.internal_company_code || '---'}</span>
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Serviço</span>
-                            <span className="text-sm font-mono font-bold text-primary">{form.service_code || '---'}</span>
-                          </div>
+                   <div className="space-y-3 pt-4 border-t border-border">
+                      <Label className="text-xs font-semibold uppercase text-muted-foreground">Códigos de Identificação</Label>
+                      <div className="space-y-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground">Código Interno Empresa</Label>
+                          <Input 
+                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
+                            placeholder="FUNC-0000" 
+                            value={form.internal_company_code} 
+                            onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-[11px] font-medium text-muted-foreground">Código de Serviço (Técnico)</Label>
+                          <Input 
+                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
+                            placeholder="TEC-000" 
+                            value={form.service_code} 
+                            onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
+                          />
                         </div>
                       </div>
                    </div>

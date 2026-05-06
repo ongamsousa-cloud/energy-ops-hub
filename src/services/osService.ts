@@ -1,6 +1,6 @@
  import { supabase } from "@/integrations/supabase/client";
  
- import { OSStatus } from "@/lib/os-status";
+ import { OSStatus } from "@/modules/work-orders/status/os-status";
 
 class OSService {
    async updateStatus(osId: string, status: OSStatus, userId: string, details?: any) {

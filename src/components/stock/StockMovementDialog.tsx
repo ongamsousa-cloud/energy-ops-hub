@@ -125,13 +125,18 @@ export default function StockMovementDialog({ open, onOpenChange, onSuccess, mat
 
   const balance = form.from_warehouse_id && form.material_id ? stockLevels[`${form.material_id}-${form.from_warehouse_id}`] : null;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Movimentação de Estoque</DialogTitle>
-          <DialogDescription>Registre entradas, saídas, devoluções, transferências ou ajustes de inventário.</DialogDescription>
-        </DialogHeader>
+   return (
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+         <DialogHeader className="p-8 bg-primary text-primary-foreground relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+             <Loader2 className="h-32 w-32 text-white animate-spin-slow" />
+           </div>
+           <div className="relative z-10">
+             <DialogTitle className="text-2xl font-bold">Movimentação de Estoque</DialogTitle>
+             <p className="text-primary-foreground/70 text-sm mt-1">Registre o fluxo de entrada e saída de materiais.</p>
+           </div>
+         </DialogHeader>
         <form onSubmit={submit} className="space-y-3 pt-2">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Tipo</Label>

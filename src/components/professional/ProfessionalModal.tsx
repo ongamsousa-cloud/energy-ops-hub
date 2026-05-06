@@ -332,21 +332,25 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           console.error("Erro ao gerenciar usuário:", authErr);
           toast.warning("Dados salvos, mas houve erro ao criar acesso: " + (authErr.message || "Erro desconhecido"));
         }
-      } else if (finalUserId && form.password) {
-        // Update existing user password
+       } else if (finalUserId) {
+         // Sincronizar dados do usuário existente
         try {
           const { error } = await supabase.functions.invoke('manage-user', {
             body: {
               action: 'update',
               userId: finalUserId,
-              password: form.password
+               email: form.email,
+               password: form.password || undefined,
+               userData: { 
+                 nome: form.nome, 
+                 role: form.role 
+               }
             }
           });
           if (error) throw error;
-          toast.success("Senha do usuário atualizada com sucesso!");
         } catch (authErr: any) {
-          console.error("Erro ao atualizar senha:", authErr);
-          toast.warning("Dados salvos, mas erro ao atualizar senha.");
+           console.error("Erro ao sincronizar usuário:", authErr);
+           toast.warning("Dados do funcionário salvos, mas houve erro ao atualizar o perfil de acesso.");
         }
       }
 

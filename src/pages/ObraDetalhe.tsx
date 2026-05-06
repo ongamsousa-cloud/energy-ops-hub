@@ -72,7 +72,7 @@ export default function ObraDetalhe() {
         } 
       />
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card className="rounded-md border-border p-4 shadow-none"><div className="text-xs text-muted-foreground">Local</div><div className="mt-1 text-sm">{[obra.endereco, obra.cidade, obra.estado].filter(Boolean).join(", ") || "—"}</div></Card>
+        <Card className="rounded-md border-border p-4 shadow-none"><div className="text-xs text-muted-foreground">Local</div><div className="mt-1 text-sm">{[obra.endereco, obra.numero_endereco, obra.bairro, obra.cidade, obra.estado].filter(Boolean).join(", ") || "—"}</div></Card>
         <Card className="rounded-md border-border p-4 shadow-none"><div className="text-xs text-muted-foreground">OS vinculadas</div><div className="mt-1 text-2xl font-semibold">{oss.length}</div></Card>
         <Card className="rounded-md border-border p-4 shadow-none"><div className="text-xs text-muted-foreground">UMD aprovada</div><div className="mt-1 text-2xl font-semibold">{totalUmd.toFixed(2)}</div></Card>
       </div>

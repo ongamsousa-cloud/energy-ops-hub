@@ -572,33 +572,48 @@ export default function OSDetalhe() {
     load();
   }
 
+   const nextPossibleStatuses = OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || [];
+
+   async function handleStatusTransition(newStatus: OSStatus) {
+     setBusy(true);
+     try {
+       await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+       toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
+       load();
+     } catch (err: any) {
+       toast.error("Erro na transição: " + err.message);
+     } finally {
+       setBusy(false);
+     }
+   }
+
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-  return (
-    <div>
-      <PageHeader
-        title={
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className="text-primary font-mono font-black">OS {os.numero}</span>
-              <StatusBadge status={os.status} />
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
-                PROJETO: {os.obra?.numero || "S/N"}
-              </Badge>
-              <span className="opacity-50">|</span>
-              <span className="font-medium">{os.obra?.nome}</span>
-            </div>
-          </div>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <StatusBadge status={os.status} />
-            {isGestor && (
-              <Dialog>
-                <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
-                <DialogContent>
+   return (
+     <div className="space-y-6">
+       <PageHeader
+         title={
+           <div className="flex flex-col gap-0.5">
+             <div className="flex items-center gap-2">
+               <span className="text-primary font-mono font-black">OS {os.numero}</span>
+               <StatusBadge status={os.operational_status || os.status} />
+             </div>
+             <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
+               <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
+                 PROJETO: {os.obra?.numero || "S/N"}
+               </Badge>
+               <span className="opacity-50">|</span>
+               <span className="font-medium">{os.obra?.nome}</span>
+             </div>
+           </div>
+         }
+         actions={
+           <div className="flex items-center gap-2">
+             <StatusBadge status={os.operational_status || os.status} />
+             {isGestor && (
+               <Dialog>
+                 <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
+                 <DialogContent>
                   <DialogHeader><DialogTitle>Atribuir Ordem de Serviço</DialogTitle></DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">

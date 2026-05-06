@@ -96,6 +96,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   };
 
   const [form, setForm] = useState(initialFormState);
+  
+  // Debounced CEP search
+  useEffect(() => {
+    const cep = form.cep.replace(/\D/g, "");
+    if (cep.length === 8) {
+      const timeoutId = setTimeout(() => {
+        handleCepSearch();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [form.cep]);
   const [showPassword, setShowPassword] = useState(false);
   const [supervisors, setSupervisors] = useState<any[]>([]);
   const [allServices, setAllServices] = useState<any[]>([]);

@@ -7,7 +7,7 @@ import EmptyState from "@/components/EmptyState";
  import { toast } from "sonner";
  import { Card, CardContent } from "@/components/ui/card";
  import { Badge } from "@/components/ui/badge";
-  import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil } from "lucide-react";
+ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil, Download, Filter, FileSpreadsheet, FileText, CheckCircle2, XCircle, AlertCircle, Clock, ClipboardList, Activity } from "lucide-react";
   import ProfessionalModal from "@/components/professional/ProfessionalModal";
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";
@@ -29,11 +29,33 @@ import EmptyState from "@/components/EmptyState";
    const [modalOpen, setModalOpen] = useState(false);
    const [selectedProf, setSelectedProf] = useState<any>(null);
   async function load() {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*, user_roles(role), departments(id,name)")
-      .order("nome");
-    setRows(data ?? []);
+     const { data: employees } = await supabase
+       .from("employees")
+       .select("*, departments(id, name)");
+
+     const { data: profiles } = await supabase
+       .from("profiles")
+       .select("*, user_roles(role), departments(id, name)")
+       .order("nome");
+
+     // Combinar dados dos perfis (usuários com login) e funcionários (todos profissionais)
+     const combined = (employees ?? []).map(emp => {
+       const profile = (profiles ?? []).find(p => p.id === emp.user_id || p.email === emp.email);
+       return {
+         ...emp,
+         ...profile,
+         id: profile?.id || emp.id, // Manter ID do perfil se existir
+         employee_id: emp.id,
+         nome: emp.full_name || profile?.nome,
+         email: emp.email || profile?.email,
+         cargo: emp.job_title || profile?.cargo,
+         department_id: emp.department_id || profile?.department_id,
+         foto_url: emp.photo_url || profile?.foto_url,
+         user_roles: profile?.user_roles
+       };
+     });
+     
+     setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");
     setDepartments(depts ?? []);
   }
@@ -50,8 +72,20 @@ import EmptyState from "@/components/EmptyState";
    const filteredRows = rows.filter(p => 
      p.nome?.toLowerCase().includes(search.toLowerCase()) || 
      p.email?.toLowerCase().includes(search.toLowerCase()) ||
-     p.cargo?.toLowerCase().includes(search.toLowerCase())
+     p.cargo?.toLowerCase().includes(search.toLowerCase()) ||
+     p.internal_company_code?.toLowerCase().includes(search.toLowerCase()) ||
+     p.service_code?.toLowerCase().includes(search.toLowerCase())
    );
+
+   const getStatusIcon = (status: string) => {
+     switch (status) {
+       case 'active': return <CheckCircle2 className="h-3 w-3 text-green-500" />;
+       case 'inactive': return <XCircle className="h-3 w-3 text-red-500" />;
+       case 'blocked': return <AlertCircle className="h-3 w-3 text-amber-500" />;
+       case 'vacation': return <Clock className="h-3 w-3 text-blue-500" />;
+       default: return null;
+     }
+   };
 
    const openEdit = (prof: any) => {
      setSelectedProf(prof);
@@ -68,70 +102,129 @@ import EmptyState from "@/components/EmptyState";
        <PageHeader 
          title="Profissionais" 
          description="Equipe e papéis de acesso ao sistema." 
-         actions={
-           <Button onClick={openNew} size="sm" className="gap-2">
-             <UserPlus className="h-4 w-4" /> Novo Profissional
-           </Button>
-         }
+          actions={
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" /> Exportar
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem className="gap-2"><FileSpreadsheet className="h-4 w-4" /> CSV</DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2"><FileSpreadsheet className="h-4 w-4" /> Excel</DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2"><FileText className="h-4 w-4" /> PDF</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button onClick={openNew} size="sm" className="gap-2">
+                <UserPlus className="h-4 w-4" /> Novo Funcionário
+              </Button>
+            </div>
+          }
        />
 
-       <div className="flex items-center gap-4 bg-muted/20 p-4 rounded-lg border">
+        <div className="flex flex-col md:flex-row items-center gap-4 bg-muted/20 p-4 rounded-lg border shadow-sm">
          <div className="relative flex-1">
            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
            <Input 
-             placeholder="Buscar por nome, email ou cargo..." 
+              placeholder="Buscar por nome, e-mail, cargo, CPF ou códigos (FUNC / TEC)..." 
              className="pl-9"
              value={search}
              onChange={(e) => setSearch(e.target.value)}
            />
          </div>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Filter className="h-4 w-4" /> Filtros
+          </Button>
        </div>
 
        {filteredRows.length === 0 ? <EmptyState title="Nenhum profissional encontrado" /> : (
-         <div className="overflow-hidden rounded-md border border-border bg-card">
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
            <table className="w-full text-sm">
-             <thead className="border-b border-border bg-muted/30 text-left text-xs uppercase tracking-wide text-muted-foreground">
+              <thead className="border-b border-border bg-muted/50 text-left text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
                <tr>
-                 <th className="px-3 py-2 w-10"></th>
-                 <th className="px-3 py-2">Nome</th>
-                 <th className="px-3 py-2">Email</th>
-                 <th className="px-3 py-2">Cargo</th>
-                 <th className="px-3 py-2 w-48">Perfil</th>
-                 <th className="px-3 py-2 w-48">Departamento</th>
-                 <th className="px-3 py-2 w-10"></th>
+                  <th className="px-4 py-3 w-12 text-center">Foto</th>
+                  <th className="px-4 py-3">Profissional</th>
+                  <th className="px-4 py-3">Identificação</th>
+                  <th className="px-4 py-3">Cargo / Setor</th>
+                  <th className="px-4 py-3 text-center">Status</th>
+                  <th className="px-4 py-3 w-40">Perfil de Acesso</th>
+                  <th className="px-4 py-3 w-12">Ações</th>
                </tr>
              </thead>
              <tbody>{filteredRows.map((p)=>{ const role = p.user_roles?.[0]?.role as AppRole | undefined; return (
-               <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                 <td className="px-3 py-2">
-                   <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors group">
+                  <td className="px-4 py-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/5 flex items-center justify-center overflow-hidden border shadow-inner mx-auto">
                      {p.foto_url ? (
                        <img src={p.foto_url} alt={p.nome} className="h-full w-full object-cover" />
                      ) : (
-                       <span className="text-[10px] font-bold text-primary">{p.nome?.substring(0, 2).toUpperCase()}</span>
+                        <span className="text-xs font-bold text-primary/60">{p.nome?.substring(0, 2).toUpperCase()}</span>
                      )}
                    </div>
                  </td>
-                 <td className="px-3 py-2 font-medium">{p.nome}</td>
-                <td className="px-3 py-2 text-muted-foreground">{p.email}</td>
-                <td className="px-3 py-2">{p.cargo ?? "—"}</td>
-                <td className="px-3 py-2">
-                  <Select value={role ?? "campo"} onValueChange={(v)=>setRole(p.id, v as AppRole)}>
-                    <SelectTrigger className="h-8"><SelectValue/></SelectTrigger>
-                    <SelectContent>{ROLES.map((r)=>(<SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>))}</SelectContent>
-                   </Select>
-                 </td>
-                 <td className="px-3 py-2">
-                   <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                     <Pencil className="h-4 w-4" />
-                   </Button>
-                 </td>
-                <td className="px-3 py-2">
-                  <Select value={p.department_id ?? ""} onValueChange={(v)=>setDept(p.id, v)}>
-                    <SelectTrigger className="h-8"><SelectValue placeholder="—"/></SelectTrigger>
-                    <SelectContent>{departments.map((d)=>(<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
-                  </Select>
-                </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-foreground text-sm leading-tight">{p.nome}</span>
+                      <span className="text-[11px] text-muted-foreground">{p.email}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="text-[10px] font-mono h-5 w-fit bg-muted/30">
+                        {p.internal_company_code || "FUNC-????"}
+                      </Badge>
+                      <Badge variant="outline" className="text-[10px] font-mono h-5 w-fit border-primary/20 text-primary">
+                        {p.service_code || "TEC-???"}
+                      </Badge>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-medium text-foreground">{p.cargo ?? "Sem cargo"}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase">{p.departments?.name ?? "Setor não definido"}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {getStatusIcon(p.status)}
+                      <span className="text-[11px] font-medium capitalize">{p.status === 'active' ? 'Ativo' : p.status === 'inactive' ? 'Inativo' : p.status === 'blocked' ? 'Bloqueado' : 'Férias'}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Select value={role ?? "campo"} onValueChange={(v)=>setRole(p.id, v as AppRole)}>
+                      <SelectTrigger className="h-8 text-xs bg-muted/30 border-none shadow-none focus:ring-0">
+                        <SelectValue/>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROLES.map((r)=>(<SelectItem key={r} value={r} className="text-xs">{ROLE_LABEL[r]}</SelectItem>))}</SelectContent>
+                    </Select>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => openEdit(p)} className="gap-2">
+                          <Pencil className="h-4 w-4" /> Ver Perfil / Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 text-destructive">
+                          <UserMinus className="h-4 w-4" /> Desativar Acesso
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="gap-2">
+                          <ClipboardList className="h-4 w-4" /> Ordens de Serviço
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2">
+                          <Activity className="h-4 w-4" /> Ver Histórico
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
               </tr>
             );})}</tbody>
           </table>

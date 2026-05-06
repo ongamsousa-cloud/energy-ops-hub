@@ -102,14 +102,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           can_manage_materials: professional.can_manage_materials ?? false,
           can_close_service_orders: professional.can_close_service_orders ?? false,
           can_view_financial_data: professional.can_view_financial_data ?? false,
-          can_view_reports: professional.can_view_reports ?? false,
-          notes: professional.notes || "",
-          admission_date: professional.admission_date || professional.data_admissao || "",
-          termination_date: professional.termination_date || "",
-          password: "",
-        });
-        setPhotoPreview(professional.foto_url || null);
-      } else {
+           can_view_reports: professional.can_view_reports ?? false,
+           notes: professional.notes || "",
+           admission_date: professional.admission_date || professional.data_admissao || "",
+           termination_date: professional.termination_date || "",
+           password: "",
+         });
+         setPhotoPreview(professional.foto_url || professional.photo_url || null);
+       } else {
         setForm(initialFormState);
         setPhotoPreview(null);
       }
@@ -203,61 +203,55 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         }
       }
 
-      if (res.error) throw res.error;
-
-      // Se for um novo cadastro e can_access_system estiver marcado, ou se quiser resetar senha
-      if (form.can_access_system && form.email && form.password && !userId) {
-        // Criar usuário no auth (isso geralmente requer uma Edge Function ou admin privileges)
-        // Por enquanto, vamos apenas registrar no profile e assumir que o sistema de convite cuidará disso
-        // mas se já tivermos o ID do profile, atualizamos.
-        toast.info("A criação de conta com senha requer privilégios de administrador. O convite será enviado por e-mail.");
-      }
-
-      // Procura o profile por e-id ou e-mail se userId não estiver presente
-      let targetUserId = userId || (professional?.user_id);
-      
-      if (!targetUserId && form.email) {
-        const { data: profileByEmail } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("email", form.email)
-          .maybeSingle();
-        if (profileByEmail) targetUserId = profileByEmail.id;
-      }
-
-      if (targetUserId) {
-        const updateData: any = {
-          nome: form.nome,
-          cargo: form.cargo,
-          especialidade: form.especialidade,
-          cpf: form.cpf,
-          rg: form.rg,
-          telefone: form.telefone,
-          data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
-          endereco_residencial: form.endereco_residencial,
-          bairro: form.bairro,
-          cidade: form.cidade,
-          estado: form.estado,
-          cep: form.cep,
-          data_admissao: form.admission_date === "" ? null : form.admission_date,
-          department_id: form.department_id === "" ? null : form.department_id,
-          foto_url: fotoUrl,
-          email: form.email
-        };
-
-        if (form.password) updateData.must_change_password = true;
-
-        const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", targetUserId);
-        if (profileError) throw profileError;
-
-        await supabase.from("user_roles").delete().eq("user_id", targetUserId);
-        await supabase.from("user_roles").insert({ user_id: targetUserId, role: form.role as any });
-        
-        // Garantir que o employee também esteja vinculado a este user_id
-        if (employeeId) {
-          await supabase.from("employees").update({ user_id: targetUserId }).eq("id", employeeId);
-        }
-      }
+       if (res.error) throw res.error;
+ 
+       let targetUserId = userId || (professional?.user_id);
+       
+       if (!targetUserId && form.email) {
+         const { data: profileByEmail } = await supabase
+           .from("profiles")
+           .select("id")
+           .eq("email", form.email)
+           .maybeSingle();
+         if (profileByEmail) targetUserId = profileByEmail.id;
+       }
+ 
+       if (targetUserId) {
+         const updateData: any = {
+           nome: form.nome,
+           cargo: form.cargo,
+           especialidade: form.especialidade,
+           cpf: form.cpf,
+           rg: form.rg,
+           telefone: form.telefone,
+           data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
+           endereco_residencial: form.endereco_residencial,
+           bairro: form.bairro,
+           cidade: form.cidade,
+           estado: form.estado,
+           cep: form.cep,
+           data_admissao: form.admission_date === "" ? null : form.admission_date,
+           department_id: form.department_id === "" ? null : form.department_id,
+           foto_url: fotoUrl,
+           email: form.email
+         };
+ 
+         if (form.password) updateData.must_change_password = true;
+ 
+         const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", targetUserId);
+         if (profileError) throw profileError;
+ 
+         await supabase.from("user_roles").delete().eq("user_id", targetUserId);
+         await supabase.from("user_roles").insert({ user_id: targetUserId, role: form.role as any });
+         
+         if (employeeId) {
+           await supabase.from("employees").update({ user_id: targetUserId }).eq("id", employeeId);
+         }
+       }
+ 
+       if (form.can_access_system && form.email && form.password && !targetUserId) {
+         toast.info("A criação de conta com senha requer convite por e-mail para novos usuários sem perfil.");
+       }
 
       toast.success(professional ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");
       

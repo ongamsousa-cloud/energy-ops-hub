@@ -40,21 +40,21 @@ import EmptyState from "@/components/EmptyState";
        .order("nome");
 
      // Combinar dados dos perfis (usuários com login) e funcionários (todos profissionais)
-     const combined = (employees ?? []).map(emp => {
-       const profile = (profiles ?? []).find(p => p.id === emp.user_id || p.email === emp.email);
-       return {
-         ...emp,
-         ...profile,
-         id: profile?.id || emp.id, // Manter ID do perfil se existir
-         employee_id: emp.id,
-         nome: emp.full_name || profile?.nome,
-         email: emp.email || profile?.email,
-         cargo: emp.job_title || profile?.cargo,
-         department_id: emp.department_id || profile?.department_id,
-         foto_url: emp.photo_url || profile?.foto_url,
-         user_roles: profile?.user_roles
-       };
-     });
+      const combined = (employees ?? []).map(emp => {
+        const profile = (profiles ?? []).find(p => p.id === emp.user_id || (emp.email && p.email === emp.email));
+        return {
+          ...emp,
+          ...profile,
+          profile_id: profile?.id || null,
+          employee_id: emp.id,
+          nome: emp.full_name || profile?.nome || "",
+          email: emp.email || profile?.email || "",
+          cargo: emp.job_title || profile?.cargo || "",
+          department_id: emp.department_id || profile?.department_id || "",
+          foto_url: emp.photo_url || profile?.foto_url || null,
+          user_roles: profile?.user_roles || []
+        };
+      });
      
      setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");
@@ -87,28 +87,39 @@ import EmptyState from "@/components/EmptyState";
      }
    }
 
-   async function toggleStatus(p: any) {
-     const newStatus = p.status === 'active' ? 'inactive' : 'active';
-     try {
-       const { error } = await supabase
-         .from("employees")
-         .update({ status: newStatus, is_active: newStatus === 'active' })
-         .eq("id", p.employee_id);
-       
-       if (error) throw error;
-       toast.success(`Status alterado para ${newStatus === 'active' ? 'Ativo' : 'Inativo'}`);
-       load();
-     } catch (error: any) {
-       toast.error("Erro ao alterar status: " + error.message);
-     }
-   }
-   const filteredRows = rows.filter(p => 
-     p.nome?.toLowerCase().includes(search.toLowerCase()) || 
-     p.email?.toLowerCase().includes(search.toLowerCase()) ||
-     p.cargo?.toLowerCase().includes(search.toLowerCase()) ||
-     p.internal_company_code?.toLowerCase().includes(search.toLowerCase()) ||
-     p.service_code?.toLowerCase().includes(search.toLowerCase())
-   );
+    async function toggleStatus(p: any) {
+      const newStatus = p.status === 'active' ? 'inactive' : 'active';
+      const isActive = newStatus === 'active';
+      try {
+        const { error: empError } = await supabase
+          .from("employees")
+          .update({ status: newStatus, is_active: isActive })
+          .eq("id", p.employee_id);
+        
+        if (empError) throw empError;
+
+        if (p.profile_id) {
+          await supabase.from("profiles").update({ ativo: isActive }).eq("id", p.profile_id);
+        }
+        
+        toast.success(`Status alterado para ${isActive ? 'Ativo' : 'Inativo'}`);
+        load();
+      } catch (error: any) {
+        toast.error("Erro ao alterar status: " + error.message);
+      }
+    }
+    const filteredRows = rows.filter(p => {
+      const s = search.toLowerCase();
+      return (
+        p.nome?.toLowerCase().includes(s) || 
+        p.email?.toLowerCase().includes(s) ||
+        p.cargo?.toLowerCase().includes(s) ||
+        p.cpf?.toLowerCase().includes(s) ||
+        p.rg?.toLowerCase().includes(s) ||
+        p.internal_company_code?.toLowerCase().includes(s) ||
+        p.service_code?.toLowerCase().includes(s)
+      );
+    });
 
    const getStatusIcon = (status: string) => {
      switch (status) {

@@ -39,7 +39,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
    const [selectedServicoId, setSelectedServicoId] = useState<string>("");
    const [selectedCategoriaId, setSelectedCategoriaId] = useState<string>("all");
   const [gestores, setGestores] = useState<any[]>([]);
-  const [equipes, setEquipes] = useState<any[]>([]);
+   const [equipes, setEquipes] = useState<any[]>([]);
+   const [obraSearchOpen, setObraSearchOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [activityPopoverOpen, setActivityPopoverOpen] = useState(false);
 
@@ -351,22 +352,50 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                        />
                      </div>
                    </div>
-                   <div className="md:col-span-2 space-y-2">
-                     <Label>Obra (Preenche automático)</Label>
-                     <Select value={formData.obraId} onValueChange={handleObraChange}>
-                       <SelectTrigger><SelectValue placeholder="Selecione uma obra existente" /></SelectTrigger>
-                        <SelectContent className="max-h-[300px]">
-                          {obras.map((o) => (
-                            <SelectItem key={o.id} value={o.id}>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-xs">{o.numero}</span>
-                                <span className="text-xs text-muted-foreground">{o.nome}</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                     </Select>
-                   </div>
+                    <div className="md:col-span-2 space-y-2">
+                      <Label>Obra / Código (Manual ou Busca)</Label>
+                      <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={obraSearchOpen}
+                            className="w-full justify-between"
+                          >
+                            {formData.obraId
+                              ? obras.find((o) => o.id === formData.obraId)?.numero || "Obra Selecionada"
+                              : "Buscar por código ou nome..."}
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[400px] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Digite o código da obra..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                              <CommandGroup>
+                                {obras.map((o) => (
+                                  <CommandItem
+                                    key={o.id}
+                                    value={`${o.numero} ${o.nome}`}
+                                    onSelect={() => {
+                                      handleObraChange(o.id);
+                                      setObraSearchOpen(false);
+                                    }}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-bold">{o.numero}</span>
+                                      <span className="text-xs text-muted-foreground">{o.nome}</span>
+                                      {o.cliente && <span className="text-[10px] text-muted-foreground/70">{o.cliente}</span>}
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                    <div className="md:col-span-2 space-y-2">
                      <Label>Endereço <span className="text-destructive">*</span></Label>
                      <Input value={formData.endereco} onChange={(e) => setFormData({...formData, endereco: e.target.value})} />

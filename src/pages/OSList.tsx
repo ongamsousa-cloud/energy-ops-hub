@@ -224,13 +224,18 @@ export default function OSList() {
                <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
                <SelectContent>
                   <SelectItem value="all">Todos os Status</SelectItem>
-                  <SelectItem value="Pendente">Pendente / Aceite</SelectItem>
-                   <SelectItem value="Iniciada">Iniciada / Lançada</SelectItem>
-                  <SelectItem value="Em deslocamento">Em deslocamento</SelectItem>
-                  <SelectItem value="Em execução">Em execução</SelectItem>
-                  <SelectItem value="Aguardando validação">Aguardando validação</SelectItem>
-                  <SelectItem value="Concluída">Concluída</SelectItem>
-                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="aguardando_aprovacao_departamento">Aguard. Departamento</SelectItem>
+                  <SelectItem value="aguardando_liberacao_estoque">Aguard. Estoque</SelectItem>
+                  <SelectItem value="material_liberado">Material Liberado</SelectItem>
+                  <SelectItem value="pronta_para_execucao">Pronta p/ Execução</SelectItem>
+                  <SelectItem value="iniciada">Iniciada</SelectItem>
+                  <SelectItem value="em_deslocamento">Em deslocamento</SelectItem>
+                  <SelectItem value="chegou_ao_local">No Local</SelectItem>
+                  <SelectItem value="em_execucao">Em execução</SelectItem>
+                  <SelectItem value="aguardando_validacao_supervisor">Aguard. Validação</SelectItem>
+                  <SelectItem value="concluida">Concluída</SelectItem>
+                  <SelectItem value="cancelada">Cancelada</SelectItem>
                </SelectContent>
              </Select>
            </div>
@@ -283,7 +288,7 @@ export default function OSList() {
                <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
                  <div className="flex justify-between items-start mb-3">
                    <div className="font-mono text-xs font-bold text-primary">{r.numero}</div>
-                   <StatusBadge status={r.status} />
+                    <StatusBadge status={r.operational_status || r.status} />
                  </div>
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-sm line-clamp-1">{r.obra?.nome}</h3>

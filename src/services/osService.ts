@@ -45,25 +45,25 @@ class OSService {
 
      if (updateError) throw updateError;
 
-     // Log the change in os_audit_logs
-     await supabase.from("os_audit_logs").insert({
-       os_id: osId,
-       user_id: userId,
-       action: 'status_change',
-       old_value: currentOS?.operational_status,
-       new_value: status,
-       details: details || {}
-     });
+      // Log the change in os_audit_logs (using as any to bypass type mismatch until regeneration)
+      await (supabase.from("os_audit_logs") as any).insert({
+        os_id: osId,
+        user_id: userId,
+        action: 'status_change',
+        old_value: currentOS?.operational_status,
+        new_value: status,
+        details: details || {}
+      });
 
-     // Also update os_history if it exists for legacy compatibility
-     await supabase.from("os_history").insert({
-       os_id: osId,
-       user_id: userId,
-       action: `Alteração de status para ${status}`,
-       old_status: currentOS?.operational_status,
-       new_status: status,
-       details: details || {}
-     });
+      // Also update os_history if it exists for legacy compatibility
+      await (supabase.from("os_history") as any).insert({
+        os_id: osId,
+        user_id: userId,
+        action: `Alteração de status para ${status}`,
+        old_status: currentOS?.operational_status,
+        new_status: status,
+        details: details || {}
+      });
    }
 
    async getOS(osId: string) {

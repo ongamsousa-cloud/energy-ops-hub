@@ -29,51 +29,46 @@ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pen
    const [search, setSearch] = useState("");
    const [modalOpen, setModalOpen] = useState(false);
    const [selectedProf, setSelectedProf] = useState<any>(null);
-  async function load() {
-     const { data: employees } = await supabase
-       .from("employees")
-       .select("*, departments(id, name)");
-
+   async function load() {
      const { data: profiles } = await supabase
        .from("profiles")
        .select("*, user_roles(role), departments(id, name)")
        .order("nome");
 
-      // Combinar dados garantindo que campos de profiles sobrescrevam funcionários apenas se existirem
-        const combined = (employees ?? []).map(emp => {
-          const p = (profiles ?? []).find(pr => pr.id === emp.user_id || (emp.email && pr.email === emp.email));
-          // Preferir dados do funcionário (employees) como fonte da verdade para dados cadastrais, 
-          // já que o RH/Gestor edita esses campos prioritariamente.
-          return {
-            ...emp,
-            profile_id: p?.id || null,
-            employee_id: emp.id,
-            nome: emp.full_name || p?.nome || "",
-            email: emp.email || p?.email || "",
-            cargo: emp.job_title || p?.cargo || "",
-            cpf: emp.document_cpf || p?.cpf || "",
-            rg: emp.document_rg || p?.rg || "",
-            telefone: emp.phone || p?.telefone || "",
-            birth_date: emp.birth_date || p?.data_nascimento || "",
-            admission_date: emp.admission_date || p?.data_admissao || "",
-            postal_code: emp.postal_code || p?.cep || "",
-            residential_address: emp.residential_address || p?.endereco_residencial || "",
-            neighborhood: emp.neighborhood || p?.bairro || "",
-            city: emp.city || p?.cidade || "",
-            state: emp.state || p?.estado || "",
-            // Keep compatibility for modal's expected field names
-            data_nascimento: emp.birth_date || p?.data_nascimento || "",
-            data_admissao: emp.admission_date || p?.data_admissao || "",
-            cep: emp.postal_code || p?.cep || "",
-            endereco_residencial: emp.residential_address || p?.endereco_residencial || "",
-            bairro: emp.neighborhood || p?.bairro || "",
-            cidade: emp.city || p?.cidade || "",
-            estado: emp.state || p?.estado || "",
-            department_id: emp.department_id || p?.department_id || "",
-            foto_url: emp.photo_url || p?.foto_url || null,
-            user_roles: p?.user_roles || []
-          };
-        });
+     const { data: employees } = await supabase
+       .from("employees")
+       .select("*, departments(id, name)");
+
+     // Base the list on profiles, and join employee data if available
+     const combined = (profiles ?? []).map(p => {
+       const emp = (employees ?? []).find(e => e.user_id === p.id || (e.email && e.email === p.email));
+       
+       return {
+         ...p,
+         id: p.id,
+         profile_id: p.id,
+         employee_id: emp?.id || null,
+         nome: p.nome || emp?.full_name || "",
+         email: p.email || emp?.email || "",
+         cargo: p.cargo || emp?.job_title || "",
+         cpf: p.cpf || emp?.document_cpf || "",
+         rg: p.rg || emp?.document_rg || "",
+         telefone: p.telefone || emp?.phone || "",
+         data_nascimento: p.data_nascimento || emp?.birth_date || "",
+         data_admissao: p.data_admissao || emp?.admission_date || "",
+         cep: p.cep || emp?.postal_code || "",
+         endereco_residencial: p.endereco_residencial || emp?.residential_address || "",
+         bairro: p.bairro || emp?.neighborhood || "",
+         cidade: p.cidade || emp?.city || "",
+         estado: p.estado || emp?.state || "",
+         department_id: p.department_id || emp?.department_id || "",
+         foto_url: p.foto_url || emp?.photo_url || null,
+         user_roles: p.user_roles || [],
+         status: emp?.status || (p.ativo ? 'active' : 'inactive'),
+         internal_company_code: emp?.internal_company_code || "",
+         service_code: emp?.service_code || ""
+       };
+     });
      
      setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");

@@ -11,15 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
-   import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
-   async function clearAll() {
-     if (!confirm("AVISO CRÍTICO: Isso irá excluir TODAS as obras cadastradas. Deseja continuar?")) return;
-     const { error } = await supabase.from("obras").delete().neq("id", "00000000-0000-0000-0000-000000000000" as any); // Delete all
-     if (error) return toast.error(error.message);
-     toast.success("Todas as obras foram removidas");
-     load();
-   }
-
+    import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
  import { useAuth } from "@/lib/auth";
  import { cepService } from "@/services";
  import * as XLSX from 'xlsx';
@@ -45,6 +37,14 @@ export default function Obras() {
      endereco: ""
    });
    const [searchingCep, setSearchingCep] = useState(false);
+
+   async function clearAll() {
+     if (!confirm("AVISO CRÍTICO: Isso irá excluir TODAS as obras cadastradas. Deseja continuar?")) return;
+     const { error } = await supabase.from("obras").delete().neq("id", "00000000-0000-0000-0000-000000000000" as any);
+     if (error) return toast.error(error.message);
+     toast.success("Todas as obras foram removidas");
+     load();
+   }
 
    async function handleCepSearch() {
      const cep = form.cep?.replace(/\D/g, "");

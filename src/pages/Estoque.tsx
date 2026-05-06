@@ -198,6 +198,15 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
      }
    }
 
+   async function loadAll() {
+     setLoading(true);
+     await Promise.all([
+       loadMaterials(), 
+       loadMovements(), 
+       loadWarehouses(), 
+       loadReservations(), 
+       loadAlerts(),
+       loadWaitingReleaseOS(),
        supabase.from("obras").select("id, numero, nome").eq("ativo", true).then(({data}) => setAllObras(data ?? [])),
        supabase.from("equipes").select("id, nome").eq("ativo", true).then(({data}) => setAllEquipes(data ?? []))
      ]);

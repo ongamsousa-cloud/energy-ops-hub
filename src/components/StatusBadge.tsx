@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
     material_liberado: { label: "Material Liberado", class: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
     aguardando_confirmacao_retirada: { label: "Aguard. Retirada", class: "bg-indigo-400/10 text-indigo-500 border-indigo-400/20" },
    pronta_para_execucao: { label: "Pronta Execução", class: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20" },
-   iniciada: { label: "Iniciada", class: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
+    iniciada: { label: "OS Lançada", class: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
    em_deslocamento: { label: "Em Deslocamento", class: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" },
    chegou_ao_local: { label: "No Local", class: "bg-violet-500/10 text-violet-600 border-violet-500/20" },
    em_execucao: { label: "Em Execução", class: "bg-blue-600/10 text-blue-700 border-blue-600/20" },

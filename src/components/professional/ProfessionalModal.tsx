@@ -173,7 +173,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="p-6 pb-2 border-b bg-muted/30">
+         <DialogHeader className="p-[20px] pb-2 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
             {professional ? "Perfil do Funcionário" : "Cadastrar Novo Funcionário"}

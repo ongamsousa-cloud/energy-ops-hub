@@ -5,6 +5,7 @@ import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ROLE_LABEL, AppRole } from "@/lib/auth";
+import { notificationService } from "@/services";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 
@@ -54,6 +55,12 @@ export default function AprovacoesUsuarios() {
     if (dept?.id) updates.department_id = dept.id;
     const { error } = await supabase.from("profiles").update(updates).eq("id", id);
     if (error) { toast.error(error.message); return; }
+    await notificationService.criarNotificacao({
+      user_id: id,
+      title: "Conta aprovada",
+      message: "Seu cadastro foi liberado pelo administrador. Você já pode acessar o sistema.",
+      type: "success"
+    });
     toast.success("Usuário aprovado");
     load();
   }

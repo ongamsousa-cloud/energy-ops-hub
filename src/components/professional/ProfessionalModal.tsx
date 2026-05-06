@@ -82,12 +82,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cpf: professional.cpf || "",
           rg: professional.rg || "",
           telefone: professional.telefone || "",
-          data_nascimento: professional.data_nascimento || "",
-          endereco_residencial: professional.endereco_residencial || "",
-          bairro: professional.bairro || "",
-          cidade: professional.cidade || "",
-          estado: professional.estado || "",
-          cep: professional.cep || "",
+            data_nascimento: professional.birth_date || professional.data_nascimento || "",
+            endereco_residencial: professional.residential_address || professional.endereco_residencial || "",
+            bairro: professional.neighborhood || professional.bairro || "",
+            cidade: professional.city || professional.cidade || "",
+            estado: professional.state || professional.estado || "",
+            cep: professional.postal_code || professional.cep || "",
           data_admissao: professional.data_admissao || "",
           department_id: professional.department_id || "",
           role: (professional.user_roles?.[0]?.role as AppRole) || "campo",
@@ -104,7 +104,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           can_view_financial_data: professional.can_view_financial_data ?? false,
            can_view_reports: professional.can_view_reports ?? false,
            notes: professional.notes || "",
-           admission_date: professional.admission_date || professional.data_admissao || "",
+            admission_date: professional.admission_date || professional.data_admissao || "",
            termination_date: professional.termination_date || "",
            password: "",
          });
@@ -290,8 +290,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         </DialogHeader>
 
          <ScrollArea className="flex-1 overflow-y-auto">
-           <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
-             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r border-border pr-8">
+            <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+              <div className="md:col-span-3 flex flex-col items-center gap-4 border-b md:border-b-0 md:border-r border-border pb-8 md:pb-0 md:pr-8">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
                   <AvatarImage src={photoPreview || ""} />

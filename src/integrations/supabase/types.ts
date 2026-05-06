@@ -2004,7 +2004,10 @@ export type Database = {
           lida: boolean
           link: string | null
           mensagem: string | null
+          read_at: string | null
+          service_order_id: string | null
           titulo: string
+          type: string | null
           user_id: string
         }
         Insert: {
@@ -2013,7 +2016,10 @@ export type Database = {
           lida?: boolean
           link?: string | null
           mensagem?: string | null
+          read_at?: string | null
+          service_order_id?: string | null
           titulo: string
+          type?: string | null
           user_id: string
         }
         Update: {
@@ -2022,10 +2028,21 @@ export type Database = {
           lida?: boolean
           link?: string | null
           mensagem?: string | null
+          read_at?: string | null
+          service_order_id?: string | null
           titulo?: string
+          type?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

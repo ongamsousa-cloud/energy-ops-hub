@@ -618,7 +618,7 @@ export default function OSDetalhe() {
       }
 
       try {
-        await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+        await osService.updateStatus(os.id, newStatus, user!.id, { comentario: "Mudança manual de status via fluxo operacional" });
         
         // Handle task automation based on status
         if (newStatus === 'aguardando_aprovacao_departamento') {
@@ -648,16 +648,16 @@ export default function OSDetalhe() {
        <PageHeader
          title={
            <div className="flex flex-col gap-0.5">
-             <div className="flex items-center gap-2">
-               <span className="text-primary font-mono font-black">OS {os.numero}</span>
-               <StatusBadge status={os.operational_status || os.status} />
-             </div>
+              <div className="flex items-center gap-2">
+                <span className="text-primary font-mono font-black">{os.titulo || `OS ${os.numero}`}</span>
+                <StatusBadge status={os.operational_status || os.status} />
+              </div>
              <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
                  PROJETO: {os.obra?.numero || "S/N"}
                </Badge>
                <span className="opacity-50">|</span>
-               <span className="font-medium">{os.obra?.nome}</span>
+                <span className="font-medium">{os.titulo ? `${os.numero} - ${os.obra?.nome}` : os.obra?.nome}</span>
              </div>
            </div>
          }

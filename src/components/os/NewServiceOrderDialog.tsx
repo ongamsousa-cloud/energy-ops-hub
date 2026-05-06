@@ -320,34 +320,51 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl">
-         <DialogHeader className="p-8 pb-6 bg-primary text-primary-foreground relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-             <ClipboardList className="h-32 w-32" />
-           </div>
-           <div className="relative z-10">
-             <DialogTitle className="text-2xl font-bold mb-1">Nova Ordem de Serviço</DialogTitle>
-             <DialogDescription className="text-primary-foreground/80">
-               Siga os passos para criar uma nova solicitação de trabalho.
-             </DialogDescription>
-           </div>
-           
-           {/* Stepper Visual */}
-           <div className="flex items-center gap-2 mt-6 relative z-10">
-             {[1, 2, 3, 4, 5].map((s) => (
-               <div key={s} className="flex items-center gap-2">
-                 <div className={cn(
-                   "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
-                   step === s ? "bg-white text-primary scale-110 shadow-lg" : 
-                   step > s ? "bg-primary-foreground/40 text-primary-foreground" : "bg-primary-foreground/10 text-primary-foreground/40"
-                 )}>
-                   {step > s ? <CheckCircle2 className="h-5 w-5" /> : s}
-                 </div>
-                 {s < 5 && <div className={cn("h-0.5 w-6 rounded-full", step > s ? "bg-primary-foreground/40" : "bg-primary-foreground/10")} />}
-               </div>
-             ))}
-           </div>
-         </DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="p-0 relative overflow-hidden border-b">
+            <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 pb-10 text-primary-foreground relative">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">
+                <ClipboardList className="h-48 w-48" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <DialogTitle className="text-3xl font-extrabold tracking-tight">Nova Ordem de Serviço</DialogTitle>
+                </div>
+                <DialogDescription className="text-primary-foreground/90 text-base font-medium max-w-lg">
+                  Preencha as informações abaixo para registrar uma nova solicitação operacional.
+                </DialogDescription>
+              </div>
+              
+              {/* Stepper Visual Modernizado */}
+              <div className="flex items-center justify-between max-w-2xl mt-10 relative z-10 px-4">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <div key={s} className="flex flex-col items-center gap-2 relative">
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 border-2 shadow-inner",
+                      step === s ? "bg-white text-primary border-white scale-125 shadow-[0_0_20px_rgba(255,255,255,0.4)]" : 
+                      step > s ? "bg-emerald-500 text-white border-emerald-500" : "bg-primary/20 text-white/40 border-white/10"
+                    )}>
+                      {step > s ? <CheckCircle2 className="h-6 w-6" /> : s}
+                    </div>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest absolute -bottom-6 whitespace-nowrap transition-colors",
+                      step === s ? "text-white" : "text-white/40"
+                    )}>
+                      {s === 1 ? "Dados" : s === 2 ? "Agendamento" : s === 3 ? "Serviços" : s === 4 ? "Materiais" : "Resumo"}
+                    </span>
+                    {s < 5 && (
+                      <div className="absolute left-[calc(100%+8px)] top-5 w-[calc(100%-8px)] h-[2px] pointer-events-none">
+                        <div className={cn("h-full w-full rounded-full transition-all duration-500", step > s ? "bg-emerald-500" : "bg-white/10")} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DialogHeader>
          
          <div className="flex-1 overflow-y-auto p-8 bg-background">
            {step === 1 && (

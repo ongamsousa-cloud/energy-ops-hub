@@ -29,51 +29,56 @@ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pen
    const [search, setSearch] = useState("");
    const [modalOpen, setModalOpen] = useState(false);
    const [selectedProf, setSelectedProf] = useState<any>(null);
-   async function load() {
-     const { data: profiles } = await supabase
-       .from("profiles")
-       .select("*, user_roles(role), departments(id, name)")
-       .order("nome");
+    async function load() {
+      try {
+        const [{ data: profiles }, { data: roles }, { data: depts }, { data: employees }] = await Promise.all([
+          supabase.from("profiles").select("*").order("nome"),
+          supabase.from("user_roles").select("*"),
+          supabase.from("departments").select("id, name, active").order("name"),
+          supabase.from("employees").select("*")
+        ]);
 
-     const { data: employees } = await supabase
-       .from("employees")
-       .select("*, departments(id, name)");
+        setDepartments((depts ?? []).filter(d => d.active));
 
-     // Base the list on profiles, and join employee data if available
-     const combined = (profiles ?? []).map(p => {
-       const emp = (employees ?? []).find(e => e.user_id === p.id || (e.email && e.email === p.email));
-       
-       return {
-         ...p,
-         id: p.id,
-         profile_id: p.id,
-         employee_id: emp?.id || null,
-         nome: p.nome || emp?.full_name || "",
-         email: p.email || emp?.email || "",
-         cargo: p.cargo || emp?.job_title || "",
-         cpf: p.cpf || emp?.document_cpf || "",
-         rg: p.rg || emp?.document_rg || "",
-         telefone: p.telefone || emp?.phone || "",
-         data_nascimento: p.data_nascimento || emp?.birth_date || "",
-         data_admissao: p.data_admissao || emp?.admission_date || "",
-         cep: p.cep || emp?.postal_code || "",
-         endereco_residencial: p.endereco_residencial || emp?.residential_address || "",
-         bairro: p.bairro || emp?.neighborhood || "",
-         cidade: p.cidade || emp?.city || "",
-         estado: p.estado || emp?.state || "",
-         department_id: p.department_id || emp?.department_id || "",
-         foto_url: p.foto_url || emp?.photo_url || null,
-         user_roles: p.user_roles || [],
-         status: emp?.status || (p.ativo ? 'active' : 'inactive'),
-         internal_company_code: emp?.internal_company_code || "",
-         service_code: emp?.service_code || ""
-       };
-     });
-     
-     setRows(combined);
-    const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");
-    setDepartments(depts ?? []);
-  }
+        const combined = (profiles ?? []).map(p => {
+          const emp = (employees ?? []).find(e => e.user_id === p.id || (e.email && e.email === p.email));
+          const userRoles = (roles ?? []).filter(r => r.user_id === p.id);
+          const dept = (depts ?? []).find(d => d.id === (p.department_id || emp?.department_id));
+          
+          return {
+            ...p,
+            id: p.id,
+            profile_id: p.id,
+            employee_id: emp?.id || null,
+            nome: p.nome || emp?.full_name || "",
+            email: p.email || emp?.email || "",
+            cargo: p.cargo || emp?.job_title || "",
+            cpf: p.cpf || emp?.document_cpf || "",
+            rg: p.rg || emp?.document_rg || "",
+            telefone: p.telefone || emp?.phone || "",
+            data_nascimento: p.data_nascimento || emp?.birth_date || "",
+            data_admissao: p.data_admissao || emp?.admission_date || "",
+            cep: p.cep || emp?.postal_code || "",
+            endereco_residencial: p.endereco_residencial || emp?.residential_address || "",
+            bairro: p.bairro || emp?.neighborhood || "",
+            cidade: p.cidade || emp?.city || "",
+            estado: p.estado || emp?.state || "",
+            department_id: p.department_id || emp?.department_id || "",
+            departments: dept ? { id: dept.id, name: dept.name } : null,
+            foto_url: p.foto_url || emp?.photo_url || null,
+            user_roles: userRoles,
+            status: emp?.status || (p.ativo ? 'active' : 'inactive'),
+            internal_company_code: emp?.internal_company_code || "",
+            service_code: emp?.service_code || ""
+          };
+        });
+        
+        setRows(combined);
+      } catch (err: any) {
+        console.error("Erro ao carregar dados:", err);
+        toast.error("Erro ao carregar dados do sistema");
+      }
+    }
   useEffect(() => { load(); }, []);
    async function setRole(uid: string, role: AppRole) {
      const { error: deleteError } = await supabase.from("user_roles").delete().eq("user_id", uid);

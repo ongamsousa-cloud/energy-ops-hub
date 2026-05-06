@@ -453,41 +453,32 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      </Select>
                    </div>
 
-                   <div className="space-y-3 pt-4 border-t border-border">
-                     <Label className="text-xs font-semibold uppercase text-muted-foreground">Identificação Profissional</Label>
-                     <div className="space-y-4">
-                       <div className="space-y-1.5">
-                         <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                         <Input 
-                           className="h-10 text-sm font-mono" 
-                           placeholder="FUNC-0000" 
-                           value={form.internal_company_code} 
-                           onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
-                         />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-xs font-medium">Cód. Serviço</Label>
-                         <Input 
-                           className="h-10 text-sm font-mono" 
-                           placeholder="TEC-000" 
-                           value={form.service_code} 
-                           onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
-                         />
-                       </div>
-                     </div>
+                   <div className="space-y-4 pt-4 border-t border-border">
+                      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                        <p className="text-[10px] uppercase font-bold text-primary mb-2">Resumo Operacional</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Empresa</span>
+                            <span className="text-sm font-mono font-bold">{form.internal_company_code || '---'}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Serviço</span>
+                            <span className="text-sm font-mono font-bold text-primary">{form.service_code || '---'}</span>
+                          </div>
+                        </div>
+                      </div>
                    </div>
                  </div>
             </div>
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
-                  <TabsTrigger value="geral">Pessoal</TabsTrigger>
-                  <TabsTrigger value="profissional">Profissional</TabsTrigger>
-                  <TabsTrigger value="operacional">Operacional</TabsTrigger>
-                  <TabsTrigger value="permissoes">Acesso</TabsTrigger>
-                  <TabsTrigger value="config_acesso">Senha</TabsTrigger>
-                  <TabsTrigger value="historico">Histórico</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
+                   <TabsTrigger value="geral">Dados Pessoais</TabsTrigger>
+                   <TabsTrigger value="profissional">Contrato & RH</TabsTrigger>
+                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
+                   <TabsTrigger value="permissoes">Acessos & Permissões</TabsTrigger>
+                   <TabsTrigger value="historico">Logs</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
@@ -664,11 +655,72 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                   </div>
                 </TabsContent>
 
-                <TabsContent value="config_acesso" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
-                   <div className="space-y-2">
-                      <Label>Senha Provisória</Label>
-                      <Input type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder="***" />
-                   </div>
+                <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-bold flex items-center gap-2 text-primary"><Shield className="h-4 w-4" /> Controle de Acesso</h4>
+                      <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label>Habilitar Login</Label>
+                            <p className="text-[10px] text-muted-foreground">Permitir que este funcionário acesse o sistema</p>
+                          </div>
+                          <Switch checked={form.can_access_system} onCheckedChange={(v) => setForm({...form, can_access_system: v})} />
+                        </div>
+                        
+                        {form.can_access_system && (
+                          <div className="space-y-3 pt-3 border-t">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Perfil do Usuário</Label>
+                              <Select value={form.role} onValueChange={(v) => setForm({...form, role: v as AppRole})}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">{targetUserId ? "Resetar Senha" : "Senha Provisória"}</Label>
+                              <div className="relative">
+                                <Input 
+                                  type={showPassword ? "text" : "password"} 
+                                  value={form.password} 
+                                  onChange={(e) => setForm({...form, password: e.target.value})} 
+                                  placeholder={targetUserId ? "Deixe em branco para manter" : "Mudar@123"} 
+                                />
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="absolute right-0 top-0 h-full px-3" 
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-bold flex items-center gap-2 text-primary"><Settings className="h-4 w-4" /> Permissões Específicas</h4>
+                      <div className="grid grid-cols-1 gap-3">
+                        {[
+                          { id: 'can_receive_service_orders', label: 'Receber Ordens de Serviço' },
+                          { id: 'can_manage_materials', label: 'Gestão de Materiais / Estoque' },
+                          { id: 'can_close_service_orders', label: 'Encerrar Ordens de Serviço' },
+                          { id: 'can_view_financial_data', label: 'Acesso a Dados Financeiros' },
+                          { id: 'can_view_reports', label: 'Visualizar Relatórios Gerenciais' }
+                        ].map(p => (
+                          <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <Label className="text-xs" htmlFor={p.id}>{p.label}</Label>
+                            <Switch id={p.id} checked={(form as any)[p.id]} onCheckedChange={(v) => setForm({...form, [p.id]: v})} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="historico" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">

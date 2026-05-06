@@ -8,30 +8,50 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Building2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+ import { Plus, Pencil, Trash2, Building2, User } from "lucide-react";
+ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Departamentos() {
   const [deps, setDeps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingDep, setEditingDep] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", active: true });
+   const [editingDep, setEditingDep] = useState<any>(null);
+   const [managers, setManagers] = useState<any[]>([]);
+   const [formData, setFormData] = useState({ 
+     name: "", 
+     description: "", 
+     active: true,
+     manager_id: "" 
+   });
 
-  const fetchDeps = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("departments")
-      .select("*")
-      .order("name");
-    if (error) toast.error(error.message);
-    else setDeps(data || []);
-    setLoading(false);
-  };
+   const fetchDeps = async () => {
+     setLoading(true);
+     const { data, error } = await supabase
+       .from("departments")
+       .select(`
+         *,
+         manager:profiles(nome)
+       `)
+       .order("name");
+     if (error) toast.error(error.message);
+     else setDeps(data || []);
+     setLoading(false);
+   };
 
-  useEffect(() => {
-    fetchDeps();
-  }, []);
+   const fetchManagers = async () => {
+     const { data, error } = await supabase
+       .from("profiles")
+       .select("id, nome")
+       .in("role", ["admin", "gestor", "developer"])
+       .order("nome");
+     if (!error) setManagers(data || []);
+   };
+
+   useEffect(() => {
+     fetchDeps();
+     fetchManagers();
+   }, []);
 
   const handleSave = async () => {
     if (!formData.name) return toast.error("Nome é obrigatório");
@@ -58,17 +78,22 @@ export default function Departamentos() {
     }
   };
 
-  const openEdit = (dep: any) => {
-    setEditingDep(dep);
-    setFormData({ name: dep.name, description: dep.description || "", active: dep.active });
-    setModalOpen(true);
-  };
+   const openEdit = (dep: any) => {
+     setEditingDep(dep);
+     setFormData({ 
+       name: dep.name, 
+       description: dep.description || "", 
+       active: dep.active,
+       manager_id: dep.manager_id || ""
+     });
+     setModalOpen(true);
+   };
 
-  const openNew = () => {
-    setEditingDep(null);
-    setFormData({ name: "", description: "", active: true });
-    setModalOpen(true);
-  };
+   const openNew = () => {
+     setEditingDep(null);
+     setFormData({ name: "", description: "", active: true, manager_id: "" });
+     setModalOpen(true);
+   };
 
   return (
     <div className="space-y-6">
@@ -87,10 +112,18 @@ export default function Departamentos() {
           <Card key={dep.id} className="p-4 flex flex-col justify-between">
             <div>
               <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">{dep.name}</h3>
-                </div>
+                 <div className="flex flex-col gap-1">
+                   <div className="flex items-center gap-2">
+                     <Building2 className="h-5 w-5 text-primary" />
+                     <h3 className="font-semibold">{dep.name}</h3>
+                   </div>
+                   {dep.manager?.nome && (
+                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                       <User className="h-3 w-3" />
+                       <span>Gestor: {dep.manager.nome}</span>
+                     </div>
+                   )}
+                 </div>
                 <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${dep.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                   {dep.active ? 'Ativo' : 'Inativo'}
                 </div>
@@ -122,14 +155,31 @@ export default function Departamentos() {
                 placeholder="Ex: Engenharia de Campo"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Descrição</Label>
-              <Textarea 
-                value={formData.description} 
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
-                placeholder="Descreva as responsabilidades deste setor"
-              />
-            </div>
+             <div className="space-y-2">
+               <Label>Gestor Responsável</Label>
+               <Select 
+                 value={formData.manager_id} 
+                 onValueChange={(v) => setFormData({ ...formData, manager_id: v })}
+               >
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione um gestor" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="none">Sem gestor</SelectItem>
+                   {managers.map((m) => (
+                     <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             </div>
+             <div className="space-y-2">
+               <Label>Descrição</Label>
+               <Textarea 
+                 value={formData.description} 
+                 onChange={(e) => setFormData({ ...formData, description: e.target.value })} 
+                 placeholder="Descreva as responsabilidades deste setor"
+               />
+             </div>
             <div className="flex items-center gap-2">
               <Switch 
                 checked={formData.active} 

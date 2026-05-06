@@ -75,9 +75,12 @@ export default function OSDetalhe() {
 
   const isOwner = os && user && (os.profissional_id === user.id || os.created_by === user.id);
   const isFromDept = os && profile && os.department_id === profile.department_id;
-   const canApprove = hasRole(["admin","gestor","supervisor"]);
-   const isGestor = hasRole(["admin", "gestor"]);
-    const canEdit = (isOwner || isGestor || isFromDept) && ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
+    const isSystemAdmin = hasRole(["admin", "developer"]);
+    const isDeptManager = hasRole(["gestor"]) && os?.department_id === profile?.department_id;
+    const canApprove = isSystemAdmin || isDeptManager || hasRole(["supervisor"]);
+    const isGestor = isSystemAdmin || isDeptManager;
+    const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
+                   ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -117,11 +120,32 @@ export default function OSDetalhe() {
      load();
      supabase.from("categorias").select("*").eq("ativo", true).order("ordem").then(({ data }) => setCats(data ?? []));
      supabase.from("execution_codes").select("*").eq("active", true).order("code").then(({ data }) => setCodes(data ?? []));
-     supabase.from("equipes").select("*").order("nome").then(({ data }) => setEquipes(data ?? []));
-     supabase.from("profiles").select("id, nome").order("nome").then(({ data }) => setProfs(data ?? []));
+     
+     // Carregar equipes filtradas pelo departamento da OS se o usuário for gestor do departamento
+     const fetchEquipes = async () => {
+       let query = supabase.from("equipes").select("*").order("nome");
+       if (isDeptManager && os?.department_id) {
+         query = query.eq("department_id", os.department_id);
+       }
+       const { data } = await query;
+       setEquipes(data ?? []);
+     };
+
+     // Carregar profissionais filtrados
+     const fetchProfs = async () => {
+       let query = supabase.from("profiles").select("id, nome").order("nome");
+       if (isDeptManager && os?.department_id) {
+         query = query.eq("department_id", os.department_id);
+       }
+       const { data } = await query;
+       setProfs(data ?? []);
+     };
+
+     fetchEquipes();
+     fetchProfs();
      supabase.from("departments").select("id, name").eq("active", true).order("name").then(({ data }) => setDeps(data ?? []));
      getEvidenceRules().then(setEvRules);
-   }, [load]);
+   }, [load, os?.department_id, isDeptManager]);
 
   useEffect(() => {
     if (!evRules) return;

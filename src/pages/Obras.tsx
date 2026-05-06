@@ -248,9 +248,9 @@ export default function Obras() {
               <Button variant="outline" size="sm" onClick={() => document.getElementById('import-obras')?.click()} title="Importar de CSV ou Excel">
                 <Upload className="mr-1 h-3.5 w-3.5" /> Importar
               </Button>
-              <Button variant="destructive" size="sm" onClick={clearAll} title="Limpar todas as obras">
-                <Trash className="h-3.5 w-3.5" />
-              </Button>
+               <Button variant="destructive" size="sm" onClick={clearAll} title="Limpar todas as obras" className="gap-2">
+                 <Trash className="h-3.5 w-3.5" /> Limpar Tabela
+               </Button>
              <Dialog open={open} onOpenChange={(val) => {
                setOpen(val);
                if (!val) {

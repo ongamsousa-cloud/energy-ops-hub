@@ -573,7 +573,7 @@ export default function OSDetalhe() {
     load();
   }
 
-   const nextPossibleStatuses = OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || [];
+    const nextPossibleStatuses = (OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || []) as OSStatus[];
 
    async function handleStatusTransition(newStatus: OSStatus) {
      setBusy(true);

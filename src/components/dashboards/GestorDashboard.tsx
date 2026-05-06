@@ -40,7 +40,7 @@ export default function GestorDashboard({ stats, byStatus, umdHistory = [] }: Ge
           .order("fim_em"),
         supabase
           .from("ordens_servico")
-          .select("status")
+          .select("operational_status, status")
           .gte("created_at", period.start.toISOString())
           .lte("created_at", period.end.toISOString()),
       ]);
@@ -53,7 +53,8 @@ export default function GestorDashboard({ stats, byStatus, umdHistory = [] }: Ge
       setPeriodHistory(Object.entries(h).map(([date, umd]) => ({ date, umd })));
       const s: Record<string, number> = {};
       (stat.data ?? []).forEach((r: any) => {
-        s[r.status] = (s[r.status] ?? 0) + 1;
+        const status = r.operational_status || r.status;
+        s[status] = (s[status] ?? 0) + 1;
       });
       setPeriodStatus(Object.entries(s).map(([status, n]) => ({ status: status.replace(/_/g, " "), n })));
     })();

@@ -19,9 +19,9 @@
    useEffect(() => {
      const isSupervisor = hasRole("supervisor") && !hasRole(["admin", "gestor"]);
      
-     let query = supabase.from("ordens_servico")
-       .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
-       .in("status", ["aguardando_revisao","corrigida","em_revisao"]);
+      let query = supabase.from("ordens_servico")
+        .select("*, obra:obras(numero,nome), profissional:profiles!ordens_servico_profissional_id_fkey(nome)")
+        .or(`operational_status.in.(aguardando_validacao_supervisor,corrigida),status.in.(aguardando_revisao,corrigida)`);
  
      if (isSupervisor) {
        query = query.eq("assigned_supervisor_id", user?.id);
@@ -43,7 +43,7 @@
      return {
        total: rows.length,
        urgent: rows.filter(r => r.prioridade === 'alta' || r.prioridade === 'urgente').length,
-       waiting: rows.filter(r => r.status === 'aguardando_revisao').length
+        waiting: rows.filter(r => (r.operational_status || r.status) === 'aguardando_validacao_supervisor' || (r.operational_status || r.status) === 'aguardando_revisao').length
      };
    }, [rows]);
  
@@ -107,7 +107,7 @@
                        <div className="flex items-center gap-2">
                          <span className="font-mono text-sm font-bold text-primary">{r.numero}</span>
                          <Badge variant="outline" className="text-[10px] uppercase">{r.prioridade || 'MÉDIA'}</Badge>
-                         <StatusBadge status={r.status}/>
+                          <StatusBadge status={r.operational_status || r.status}/>
                        </div>
                        <h3 className="font-semibold">{r.obra?.nome}</h3>
                        <p className="text-sm text-muted-foreground">Executado por: <span className="text-foreground font-medium">{r.profissional?.nome}</span></p>

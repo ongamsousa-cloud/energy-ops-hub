@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+ import { useEffect, useMemo, useState } from "react";
+ import { useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { cn } from "@/lib/utils";
+ import EmptyState from "@/components/EmptyState";
 import {
    Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
     TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2, X,
@@ -54,9 +55,10 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const canWrite = hasRole(["admin","gestor","supervisor","estoque"]);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<any[]>([]);
-  const [movements, setMovements] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
-  const [reservations, setReservations] = useState<any[]>([]);
+    const [movements, setMovements] = useState<any[]>([]);
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [reservations, setReservations] = useState<any[]>([]);
+    const [waitingReleaseOS, setWaitingReleaseOS] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
    const [search, setSearch] = useState("");
    const [osFilter, setOsFilter] = useState("all");
@@ -77,80 +79,44 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
    });
 
    useEffect(() => { loadAll(); }, []);
- 
-  async function deleteMaterial(id: string) {
-    if (!confirm("Tem certeza que deseja desativar este material?")) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
-      if (error) throw error;
-      toast.success("Material desativado");
-      loadMaterials();
-    } catch (e: any) {
-      toast.error("Erro ao desativar: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  async function deleteWarehouse(id: string) {
-    if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
-    setLoading(true);
-    try {
-      const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
-      if (err) throw err;
-      toast.success("Almoxarifado desativado");
-      loadWarehouses();
-    } catch (e: any) {
-      toast.error("Erro ao desativar: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+   async function loadWaitingReleaseOS() {
+     const { data } = await supabase.from("ordens_servico")
+       .select("*, obra:obras(numero, nome), materials:os_materials(*, materials(name, code, unit))")
+       .eq("operational_status", "aguardando_liberacao_estoque")
+       .order("created_at", { ascending: true });
+     setWaitingReleaseOS(data ?? []);
+   }
 
-  useEffect(() => {
-    const ch = supabase.channel("stock-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => {
-        loadMovements();
-        loadMaterials();
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stock_alerts" }, (payload) => {
-        toast.error(`ALERTA DE ESTOQUE: ${payload.new.message}`, {
-          duration: 5000,
-          icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
-        });
-        loadAlerts();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_levels" }, () => loadMaterials())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
-  function exportMovementsToCSV() {
-    if (filteredMovements.length === 0) return toast.info("Nenhuma movimentação para exportar");
-    
-    const headers = ["Data", "Tipo", "Material", "Qtd", "Unidade", "De", "Para", "Responsável", "OS", "Notas"];
-    const rows = filteredMovements.map(m => [
-      format(new Date(m.created_at), "dd/MM/yyyy HH:mm"),
-      TYPE_LABEL[m.type],
-      m.materials?.name,
-      m.quantity,
-      m.materials?.unit,
-      m.from_wh?.name || "-",
-      m.to_wh?.name || "-",
-      m.creator?.nome || "-",
-      m.ordens_servico?.numero || "-",
-      m.notes || "-"
-    ]);
+   async function releaseMaterials(osId: string) {
+     setLoading(true);
+     try {
+       const { error } = await supabase.from("ordens_servico").update({
+         operational_status: "material_liberado"
+       }).eq("id", osId);
+       
+       if (error) throw error;
 
-    const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `movimentacoes_estoque_${format(new Date(), "yyyyMMdd")}.csv`;
-    link.click();
-    toast.success("Relatório exportado com sucesso");
-  }
+       const { data: { user } } = await supabase.auth.getUser();
 
+       // Log in audit
+       await (supabase.from("os_audit_logs") as any).insert({
+         os_id: osId,
+         user_id: user?.id,
+         action: 'status_change',
+         old_value: 'aguardando_liberacao_estoque',
+         new_value: 'material_liberado',
+         details: { message: 'Materiais liberados pelo almoxarifado' }
+       });
+
+       toast.success("Materiais liberados com sucesso!");
+       loadWaitingReleaseOS();
+     } catch (err: any) {
+       toast.error("Erro ao liberar materiais: " + err.message);
+     } finally {
+       setLoading(false);
+     }
+   }
 
    async function loadAll() {
      setLoading(true);
@@ -160,10 +126,85 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        loadWarehouses(), 
        loadReservations(), 
        loadAlerts(),
+       loadWaitingReleaseOS(),
        supabase.from("obras").select("id, numero, nome").eq("ativo", true).then(({data}) => setAllObras(data ?? [])),
        supabase.from("equipes").select("id, nome").eq("ativo", true).then(({data}) => setAllEquipes(data ?? []))
      ]);
      setLoading(false);
+   }
+
+   async function deleteMaterial(id: string) {
+     if (!confirm("Tem certeza que deseja desativar este material?")) return;
+     setLoading(true);
+     try {
+       const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
+       if (error) throw error;
+       toast.success("Material desativado");
+       loadMaterials();
+     } catch (e: any) {
+       toast.error("Erro ao desativar: " + e.message);
+     } finally {
+       setLoading(false);
+     }
+   }
+
+   async function deleteWarehouse(id: string) {
+     if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+     setLoading(true);
+     try {
+       const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
+       if (err) throw err;
+       toast.success("Almoxarifado desativado");
+       loadWarehouses();
+     } catch (e: any) {
+       toast.error("Erro ao desativar: " + e.message);
+     } finally {
+       setLoading(false);
+     }
+   }
+
+   useEffect(() => {
+     const ch = supabase.channel("stock-realtime")
+       .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => {
+         loadMovements();
+         loadMaterials();
+       })
+       .on("postgres_changes", { event: "INSERT", schema: "public", table: "stock_alerts" }, (payload) => {
+         toast.error(`ALERTA DE ESTOQUE: ${payload.new.message}`, {
+           duration: 5000,
+           icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
+         });
+         loadAlerts();
+       })
+       .on("postgres_changes", { event: "*", schema: "public", table: "stock_levels" }, () => loadMaterials())
+       .subscribe();
+     return () => { supabase.removeChannel(ch); };
+   }, []);
+
+   function exportMovementsToCSV() {
+     if (filteredMovements.length === 0) return toast.info("Nenhuma movimentação para exportar");
+     
+     const headers = ["Data", "Tipo", "Material", "Qtd", "Unidade", "De", "Para", "Responsável", "OS", "Notas"];
+     const rows = filteredMovements.map(m => [
+       format(new Date(m.created_at), "dd/MM/yyyy HH:mm"),
+       TYPE_LABEL[m.type],
+       m.materials?.name,
+       m.quantity,
+       m.materials?.unit,
+       m.from_wh?.name || "-",
+       m.to_wh?.name || "-",
+       m.creator?.nome || "-",
+       m.ordens_servico?.numero || "-",
+       m.notes || "-"
+     ]);
+
+     const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
+     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+     const link = document.createElement("a");
+     link.href = URL.createObjectURL(blob);
+     link.download = `movimentacoes_estoque_${format(new Date(), "yyyyMMdd")}.csv`;
+     link.click();
+     toast.success("Relatório exportado com sucesso");
    }
 
   async function loadMaterials() {
@@ -334,7 +375,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
          <TabsList className="flex w-full overflow-x-auto bg-muted/50 p-1 mb-4">
            <TabsTrigger value="overview" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
            <TabsTrigger value="entradas" className="flex-1 min-w-[120px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-           <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberações (OS)</TabsTrigger>
+            <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Pendentes Liberação {waitingReleaseOS.length > 0 && <Badge className="ml-2 scale-75" variant="secondary">{waitingReleaseOS.length}</Badge>}</TabsTrigger>
            <TabsTrigger value="materials" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
            <TabsTrigger value="warehouses" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
            <TabsTrigger value="movements" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
@@ -613,66 +654,64 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
         <TabsContent value="liberacao" className="mt-4 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
             <Card className="p-4 bg-amber-500/5 border-amber-500/10">
-              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Liberado Hoje</div>
-              <div className="text-2xl font-black text-amber-700">{summary.outToday.length}</div>
-              <div className="text-[10px] text-amber-600/70">Saídas para campo</div>
+              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Pendentes de Liberação</div>
+              <div className="text-2xl font-black text-amber-700">{waitingReleaseOS.length}</div>
+              <div className="text-[10px] text-amber-600/70">Aguardando estoque</div>
             </Card>
-            <Card className="p-4 bg-primary/5 border-primary/10">
-              <div className="text-[10px] font-bold text-primary uppercase tracking-widest">OS Atendidas</div>
-              <div className="text-2xl font-black text-primary/80">{new Set(summary.outToday.map(m => m.os_id).filter(Boolean)).size}</div>
-              <div className="text-[10px] text-primary/60">Obras em execução</div>
+            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
+              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Liberado Hoje</div>
+              <div className="text-2xl font-black text-emerald-700">{summary.outToday.length}</div>
+              <div className="text-[10px] text-emerald-600/70">Saídas para campo</div>
             </Card>
           </div>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowUpFromLine className="h-5 w-5 text-amber-500" />
-              <h3 className="text-lg font-bold">Liberação p/ Serviços Externos</h3>
+              <h3 className="text-lg font-bold">Ordens Aguardando Material</h3>
             </div>
-            <Button onClick={() => openMovement("saida")} className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Plus className="h-4 w-4 mr-2" /> Nova Liberação (Saída)
-            </Button>
           </div>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>OS Vinculada</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
-                  <TableHead>Origem</TableHead>
-                  <TableHead>Retirado por</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {movements.filter(m => m.type === "saida").map(m => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
-                    <TableCell>
-                      {m.ordens_servico?.numero ? (
-                        <Badge variant="outline" className="font-mono text-[10px]">OS {m.ordens_servico.numero}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-[10px]">Sem OS</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium text-xs">{m.materials?.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-amber-600 font-bold">-{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.from_wh?.name || "—"}</TableCell>
-                    <TableCell className="text-xs">{m.profiles?.nome || "—"}</TableCell>
-                    <TableCell><Badge className="bg-blue-500/10 text-blue-600 border-none text-[10px]">LIBERADO</Badge></TableCell>
-                  </TableRow>
-                ))}
-                {movements.filter(m => m.type === "saida").length === 0 && (
-                  <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">Nenhuma liberação registrada recentemente.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+
+          {waitingReleaseOS.length === 0 ? (
+            <EmptyState title="Nenhuma OS pendente" description="Não há ordens de serviço aguardando liberação de estoque no momento." />
+          ) : (
+            <div className="grid gap-4">
+              {waitingReleaseOS.map((o) => (
+                <Card key={o.id} className="p-4 border-l-4 border-l-amber-500">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-primary">OS {o.numero}</span>
+                        <Badge variant="outline" className="text-[10px]">{o.prioridade || 'MÉDIA'}</Badge>
+                      </div>
+                      <h4 className="font-semibold text-sm">{o.obra?.nome}</h4>
+                      <div className="text-xs text-muted-foreground">Solicitado em {format(new Date(o.created_at), "dd/MM/yy HH:mm")}</div>
+                      
+                      <div className="mt-3">
+                        <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Materiais Planejados:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {o.materials?.map((m: any) => (
+                            <Badge key={m.id} variant="secondary" className="text-[10px] font-normal">
+                              {m.materials?.name}: {m.quantity_planned} {m.materials?.unit}
+                            </Badge>
+                          ))}
+                          {(!o.materials || o.materials.length === 0) && <span className="text-[10px] text-muted-foreground italic">Nenhum material listado</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button size="sm" onClick={() => releaseMaterials(o.id)} className="bg-amber-600 hover:bg-amber-700">
+                        Liberar Materiais
+                      </Button>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/app/os/${o.id}`}>Ver Detalhes</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="materials" className="space-y-3 mt-4">

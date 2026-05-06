@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+ import { supabase } from "@/integrations/supabase/client";
+ import { osService } from "@/services/osService";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
@@ -17,7 +18,8 @@ import { toast } from "sonner";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
-import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
+ import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
+ import { OS_STATUS_FLOW, type OSStatus } from "@/lib/os-status";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 
@@ -231,11 +233,10 @@ export default function OSDetalhe() {
 
       if (error) throw error;
 
-      const currentStatus = (os.operational_status || os.status || "").toLowerCase();
-      if (["iniciada", "atribuida", "pendente"].includes(currentStatus)) {
+      const currentStatus = (os.operational_status || os.status || "pendente").toLowerCase();
+      if (["pendente", "atribuida", "material_liberado", "pronta_para_execucao", "iniciada"].includes(currentStatus)) {
         await supabase.from("ordens_servico").update({
           operational_status: "em_execucao",
-          status: "em_andamento"
         }).eq("id", id);
       }
 
@@ -349,7 +350,7 @@ export default function OSDetalhe() {
     try {
       const geo = await getGeo();
       const { error } = await supabase.from("ordens_servico").update({
-        status: "aguardando_revisao", 
+        operational_status: "aguardando_validacao_supervisor", 
         fim_em: new Date().toISOString(),
         fim_lat: geo.lat, 
         fim_lng: geo.lng,
@@ -357,8 +358,8 @@ export default function OSDetalhe() {
       
       if (error) throw error;
       
-      await registrarAuditoria("aguardando_revisao", "OS finalizada pelo profissional e enviada para revisão.");
-      toast.success("OS enviada para revisão com sucesso!");
+      await registrarAuditoria("aguardando_validacao_supervisor", "finalizacao_profissional", { message: "OS finalizada pelo profissional e enviada para revisão do supervisor." });
+      toast.success("OS enviada para validação do supervisor!");
       load();
     } catch (err: any) {
       toast.error("Erro ao finalizar OS: " + err.message);
@@ -367,14 +368,15 @@ export default function OSDetalhe() {
     }
   }
 
-    async function registrarAuditoria(statusNovo: string, comentario: string = "") {
+    async function registrarAuditoria(statusNovo: string, action: string = "status_change", details: any = {}) {
       try {
-        const { error } = await supabase.from("os_audit_logs").insert({
+        const { error } = await (supabase.from("os_audit_logs") as any).insert({
           os_id: id,
           user_id: user!.id,
-          status_anterior: os.status,
-          status_novo: statusNovo,
-          comentario: comentario || ""
+          action: action,
+          old_value: os.operational_status || os.status,
+          new_value: statusNovo,
+          details: { ...details, timestamp: new Date().toISOString() }
         });
         if (error) console.error("Erro ao registrar auditoria:", error);
       } catch (err) {
@@ -413,12 +415,10 @@ export default function OSDetalhe() {
 
   async function handleReview() {
     if (!reviewDialog.comment && reviewDialog.type === "reprovar") return toast.error("Motivo é obrigatório");
-    const status = reviewDialog.type === "reprovar" ? "reprovada" : "correcao_solicitada";
-    const update: any = { status };
+    const status = reviewDialog.type === "reprovar" ? "reprovada_auditoria" : "correcao_solicitada";
+    const update: any = { operational_status: status };
     if (reviewDialog.type === "reprovar") {
       update.motivo_reprovacao = reviewDialog.comment;
-      update.aprovado_por = user!.id;
-      update.aprovado_em = new Date().toISOString();
     } else {
       update.observacao_supervisor = reviewDialog.comment;
     }
@@ -426,7 +426,7 @@ export default function OSDetalhe() {
     try {
       const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
       if (error) throw error;
-      await registrarAuditoria(status, reviewDialog.comment);
+      await registrarAuditoria(status, reviewDialog.type === "reprovar" ? "reprovacao" : "solicitacao_correcao", { comment: reviewDialog.comment });
       toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
       setReviewDialog(prev => ({ ...prev, open: false }));
       load();
@@ -573,33 +573,48 @@ export default function OSDetalhe() {
     load();
   }
 
+   const nextPossibleStatuses = OS_STATUS_FLOW[(os?.operational_status || os?.status || 'pendente').toLowerCase() as OSStatus]?.next || [];
+
+   async function handleStatusTransition(newStatus: OSStatus) {
+     setBusy(true);
+     try {
+       await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+       toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
+       load();
+     } catch (err: any) {
+       toast.error("Erro na transição: " + err.message);
+     } finally {
+       setBusy(false);
+     }
+   }
+
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-  return (
-    <div>
-      <PageHeader
-        title={
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center gap-2">
-              <span className="text-primary font-mono font-black">OS {os.numero}</span>
-              <StatusBadge status={os.status} />
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
-              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
-                PROJETO: {os.obra?.numero || "S/N"}
-              </Badge>
-              <span className="opacity-50">|</span>
-              <span className="font-medium">{os.obra?.nome}</span>
-            </div>
-          </div>
-        }
-        actions={
-          <div className="flex items-center gap-2">
-            <StatusBadge status={os.status} />
-            {isGestor && (
-              <Dialog>
-                <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
-                <DialogContent>
+   return (
+     <div className="space-y-6">
+       <PageHeader
+         title={
+           <div className="flex flex-col gap-0.5">
+             <div className="flex items-center gap-2">
+               <span className="text-primary font-mono font-black">OS {os.numero}</span>
+               <StatusBadge status={os.operational_status || os.status} />
+             </div>
+             <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
+               <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
+                 PROJETO: {os.obra?.numero || "S/N"}
+               </Badge>
+               <span className="opacity-50">|</span>
+               <span className="font-medium">{os.obra?.nome}</span>
+             </div>
+           </div>
+         }
+         actions={
+           <div className="flex items-center gap-2">
+             <StatusBadge status={os.operational_status || os.status} />
+             {isGestor && (
+               <Dialog>
+                 <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
+                 <DialogContent>
                   <DialogHeader><DialogTitle>Atribuir Ordem de Serviço</DialogTitle></DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
@@ -631,6 +646,35 @@ export default function OSDetalhe() {
           </div>
         }
       />
+
+       {/* Operational Flow Action Bar */}
+       {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor'])) && (
+         <Card className="p-4 border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-4">
+           <div className="flex items-center gap-3">
+             <div className="p-2 bg-primary/10 rounded-full"><RefreshCw className={cn("h-4 w-4 text-primary", busy && "animate-spin")} /></div>
+             <div>
+               <p className="text-xs font-bold uppercase tracking-widest text-primary/70">Fluxo Operacional</p>
+               <p className="text-[10px] text-muted-foreground">Mova a OS para a próxima etapa do processo</p>
+             </div>
+           </div>
+           <div className="flex flex-wrap gap-2">
+             {nextPossibleStatuses.map((status) => (
+               <Button 
+                 key={status} 
+                 size="sm" 
+                 disabled={busy}
+                 onClick={() => handleStatusTransition(status as OSStatus)}
+                 className={cn(
+                   "text-[10px] font-bold uppercase",
+                   status === 'cancelada' ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary/90"
+                 )}
+               >
+                 {OS_STATUS_FLOW[status as OSStatus].label}
+               </Button>
+             ))}
+           </div>
+         </Card>
+       )}
 
       <div className="mb-4 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 text-xs text-muted-foreground bg-muted/20 p-3 rounded-lg border border-border/50 shadow-inner">
         <span><strong>Setor:</strong> <Badge variant="secondary" className="ml-1 text-[9px] h-4">{os.department?.name || "Geral"}</Badge></span>

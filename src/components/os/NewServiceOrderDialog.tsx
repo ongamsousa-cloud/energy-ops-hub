@@ -83,7 +83,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
        supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
        supabase.from("categorias").select("*").order("nome"),
        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
-       supabase.from("profiles").select("id, nome").eq("ativo", true).in("id", (await supabase.from("user_roles").select("user_id").eq("role", "gestor")).data?.map(r => r.user_id) || []),
+        supabase.from("profiles").select("id, nome").eq("ativo", true).in("id", (await supabase.from("user_roles").select("user_id").in("role", ["gestor", "supervisor"])).data?.map(r => r.user_id) || []),
        supabase.from("equipes").select("id, nome").order("nome"),
        supabase.from("departments").select("id, name, acronym").eq("active", true).order("name")
      ]);
@@ -221,8 +221,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           profissional_id: user!.id,
           assigned_manager_id: formData.gestorId || null,
           equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
-           status: "iniciada" as any,
-           operational_status: "Iniciada" as any,
+            status: "pendente" as any,
+            operational_status: "pendente" as any,
           prioridade: formData.prioridade,
           data_agendada: formData.data_agendada,
           hora_agendada: formData.hora_agendada,

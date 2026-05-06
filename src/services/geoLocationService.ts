@@ -34,21 +34,37 @@ class GeoLocationService {
     });
   }
 
-  async registrarLocalizacaoNaOrdem(serviceOrderId: string, stage: string): Promise<boolean> {
+   async registrarLocalizacaoNaOrdem(osId: string, stage: string): Promise<boolean> {
     const location = await this.capturarLocalizacaoAtual();
     if (!location) return false;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    const { error } = await supabase.from("service_order_history").insert({
-      service_order_id: serviceOrderId,
-      user_id: user.id,
-      action: `Captura de Localização: ${stage}`,
-      details: { accuracy: location.accuracy, stage, latitude: location.latitude, longitude: location.longitude },
-      latitude: location.latitude,
-      longitude: location.longitude
-    });
+     const { error } = await (supabase.from("os_audit_logs") as any).insert({
+       os_id: osId,
+       user_id: user.id,
+       action: `location_capture`,
+       details: { 
+         stage, 
+         accuracy: location.accuracy, 
+         latitude: location.latitude, 
+         longitude: location.longitude 
+       }
+     });
+
+     // Update the OS with the current location if it's start or end
+     if (stage === 'inicio' || stage === 'fim') {
+       const updateData: any = {};
+       if (stage === 'inicio') {
+         updateData.inicio_lat = location.latitude;
+         updateData.inicio_lng = location.longitude;
+       } else {
+         updateData.fim_lat = location.latitude;
+         updateData.fim_lng = location.longitude;
+       }
+       await supabase.from("ordens_servico").update(updateData).eq("id", osId);
+     }
 
     return !error;
   }

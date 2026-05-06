@@ -78,90 +78,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
    });
 
    useEffect(() => { loadAll(); }, []);
- 
-  async function deleteMaterial(id: string) {
-    if (!confirm("Tem certeza que deseja desativar este material?")) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
-      if (error) throw error;
-      toast.success("Material desativado");
-      loadMaterials();
-    } catch (e: any) {
-      toast.error("Erro ao desativar: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  async function deleteWarehouse(id: string) {
-    if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
-    setLoading(true);
-    try {
-      const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
-      if (err) throw err;
-      toast.success("Almoxarifado desativado");
-      loadWarehouses();
-    } catch (e: any) {
-      toast.error("Erro ao desativar: " + e.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    const ch = supabase.channel("stock-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => {
-        loadMovements();
-        loadMaterials();
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "stock_alerts" }, (payload) => {
-        toast.error(`ALERTA DE ESTOQUE: ${payload.new.message}`, {
-          duration: 5000,
-          icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
-        });
-        loadAlerts();
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "stock_levels" }, () => loadMaterials())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, []);
-  function exportMovementsToCSV() {
-    if (filteredMovements.length === 0) return toast.info("Nenhuma movimentação para exportar");
-    
-    const headers = ["Data", "Tipo", "Material", "Qtd", "Unidade", "De", "Para", "Responsável", "OS", "Notas"];
-    const rows = filteredMovements.map(m => [
-      format(new Date(m.created_at), "dd/MM/yyyy HH:mm"),
-      TYPE_LABEL[m.type],
-      m.materials?.name,
-      m.quantity,
-      m.materials?.unit,
-      m.from_wh?.name || "-",
-      m.to_wh?.name || "-",
-      m.creator?.nome || "-",
-      m.ordens_servico?.numero || "-",
-      m.notes || "-"
-    ]);
-
-    const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `movimentacoes_estoque_${format(new Date(), "yyyyMMdd")}.csv`;
-    link.click();
-    toast.success("Relatório exportado com sucesso");
-  }
-
-
-   async function loadAll() {
-     setLoading(true);
-     await Promise.all([
-       loadMaterials(), 
-       loadMovements(), 
-       loadWarehouses(), 
-       loadReservations(), 
-       loadAlerts(),
-       loadWaitingReleaseOS(),
    async function loadWaitingReleaseOS() {
      const { data } = await supabase.from("ordens_servico")
        .select("*, obra:obras(numero, nome), materials:os_materials(*, materials(name, code, unit))")
@@ -179,10 +96,12 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        
        if (error) throw error;
 
+       const { data: { user } } = await supabase.auth.getUser();
+
        // Log in audit
        await (supabase.from("os_audit_logs") as any).insert({
          os_id: osId,
-         user_id: (await supabase.auth.getUser()).data.user?.id,
+         user_id: user?.id,
          action: 'status_change',
          old_value: 'aguardando_liberacao_estoque',
          new_value: 'material_liberado',
@@ -211,6 +130,80 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        supabase.from("equipes").select("id, nome").eq("ativo", true).then(({data}) => setAllEquipes(data ?? []))
      ]);
      setLoading(false);
+   }
+
+   async function deleteMaterial(id: string) {
+     if (!confirm("Tem certeza que deseja desativar este material?")) return;
+     setLoading(true);
+     try {
+       const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
+       if (error) throw error;
+       toast.success("Material desativado");
+       loadMaterials();
+     } catch (e: any) {
+       toast.error("Erro ao desativar: " + e.message);
+     } finally {
+       setLoading(false);
+     }
+   }
+
+   async function deleteWarehouse(id: string) {
+     if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+     setLoading(true);
+     try {
+       const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
+       if (err) throw err;
+       toast.success("Almoxarifado desativado");
+       loadWarehouses();
+     } catch (e: any) {
+       toast.error("Erro ao desativar: " + e.message);
+     } finally {
+       setLoading(false);
+     }
+   }
+
+   useEffect(() => {
+     const ch = supabase.channel("stock-realtime")
+       .on("postgres_changes", { event: "*", schema: "public", table: "stock_movements" }, () => {
+         loadMovements();
+         loadMaterials();
+       })
+       .on("postgres_changes", { event: "INSERT", schema: "public", table: "stock_alerts" }, (payload) => {
+         toast.error(`ALERTA DE ESTOQUE: ${payload.new.message}`, {
+           duration: 5000,
+           icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
+         });
+         loadAlerts();
+       })
+       .on("postgres_changes", { event: "*", schema: "public", table: "stock_levels" }, () => loadMaterials())
+       .subscribe();
+     return () => { supabase.removeChannel(ch); };
+   }, []);
+
+   function exportMovementsToCSV() {
+     if (filteredMovements.length === 0) return toast.info("Nenhuma movimentação para exportar");
+     
+     const headers = ["Data", "Tipo", "Material", "Qtd", "Unidade", "De", "Para", "Responsável", "OS", "Notas"];
+     const rows = filteredMovements.map(m => [
+       format(new Date(m.created_at), "dd/MM/yyyy HH:mm"),
+       TYPE_LABEL[m.type],
+       m.materials?.name,
+       m.quantity,
+       m.materials?.unit,
+       m.from_wh?.name || "-",
+       m.to_wh?.name || "-",
+       m.creator?.nome || "-",
+       m.ordens_servico?.numero || "-",
+       m.notes || "-"
+     ]);
+
+     const csvContent = [headers, ...rows].map(e => e.join(";")).join("\n");
+     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+     const link = document.createElement("a");
+     link.href = URL.createObjectURL(blob);
+     link.download = `movimentacoes_estoque_${format(new Date(), "yyyyMMdd")}.csv`;
+     link.click();
+     toast.success("Relatório exportado com sucesso");
    }
 
   async function loadMaterials() {

@@ -53,9 +53,12 @@ export default function Obras() {
      load();
    }
 
-   async function handleCepSearch() {
-     const cep = form.cep?.replace(/\D/g, "");
-     if (cep?.length !== 8) return toast.error("CEP inválido");
+    async function handleCepSearch(forcedCep?: string) {
+      const cep = (forcedCep || form.cep)?.replace(/\D/g, "");
+      if (cep?.length !== 8) {
+        if (!forcedCep) toast.error("CEP inválido");
+        return;
+      }
      setSearchingCep(true);
      try {
        const data = await cepService.buscarCep(cep);

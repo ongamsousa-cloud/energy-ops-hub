@@ -188,7 +188,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[95vh] p-0 overflow-hidden flex flex-col">
          <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
@@ -200,7 +200,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         </DialogHeader>
 
         <ScrollArea className="flex-1">
-          <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+          <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r pr-6">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
@@ -268,7 +268,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="md:col-span-2 space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />

@@ -470,11 +470,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                       <Label className="text-xs font-medium">Tipo de Funcionário</Label>
                       <Select value={form.employee_type} onValueChange={(v) => setForm({ ...form, employee_type: v })}>
                         <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="internal">Interno / Administrativo</SelectItem>
+                                                <SelectContent>
+                          <SelectItem value="management">Gestor / Gerência</SelectItem>
+                          <SelectItem value="supervisor">Supervisor</SelectItem>
                           <SelectItem value="field_worker">Técnico de Campo</SelectItem>
+                          <SelectItem value="auditor">Auditor</SelectItem>
+                          <SelectItem value="stock">Estoquista / Almoxarifado</SelectItem>
+                          <SelectItem value="admin">Administrativo</SelectItem>
+                          <SelectItem value="finance">Financeiro</SelectItem>
                           <SelectItem value="outsourced">Terceirizado</SelectItem>
-                          <SelectItem value="management">Gestão / Executivo</SelectItem>
+                          <SelectItem value="developer">Desenvolvedor / TI</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

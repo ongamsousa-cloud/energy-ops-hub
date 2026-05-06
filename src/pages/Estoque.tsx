@@ -78,19 +78,35 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
 
    useEffect(() => { loadAll(); }, []);
  
-    async function deleteMaterial(id: string) {
-      if (!confirm("Tem certeza que deseja desativar este material?")) return;
+  async function deleteMaterial(id: string) {
+    if (!confirm("Tem certeza que deseja desativar este material?")) return;
+    setLoading(true);
+    try {
       const { error } = await supabase.from("materials").update({ active: false }).eq("id", id);
-      if (error) toast.error("Erro ao desativar: " + error.message);
-      else { toast.success("Material desativado"); loadMaterials(); }
+      if (error) throw error;
+      toast.success("Material desativado");
+      loadMaterials();
+    } catch (e: any) {
+      toast.error("Erro ao desativar: " + e.message);
+    } finally {
+      setLoading(false);
     }
- 
-    async function deleteWarehouse(id: string) {
-      if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+  }
+
+  async function deleteWarehouse(id: string) {
+    if (!confirm("Tem certeza que deseja desativar este almoxarifado?")) return;
+    setLoading(true);
+    try {
       const { error: err } = await supabase.from("warehouses").update({ active: false }).eq("id", id);
-      if (err) toast.error("Erro ao desativar: " + err.message);
-      else { toast.success("Almoxarifado desativado"); loadWarehouses(); }
+      if (err) throw err;
+      toast.success("Almoxarifado desativado");
+      loadWarehouses();
+    } catch (e: any) {
+      toast.error("Erro ao desativar: " + e.message);
+    } finally {
+      setLoading(false);
     }
+  }
 
   useEffect(() => {
     const ch = supabase.channel("stock-realtime")

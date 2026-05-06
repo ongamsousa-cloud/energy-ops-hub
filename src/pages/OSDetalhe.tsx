@@ -197,44 +197,57 @@ export default function OSDetalhe() {
     });
   }
 
-   async function addItem(activity?: any) {
-     const activityId = activity?.id || form.atividade_id;
-     const categoryId = activity?.categoria_id || form.categoria_id;
-     
-     if (!activityId || !form.quantidade) {
-       if (!form.quantidade) toast.error("Informe a quantidade");
-       else toast.error("Selecione a atividade");
-       return;
-     }
+  async function addItem(activity?: any) {
+    const activityId = activity?.id || form.atividade_id;
+    const categoryId = activity?.categoria_id || form.categoria_id;
 
-     const targetAtv = activity || atvs.find(a => a.id === activityId);
-     const q = Number(form.quantidade);
-     if (!(q > 0)) return toast.error("Quantidade inválida");
-     const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
-
-    const { error } = await supabase.from("os_atividades").insert({
-      os_id: id,
-       atividade_id: activityId,
-       categoria_id: categoryId,
-      quantidade: q,
-       umd_unitaria: targetAtv.umd_unitaria,
-       umd_total: q * Number(targetAtv.umd_unitaria),
-       unidade: targetAtv.unidade,
-      observacao: form.observacao || null,
-      latitude: geo.lat, longitude: geo.lng,
-      created_by: user!.id,
-    });
-    if (error) return toast.error(error.message);
-    if (["iniciada", "atribuida", "pendente"].includes(os.operational_status || os.status)) {
-      await supabase.from("ordens_servico").update({ 
-        operational_status: "em_execucao",
-        status: "em_andamento" 
-      }).eq("id", id);
+    if (!activityId || !form.quantidade) {
+      if (!form.quantidade) toast.error("Informe a quantidade");
+      else toast.error("Selecione a atividade");
+      return;
     }
-    setAdd(false);
-    setForm({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "" });
-    toast.success("Atividade lançada");
-    load();
+
+    const targetAtv = activity || atvs.find(a => a.id === activityId);
+    const q = Number(form.quantidade);
+    if (!(q > 0)) return toast.error("Quantidade inválida");
+
+    setBusy(true);
+    try {
+      const geo = targetAtv?.exige_localizacao ? await getGeo() : {};
+
+      const { error } = await supabase.from("os_atividades").insert({
+        os_id: id,
+        atividade_id: activityId,
+        categoria_id: categoryId,
+        quantidade: q,
+        umd_unitaria: targetAtv.umd_unitaria,
+        umd_total: q * Number(targetAtv.umd_unitaria),
+        unidade: targetAtv.unidade,
+        observacao: form.observacao || null,
+        latitude: geo.lat,
+        longitude: geo.lng,
+        created_by: user!.id,
+      });
+
+      if (error) throw error;
+
+      const currentStatus = (os.operational_status || os.status || "").toLowerCase();
+      if (["iniciada", "atribuida", "pendente"].includes(currentStatus)) {
+        await supabase.from("ordens_servico").update({
+          operational_status: "em_execucao",
+          status: "em_andamento"
+        }).eq("id", id);
+      }
+
+      setAdd(false);
+      setForm({ categoria_id: "", atividade_id: "", quantidade: "", observacao: "", execution_code_id: "" });
+      toast.success("Atividade lançada");
+      load();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao lançar atividade");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function removeItem(itemId: string) {
@@ -776,8 +789,9 @@ export default function OSDetalhe() {
                          />
                        </div>
                        
-                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade}>
-                         Confirmar Lançamento
+                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade || busy}>
+                         {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
+                         {busy ? "Processando..." : "Confirmar Lançamento"}
                        </Button>
                      </div>
                    </DialogContent>
@@ -1087,45 +1101,81 @@ export default function OSDetalhe() {
       {/* Ações de fluxo */}
        <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
          {canEdit && os.status !== "aguardando_revisao" && (
-           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar}>
-             <CheckCircle className="mr-2 h-5 w-5" />
-             Finalizar e enviar para revisão
+           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
+             {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+             {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
            </Button>
          )}
          
           {/* Fluxo de Aceite e Início */}
-           {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
-             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
-               const update: any = { 
-                 operational_status: "Iniciada" as any,
-                 status: "iniciada"
-               };
-               // Se não houver profissional ou for diferente do atual, assume a OS
-               if (!os.profissional_id || os.profissional_id !== user!.id) {
-                 update.profissional_id = user!.id;
-               }
-               await supabase.from("ordens_servico").update(update).eq("id", id);
-               await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
-               toast.success("Ordem de Serviço Aceita e Iniciada");
-               load();
-             }}>
-              <CheckCircle className="mr-2 h-5 w-5" />
-              Dar o Aceite na OS
+            {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
+              <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={busy} onClick={async () => {
+                setBusy(true);
+                try {
+                  const update: any = { 
+                    operational_status: "Iniciada" as any,
+                    status: "iniciada"
+                  };
+                  if (!os.profissional_id || os.profissional_id !== user!.id) {
+                    update.profissional_id = user!.id;
+                  }
+                  await supabase.from("ordens_servico").update(update).eq("id", id);
+                  await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
+                  toast.success("Ordem de Serviço Aceita e Iniciada");
+                  load();
+                } catch (e: any) {
+                  toast.error(e.message || "Erro ao iniciar OS");
+                } finally {
+                  setBusy(false);
+                }
+              }}>
+               {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+               Dar o Aceite na OS
+             </Button>
+           )}
+
+          {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                await supabase.from("ordens_servico").update({ 
+                  operational_status: "em_deslocamento",
+                  status: "em_andamento"
+                }).eq("id", id);
+                await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
+                toast.success("Deslocamento Iniciado");
+                load();
+              } catch (e: any) {
+                toast.error(e.message || "Erro no deslocamento");
+              } finally {
+                setBusy(false);
+              }
+            }}>
+              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
+              Iniciar Deslocamento
             </Button>
           )}
 
-          {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
-            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
-              await supabase.from("ordens_servico").update({ 
-                operational_status: "em_deslocamento",
-                status: "em_andamento"
-              }).eq("id", id);
-              await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
-              toast.success("Deslocamento Iniciado");
-              load();
+          {os.operational_status === "em_deslocamento" && isOwner && (
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                const geo = await getGeo();
+                await supabase.from("ordens_servico").update({ 
+                  operational_status: "chegou_ao_local",
+                  status: "em_andamento",
+                  inicio_atendimento: new Date().toISOString()
+                }).eq("id", id);
+                toast.success("Atendimento iniciado");
+                load();
+              } catch (e: any) {
+                toast.error(e.message || "Erro ao registrar chegada");
+              } finally {
+                setBusy(false);
+              }
             }}>
-              <MapPin className="mr-2 h-5 w-5" />
-              Iniciar Deslocamento
+              {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Registrar Chegada ao Local
             </Button>
           )}
 
@@ -1161,8 +1211,9 @@ export default function OSDetalhe() {
                <Tooltip>
                  <TooltipTrigger asChild>
                    <span>
-                     <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
-                       <CheckCircle className="h-3.5 w-3.5" /> Aprovar OS
+              <Button size="sm" onClick={aprovar} disabled={!evCheck.ok || busy} className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
+                {busy ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                {busy ? "Processando..." : "Aprovar OS"}
                      </Button>
                    </span>
                  </TooltipTrigger>
@@ -1178,10 +1229,10 @@ export default function OSDetalhe() {
                  )}
                </Tooltip>
              </TooltipProvider>
-              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5">
+              <Button size="sm" variant="outline" onClick={() => setReviewDialog({ open: true, type: 'correcao', comment: '' })} className="gap-1.5" disabled={busy}>
                <History className="h-3.5 w-3.5" /> Solicitar Correção
              </Button>
-              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5">
+              <Button size="sm" variant="destructive" onClick={() => setReviewDialog({ open: true, type: 'reprovar', comment: '' })} className="gap-1.5" disabled={busy}>
                <XCircle className="h-3.5 w-3.5" /> Reprovar
              </Button>
              <Button size="sm" variant="secondary" className="gap-1.5" onClick={() => {

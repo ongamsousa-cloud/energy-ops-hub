@@ -796,8 +796,7 @@ export default function OSDetalhe() {
                       <p className="text-primary-foreground/70 text-sm mt-1">Registre a produtividade realizada no campo.</p>
                     </div>
                   </DialogHeader>
-                  <div className="p-8 grid gap-6 py-6 bg-background">
-                  <div className="grid gap-6 py-6">
+                   <div className="p-8 grid gap-6 bg-background">
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Catálogo de Atividades</Label>
                       <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>

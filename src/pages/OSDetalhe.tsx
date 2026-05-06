@@ -565,8 +565,21 @@ export default function OSDetalhe() {
   return (
     <div>
       <PageHeader
-        title={`OS ${os.numero}`}
-        description={`${os.obra?.numero} · ${os.obra?.nome}`}
+        title={
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-primary font-mono font-black">OS {os.numero}</span>
+              <StatusBadge status={os.status} />
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
+              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
+                PROJETO: {os.obra?.numero || "S/N"}
+              </Badge>
+              <span className="opacity-50">|</span>
+              <span className="font-medium">{os.obra?.nome}</span>
+            </div>
+          </div>
+        }
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={os.status} />

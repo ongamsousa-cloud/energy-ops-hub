@@ -284,26 +284,15 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                          placeholder="joao@empresa.com" 
                        />
                      </div>
-                     <div className="space-y-1.5 group">
-                       <Label className="text-xs font-medium flex items-center gap-1.5">
-                         <Globe className="h-3 w-3 text-muted-foreground" />
-                         Telefone / WhatsApp (Internacional)
-                       </Label>
-                       <div className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                         <PhoneInput
-                           international
-                           defaultCountry="BR"
-                           labels={pt}
-                           value={form.telefone}
-                           onChange={(value) => setForm({ ...form, telefone: value || "" })}
-                           className="w-full h-full border-none focus:ring-0 [&>input]:border-none [&>input]:focus:ring-0"
-                           placeholder="Digite o número"
-                         />
-                       </div>
-                       {form.telefone && !isValidPhoneNumber(form.telefone) && (
-                         <p className="text-[10px] text-destructive font-medium mt-1">Número de telefone inválido para o país selecionado</p>
-                       )}
-                     </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Telefone / WhatsApp</Label>
+                        <Input 
+                          value={form.telefone} 
+                          onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })} 
+                          placeholder="(00) 00000-0000"
+                          maxLength={15}
+                        />
+                      </div>
                      <div className="space-y-1.5">
                        <Label className="text-xs font-medium">CPF</Label>
                        <Input 

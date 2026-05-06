@@ -213,8 +213,18 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         toast.info("A criação de conta com senha requer privilégios de administrador. O convite será enviado por e-mail.");
       }
 
-      const targetUserId = userId || (professional?.user_id);
+      // Procura o profile por e-id ou e-mail se userId não estiver presente
+      let targetUserId = userId || (professional?.user_id);
       
+      if (!targetUserId && form.email) {
+        const { data: profileByEmail } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", form.email)
+          .maybeSingle();
+        if (profileByEmail) targetUserId = profileByEmail.id;
+      }
+
       if (targetUserId) {
         const updateData: any = {
           nome: form.nome,
@@ -242,6 +252,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
         await supabase.from("user_roles").delete().eq("user_id", targetUserId);
         await supabase.from("user_roles").insert({ user_id: targetUserId, role: form.role as any });
+        
+        // Garantir que o employee também esteja vinculado a este user_id
+        if (employeeId) {
+          await supabase.from("employees").update({ user_id: targetUserId }).eq("id", employeeId);
+        }
       }
 
       toast.success(professional ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");

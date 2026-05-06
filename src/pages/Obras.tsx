@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
-    import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
+     import { Plus, Search, Upload, Trash2, Edit, Trash, Briefcase, User, MapPin } from "lucide-react";
  import { useAuth } from "@/lib/auth";
  import { cepService } from "@/services";
  import * as XLSX from 'xlsx';

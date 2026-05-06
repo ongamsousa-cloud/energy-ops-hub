@@ -40,30 +40,32 @@ import EmptyState from "@/components/EmptyState";
        .order("nome");
 
       // Combinar dados garantindo que campos de profiles sobrescrevam funcionários apenas se existirem
-       const combined = (employees ?? []).map(emp => {
-         const p = (profiles ?? []).find(pr => pr.id === emp.user_id || (emp.email && pr.email === emp.email));
-         return {
-           ...emp,
-           profile_id: p?.id || null,
-           employee_id: emp.id,
-           nome: p?.nome || emp.full_name || "",
-           email: p?.email || emp.email || "",
-           cargo: p?.cargo || emp.job_title || "",
-           cpf: p?.cpf || emp.document_cpf || "",
-           rg: p?.rg || emp.document_rg || "",
-           telefone: p?.telefone || emp.phone || "",
-           data_nascimento: p?.data_nascimento || emp.birth_date || "",
-           data_admissao: p?.data_admissao || emp.admission_date || "",
-           cep: p?.cep || emp.postal_code || "",
-           endereco_residencial: p?.endereco_residencial || emp.residential_address || "",
-           bairro: p?.bairro || emp.neighborhood || "",
-           cidade: p?.cidade || emp.city || "",
-           estado: p?.estado || emp.state || "",
-           department_id: p?.department_id || emp.department_id || "",
-           foto_url: p?.foto_url || emp.photo_url || null,
-           user_roles: p?.user_roles || []
-         };
-       });
+        const combined = (employees ?? []).map(emp => {
+          const p = (profiles ?? []).find(pr => pr.id === emp.user_id || (emp.email && pr.email === emp.email));
+          // Preferir dados do funcionário (employees) como fonte da verdade para dados cadastrais, 
+          // já que o RH/Gestor edita esses campos prioritariamente.
+          return {
+            ...emp,
+            profile_id: p?.id || null,
+            employee_id: emp.id,
+            nome: emp.full_name || p?.nome || "",
+            email: emp.email || p?.email || "",
+            cargo: emp.job_title || p?.cargo || "",
+            cpf: emp.document_cpf || p?.cpf || "",
+            rg: emp.document_rg || p?.rg || "",
+            telefone: emp.phone || p?.telefone || "",
+            data_nascimento: emp.birth_date || p?.data_nascimento || "",
+            data_admissao: emp.admission_date || p?.data_admissao || "",
+            cep: emp.postal_code || p?.cep || "",
+            endereco_residencial: emp.residential_address || p?.endereco_residencial || "",
+            bairro: emp.neighborhood || p?.bairro || "",
+            cidade: emp.city || p?.cidade || "",
+            estado: emp.state || p?.estado || "",
+            department_id: emp.department_id || p?.department_id || "",
+            foto_url: emp.photo_url || p?.foto_url || null,
+            user_roles: p?.user_roles || []
+          };
+        });
      
      setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");

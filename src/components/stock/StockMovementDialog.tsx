@@ -228,11 +228,13 @@ export default function StockMovementDialog({ open, onOpenChange, onSuccess, mat
           <div className="space-y-1.5"><Label>Observações</Label>
             <Textarea value={form.notes} onChange={e=>setForm({...form, notes: e.target.value})} rows={2}/></div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={()=>onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Confirmar</Button>
-          </DialogFooter>
-        </form>
+         </form>
+         <DialogFooter className="p-8 bg-muted/10 border-t flex gap-3">
+           <Button type="button" variant="ghost" className="px-6 font-semibold" onClick={()=>onOpenChange(false)}>Cancelar</Button>
+           <Button type="submit" form="stock-mov-form" className="px-10 font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20" disabled={loading}>
+             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Confirmar Movimentação
+           </Button>
+         </DialogFooter>
       </DialogContent>
     </Dialog>
   );

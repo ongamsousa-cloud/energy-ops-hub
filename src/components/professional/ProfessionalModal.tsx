@@ -368,10 +368,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
            cidade: form.cidade,
            estado: form.estado,
            foto_url: fotoUrl,
-           department_id: form.department_id === "" ? null : form.department_id,
-           ativo: form.is_active
-         };
-         await supabase.from("profiles").update(profileData).eq("id", finalUserId);
+            department_id: form.department_id === "" ? null : form.department_id,
+            supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
+            ativo: form.is_active
+          };
+          await supabase.from("profiles").update(profileData).eq("id", finalUserId);
        }
 
 

@@ -67,7 +67,7 @@ export default function OSDashboardTab({ period }: { period: Period }) {
   const kpis = useMemo(() => {
     const k: Record<string, number> = { abertas: 0, revisao: 0, aprovadas: 0, reprovadas: 0 };
     rows.forEach((r) => {
-       if (["iniciada", "em_andamento", "corrigida", "lancada"].includes(r.status) || ["iniciada", "lancada"].includes(r.operational_status?.toLowerCase())) k.abertas++;
+        if (["iniciada", "em_andamento", "corrigida", "lancada", "os lançada", "os lancada"].includes(r.status) || ["iniciada", "lancada", "os lançada", "os lancada"].includes(r.operational_status?.toLowerCase())) k.abertas++;
       else if (["aguardando_revisao", "em_revisao"].includes(r.status)) k.revisao++;
       else if (r.status === "aprovada") k.aprovadas++;
       else if (r.status === "reprovada") k.reprovadas++;

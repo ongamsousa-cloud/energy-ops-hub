@@ -787,10 +787,16 @@ export default function OSDetalhe() {
                  <Dialog open={add} onOpenChange={setAdd}>
                    <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4"/>Lançar Atividade</Button></DialogTrigger>
                    <DialogContent className="max-w-xl">
-                  <DialogHeader className="border-b pb-4">
-                    <DialogTitle className="text-xl font-bold text-primary">Novo Lançamento Técnico</DialogTitle>
-                    <DialogDescription className="text-muted-foreground">Selecione a atividade e informe a produtividade realizada.</DialogDescription>
+                  <DialogHeader className="p-8 bg-primary text-primary-foreground relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
+                      <Plus className="h-32 w-32 text-white" />
+                    </div>
+                    <div className="relative z-10">
+                      <DialogTitle className="text-2xl font-bold">Novo Lançamento Técnico</DialogTitle>
+                      <p className="text-primary-foreground/70 text-sm mt-1">Registre a produtividade realizada no campo.</p>
+                    </div>
                   </DialogHeader>
+                  <div className="p-8 grid gap-6 py-6 bg-background">
                   <div className="grid gap-6 py-6">
                     <div className="space-y-2">
                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Catálogo de Atividades</Label>

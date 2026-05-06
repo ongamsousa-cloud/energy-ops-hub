@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+ import { useEffect, useMemo, useState } from "react";
+ import { useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { cn } from "@/lib/utils";
+ import EmptyState from "@/components/EmptyState";
 import {
    Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
     TrendingUp, History, Warehouse as WarehouseIcon, Plus, Search, Activity, Trash2, Edit2, X,

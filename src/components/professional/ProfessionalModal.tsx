@@ -153,21 +153,30 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: profs_inner }, { data: servs }] = await Promise.all<any>([
-      supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-      supabase.from("profiles").select("id, nome, user_roles!inner(role)").in("user_roles.role", ["admin", "gestor", "supervisor"]),
-      supabase.from("servicos").select("id, nome").eq("ativo", true)
-    ]);
-    
-    const supervisorList: any[] = [...(emps ?? [])];
-    (profs_inner ?? []).forEach(p => {
-      if (!supervisorList.find(e => e.user_id === p.id)) {
-        supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
+    try {
+      const [empsRes, profsRes, servsRes] = await Promise.all([
+        supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
+        supabase.from("profiles").select("id, nome"),
+        supabase.from("servicos").select("id, nome").eq("ativo", true)
+      ]);
+      
+      const supervisorList: any[] = empsRes.data ? [...empsRes.data] : [];
+      
+      // Fallback: Se a lista de funcionários estiver pequena ou vazia, use perfis do sistema
+      if (profsRes.data) {
+        profsRes.data.forEach(p => {
+          if (!supervisorList.find(e => e.id === p.id || e.user_id === p.id)) {
+            supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
+          }
+        });
       }
-    });
 
-    setSupervisors(supervisorList);
-    setAllServices(servs ?? []);
+      setSupervisors(supervisorList);
+      setAllServices(servsRes.data ?? []);
+    } catch (err) {
+      console.error("Erro ao carregar supervisores:", err);
+      toast.error("Erro ao carregar lista de supervisores");
+    }
   };
 
   const handleCepBlur = async () => {
@@ -423,29 +432,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      </Select>
                    </div>
 
-                   <div className="space-y-3 pt-4 border-t border-border">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground">Códigos de Identificação</Label>
-                      <div className="space-y-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Código Interno Empresa</Label>
-                          <Input 
-                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
-                            placeholder="FUNC-0000" 
-                            value={form.internal_company_code} 
-                            onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[11px] font-medium text-muted-foreground">Código de Serviço (Técnico)</Label>
-                          <Input 
-                            className="h-9 font-mono text-sm border-primary/20 focus:border-primary" 
-                            placeholder="TEC-000" 
-                            value={form.service_code} 
-                            onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
-                          />
-                        </div>
-                      </div>
-                   </div>
                  </div>
             </div>
 
@@ -464,6 +450,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
+                    </div>
+                    <div className="space-y-1.5">
+                       <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
+                       <Input 
+                         value={form.internal_company_code} 
+                         onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
+                         placeholder="Ex: FUNC-001"
+                       />
                     </div>
                     <div className="space-y-1.5">
                        <Label className="text-xs font-medium">Email Corporativo *</Label>
@@ -590,6 +584,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Veículo</Label>
                       <Input value={form.veiculo_vinculado} onChange={(e) => setForm({ ...form, veiculo_vinculado: e.target.value })} placeholder="Modelo/Placa" />
+                    </div>
+                    <div className="space-y-1.5">
+                       <Label className="text-xs font-medium">Cód. Serviço (Técnico)</Label>
+                       <Input 
+                         value={form.service_code} 
+                         onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
+                         placeholder="Ex: TEC-001"
+                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Horário</Label>

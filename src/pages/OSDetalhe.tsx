@@ -231,11 +231,10 @@ export default function OSDetalhe() {
 
       if (error) throw error;
 
-      const currentStatus = (os.operational_status || os.status || "").toLowerCase();
-      if (["iniciada", "atribuida", "pendente"].includes(currentStatus)) {
+      const currentStatus = (os.operational_status || os.status || "pendente").toLowerCase();
+      if (["pendente", "atribuida", "material_liberado", "pronta_para_execucao", "iniciada"].includes(currentStatus)) {
         await supabase.from("ordens_servico").update({
           operational_status: "em_execucao",
-          status: "em_andamento"
         }).eq("id", id);
       }
 

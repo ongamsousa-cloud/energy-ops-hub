@@ -82,7 +82,7 @@ export default function OSDetalhe() {
     const canApprove = isSystemAdmin || isDeptManager || hasRole(["supervisor"]);
     const isGestor = isSystemAdmin || isDeptManager;
   const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
-                 ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
+                 ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao","pronta_para_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
 
   const [startValidation, setStartValidation] = useState<{ can_start: boolean, blocked_by: string[], message: string } | null>(null);
 
@@ -357,12 +357,13 @@ export default function OSDetalhe() {
     setBusy(true);
     try {
       const geo = await getGeo();
-      const { error } = await supabase.from("ordens_servico").update({
-        operational_status: "aguardando_validacao_supervisor", 
-        fim_em: new Date().toISOString(),
-        fim_lat: geo.lat, 
-        fim_lng: geo.lng,
-      }).eq("id", id);
+       const { error } = await supabase.from("ordens_servico").update({
+         operational_status: "aguardando_validacao_supervisor", 
+         status: "concluida_campo", // Keeping status for legacy compatibility but updating correctly
+         fim_em: new Date().toISOString(),
+         fim_lat: geo.lat, 
+         fim_lng: geo.lng,
+       }).eq("id", id);
       
       if (error) throw error;
       
@@ -402,6 +403,7 @@ export default function OSDetalhe() {
      try {
        await supabase.from("os_atividades").update({ status: "aprovado" }).eq("os_id", id);
        const { error } = await supabase.from("ordens_servico").update({ 
+         operational_status: "aprovada_supervisor",
          status: "aprovada", 
          aprovado_por: user!.id, 
          aprovado_em: new Date().toISOString(),

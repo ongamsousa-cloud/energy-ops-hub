@@ -123,7 +123,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl,
-        user_id: userId || null
+                user_id: userId || null,
+        document_rg: form.rg,
+        birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
+        postal_code: form.cep,
+        residential_address: form.endereco_residencial,
+        neighborhood: form.bairro,
+        city: form.cidade,
+        state: form.estado
       };
 
       let res;

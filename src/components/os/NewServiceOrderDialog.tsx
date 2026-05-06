@@ -254,7 +254,22 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       const { error: itensError } = await supabase.from("os_atividades").insert(osAtividades);
       if (itensError) throw itensError;
 
-      toast.success("Ordem de Serviço criada com sucesso!");
+       toast.success("Ordem de Serviço criada com sucesso! Tarefa de aprovação enviada ao gestor.");
+       
+       // Create approval task for gestor
+       if (formData.gestorId) {
+         await supabase.from("department_tasks").insert({
+           os_id: os.id,
+           to_department_id: formData.departmentId || null,
+           assigned_to: formData.gestorId,
+           task_type: "aprovar_os",
+           title: `Aprovar Nova OS #${os.id.substring(0, 8)}`,
+           description: "Nova OS criada aguardando aprovação técnica e operacional para seguir o fluxo.",
+           priority: formData.prioridade === 'urgente' ? 'alta' : 'normal',
+           created_by: user!.id
+         });
+       }
+
       onOpenChange(false);
       if (onSuccess) {
         onSuccess(os.id);

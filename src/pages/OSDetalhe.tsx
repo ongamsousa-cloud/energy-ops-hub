@@ -81,8 +81,16 @@ export default function OSDetalhe() {
     const isDeptManager = hasRole(["gestor"]) && os?.department_id === profile?.department_id;
     const canApprove = isSystemAdmin || isDeptManager || hasRole(["supervisor"]);
     const isGestor = isSystemAdmin || isDeptManager;
-    const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
-                   ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
+  const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
+                 ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
+
+  const [startValidation, setStartValidation] = useState<{ can_start: boolean, blocked_by: string[], message: string } | null>(null);
+
+  useEffect(() => {
+    if (os && user) {
+      osService.canStartWorkOrder(os.id, user.id).then(setStartValidation);
+    }
+  }, [os, user]);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")
@@ -427,7 +435,30 @@ export default function OSDetalhe() {
       const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
       if (error) throw error;
       await registrarAuditoria(status, reviewDialog.type === "reprovar" ? "reprovacao" : "solicitacao_correcao", { comment: reviewDialog.comment });
-      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+      
+      // Create non-conformity if requested
+      await supabase.from("non_conformities").insert({
+        os_id: id,
+        title: reviewDialog.type === "reprovar" ? "OS Reprovada" : "Correção Solicitada",
+        description: reviewDialog.comment,
+        severity: reviewDialog.type === "reprovar" ? "alta" : "media",
+        assigned_to: os.profissional_id,
+        created_by: user!.id,
+        status: 'aberta'
+      });
+
+      // Create corrective task for professional
+      await supabase.from("department_tasks").insert({
+        os_id: id,
+        assigned_to: os.profissional_id,
+        task_type: "solicitar_correcao",
+        title: "Correção Necessária na OS",
+        description: reviewDialog.comment,
+        priority: reviewDialog.type === "reprovar" ? "alta" : "normal",
+        created_by: user!.id
+      });
+
+      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada e não conformidade registrada" : "Correção solicitada ao profissional");
       setReviewDialog(prev => ({ ...prev, open: false }));
       load();
     } catch (err: any) {
@@ -577,11 +608,33 @@ export default function OSDetalhe() {
 
    async function handleStatusTransition(newStatus: OSStatus) {
      setBusy(true);
-     try {
-       await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
-       toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
-       load();
-     } catch (err: any) {
+      // If transitioning to 'iniciada', check the gate
+      if (newStatus === 'iniciada') {
+        const validation = await osService.canStartWorkOrder(os.id, user!.id);
+        if (!validation.can_start) {
+          toast.error(validation.message);
+          return;
+        }
+      }
+
+      try {
+        await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+        
+        // Handle task automation based on status
+        if (newStatus === 'aguardando_aprovacao_departamento') {
+          await supabase.from("department_tasks").insert({
+            os_id: os.id,
+            to_department_id: os.department_id,
+            task_type: "aprovar_os",
+            title: "Aprovação de OS",
+            description: "OS aguardando aprovação departamental.",
+            created_by: user!.id
+          });
+        }
+
+        toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
+        load();
+      } catch (err: any) {
        toast.error("Erro na transição: " + err.message);
      } finally {
        setBusy(false);
@@ -1144,82 +1197,21 @@ export default function OSDetalhe() {
 
       {/* Ações de fluxo */}
        <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
-         {canEdit && os.status !== "aguardando_revisao" && (
-           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
-             {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
-             {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
-           </Button>
-         )}
-         
-          {/* Fluxo de Aceite e Início */}
-            {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
-              <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={busy} onClick={async () => {
-                setBusy(true);
-                try {
-                  const update: any = { 
-                    operational_status: "Iniciada" as any,
-                    status: "iniciada"
-                  };
-                  if (!os.profissional_id || os.profissional_id !== user!.id) {
-                    update.profissional_id = user!.id;
-                  }
-                  await supabase.from("ordens_servico").update(update).eq("id", id);
-                  await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
-                  toast.success("Ordem de Serviço Aceita e Iniciada");
-                  load();
-                } catch (e: any) {
-                  toast.error(e.message || "Erro ao iniciar OS");
-                } finally {
-                  setBusy(false);
-                }
-              }}>
-               {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
-               Dar o Aceite na OS
-             </Button>
-           )}
-
-          {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
-            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" disabled={busy} onClick={async () => {
-              setBusy(true);
-              try {
-                await supabase.from("ordens_servico").update({ 
-                  operational_status: "em_deslocamento",
-                  status: "em_andamento"
-                }).eq("id", id);
-                await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
-                toast.success("Deslocamento Iniciado");
-                load();
-              } catch (e: any) {
-                toast.error(e.message || "Erro no deslocamento");
-              } finally {
-                setBusy(false);
-              }
-            }}>
-              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
-              Iniciar Deslocamento
-            </Button>
+          {/* Gate check message */}
+          {startValidation && !startValidation.can_start && (os.operational_status || os.status)?.toLowerCase() === "pronta_para_execucao" && (
+            <div className="w-full p-4 rounded-lg border-2 border-amber-500 bg-amber-50 flex items-center gap-3 animate-in fade-in zoom-in duration-300">
+              <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
+              <div>
+                <p className="font-bold text-amber-800 text-sm">Trabalho Bloqueado</p>
+                <p className="text-amber-700 text-xs">{startValidation.message}</p>
+              </div>
+            </div>
           )}
 
-          {os.operational_status === "em_deslocamento" && isOwner && (
-            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" disabled={busy} onClick={async () => {
-              setBusy(true);
-              try {
-                const geo = await getGeo();
-                await supabase.from("ordens_servico").update({ 
-                  operational_status: "chegou_ao_local",
-                  status: "em_andamento",
-                  inicio_atendimento: new Date().toISOString()
-                }).eq("id", id);
-                toast.success("Atendimento iniciado");
-                load();
-              } catch (e: any) {
-                toast.error(e.message || "Erro ao registrar chegada");
-              } finally {
-                setBusy(false);
-              }
-            }}>
-              {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Registrar Chegada ao Local
+          {canEdit && (os.operational_status || os.status)?.toLowerCase() === "em_execucao" && (
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
+              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+              {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
             </Button>
           )}
 

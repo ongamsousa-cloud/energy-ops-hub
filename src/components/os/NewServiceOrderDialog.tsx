@@ -368,11 +368,53 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                             <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[400px] p-0" align="start">
+                        <PopoverContent className="w-[450px] p-0" align="start">
                           <Command>
-                            <CommandInput placeholder="Digite o código da obra..." />
+                            <CommandInput 
+                              placeholder="Digite o código da obra..." 
+                              onValueChange={(val) => {
+                                // Keep track of search value for manual entry
+                                (window as any)._lastObraSearch = val;
+                              }}
+                            />
                             <CommandList>
-                              <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                              <CommandEmpty className="p-4 flex flex-col gap-2">
+                                <p className="text-sm">Nenhuma obra encontrada.</p>
+                                <Button 
+                                  variant="secondary" 
+                                  size="sm" 
+                                  className="w-full"
+                                  onClick={async () => {
+                                    const numero = (window as any)._lastObraSearch;
+                                    if (!numero) return;
+                                    
+                                    try {
+                                      const { data: newObra, error } = await supabase
+                                        .from("obras")
+                                        .insert({ 
+                                          numero, 
+                                          nome: `Obra ${numero}`,
+                                          ativo: true,
+                                          status: 'aberta'
+                                        })
+                                        .select()
+                                        .single();
+                                      
+                                      if (error) throw error;
+                                      
+                                      setObras(prev => [...prev, newObra]);
+                                      handleObraChange(newObra.id);
+                                      setObraSearchOpen(false);
+                                      toast.success(`Obra ${numero} cadastrada temporariamente.`);
+                                    } catch (err: any) {
+                                      toast.error("Erro ao criar obra: " + err.message);
+                                    }
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Cadastrar "{(window as any)._lastObraSearch}" como nova obra
+                                </Button>
+                              </CommandEmpty>
                               <CommandGroup>
                                 {obras.map((o) => (
                                   <CommandItem

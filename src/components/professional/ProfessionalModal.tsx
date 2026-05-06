@@ -96,6 +96,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   };
 
   const [form, setForm] = useState(initialFormState);
+  
+  // Debounced CEP search
+  useEffect(() => {
+    const cep = form.cep.replace(/\D/g, "");
+    if (cep.length === 8) {
+      const timeoutId = setTimeout(() => {
+        handleCepSearch();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [form.cep]);
   const [showPassword, setShowPassword] = useState(false);
   const [supervisors, setSupervisors] = useState<any[]>([]);
   const [allServices, setAllServices] = useState<any[]>([]);
@@ -157,35 +168,31 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const fetchSupervisorsAndServices = async () => {
     try {
-      // Fetch both from employees and profiles to ensure all potential supervisors are listed
-      const [empsRes, rolesRes, servsRes] = await Promise.all([
-        supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-        supabase.from("user_roles").select("user_id, role").in("role", ["supervisor", "admin", "gestor", "developer"]),
-        supabase.from("servicos").select("id, nome").eq("ativo", true)
-      ]);
+      const { data: rolesData } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["supervisor", "admin", "gestor", "developer"]);
+        
+      const userIds = rolesData?.map(r => r.user_id) || [];
       
-      const supervisorUserIds = rolesRes.data?.map(r => r.user_id) || [];
-      
-      // Filter employees that are supervisors/admins
-      const supervisorList = empsRes.data?.filter(emp => 
-        emp.user_id && supervisorUserIds.includes(emp.user_id)
-      ) || [];
-      
-      // Fallback: fetch names from profiles for any missing supervisors who aren't in employees table yet
-      const missingIds = supervisorUserIds.filter(id => !supervisorList.find(s => s.user_id === id));
-      if (missingIds.length > 0) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, nome")
-          .in("id", missingIds);
-          
-        profs?.forEach(p => {
-          supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
-        });
-      }
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, nome")
+        .in("id", userIds);
+        
+      const { data: servicesData } = await supabase
+        .from("servicos")
+        .select("id, nome")
+        .eq("ativo", true);
+
+      const supervisorList = (profilesData || []).map(p => ({
+        id: p.id,
+        full_name: p.nome,
+        user_id: p.id
+      }));
 
       setSupervisors(supervisorList);
-      setAllServices(servsRes.data ?? []);
+      setAllServices(servicesData ?? []);
     } catch (err) {
       console.error("Erro ao carregar supervisores:", err);
       toast.error("Erro ao carregar lista de supervisores");
@@ -211,9 +218,9 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cidade: data.localidade || prev.cidade,
           estado: data.uf || prev.estado
         }));
-        toast.success("Endereço localizado com sucesso!");
+        toast.success("Endereço localizado!");
       } else {
-        toast.error("CEP não encontrado nas bases oficiais.");
+        toast.error("CEP não encontrado.");
       }
     } catch (error) {
       console.error("Erro ao buscar CEP:", error);
@@ -361,10 +368,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
            cidade: form.cidade,
            estado: form.estado,
            foto_url: fotoUrl,
-           department_id: form.department_id === "" ? null : form.department_id,
-           ativo: form.is_active
-         };
-         await supabase.from("profiles").update(profileData).eq("id", finalUserId);
+            department_id: form.department_id === "" ? null : form.department_id,
+            supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
+            ativo: form.is_active
+          };
+          await supabase.from("profiles").update(profileData).eq("id", finalUserId);
        }
 
 

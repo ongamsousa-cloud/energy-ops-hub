@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Textarea } from "@/components/ui/textarea";
-import { maskCPF, maskPhone, maskCEP } from "@/lib/utils/masks";
+ import { maskCPF, maskPhone, maskCEP, maskRG } from "@/lib/utils/masks";
 
 interface ProfessionalModalProps {
   open: boolean;
@@ -276,10 +276,14 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Email Corporativo *</Label>
-                      <Input value={form.email} disabled={!!professional} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="joao@empresa.com" />
-                    </div>
+                     <div className="space-y-1.5">
+                       <Label className="text-xs font-medium">Email Corporativo *</Label>
+                       <Input 
+                         value={form.email} 
+                         onChange={(e) => setForm({ ...form, email: e.target.value })} 
+                         placeholder="joao@empresa.com" 
+                       />
+                     </div>
                      <div className="space-y-1.5 group">
                        <Label className="text-xs font-medium flex items-center gap-1.5">
                          <Globe className="h-3 w-3 text-muted-foreground" />
@@ -336,18 +340,51 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                       Documentação e Endereço
                     </h4>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">RG</Label>
-                         <Input className="h-11" value={form.rg} onChange={(e) => setForm({ ...form, rg: e.target.value })} placeholder="00.000.000-0" />
-                       </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold">RG</Label>
+                          <Input 
+                            className="h-11" 
+                            value={form.rg} 
+                            onChange={(e) => setForm({ ...form, rg: maskRG(e.target.value) })} 
+                            placeholder="00.000.000-0" 
+                          />
+                        </div>
                        <div className="space-y-2">
                          <Label className="text-sm font-semibold">Data de Nascimento</Label>
                          <Input className="h-11" type="date" value={form.data_nascimento} onChange={(e) => setForm({ ...form, data_nascimento: e.target.value })} />
                        </div>
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">CEP</Label>
-                         <Input className="h-11" value={form.cep} onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} placeholder="00000-000" />
-                       </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-semibold">CEP</Label>
+                          <Input 
+                            className="h-11" 
+                            value={form.cep} 
+                            onChange={async (e) => {
+                              const maskedCep = maskCEP(e.target.value);
+                              setForm({ ...form, cep: maskedCep });
+                              if (maskedCep.length === 9) {
+                                try {
+                                  const response = await fetch(`https://viacep.com.br/ws/${maskedCep.replace(/\D/g, '')}/json/`);
+                                  const data = await response.json();
+                                  if (!data.erro) {
+                                    setForm(prev => ({
+                                      ...prev,
+                                      cep: maskedCep,
+                                      endereco_residencial: data.logradouro,
+                                      bairro: data.bairro,
+                                      cidade: data.localidade,
+                                      estado: data.uf
+                                    }));
+                                    toast.success("Endereço preenchido automaticamente");
+                                  }
+                                } catch (error) {
+                                  console.error("Erro ao buscar CEP:", error);
+                                }
+                              }
+                            }} 
+                            placeholder="00000-000"
+                            maxLength={9}
+                          />
+                        </div>
                        <div className="md:col-span-2 space-y-2">
                          <Label className="text-sm font-semibold">Endereço Residencial</Label>
                          <Input className="h-11" value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />

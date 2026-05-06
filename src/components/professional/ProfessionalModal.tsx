@@ -10,7 +10,7 @@ import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
  import pt from 'react-phone-number-input/locale/pt.json';
-import { ROLE_LABEL, AppRole } from "@/lib/auth";
+import { ROLE_LABEL, AppRole, useAuth } from "@/lib/auth";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
@@ -29,6 +29,7 @@ interface ProfessionalModalProps {
 const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque", "developer"];
 
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
+  const { profile: currentUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -204,6 +205,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       }
 
       const employeeData = {
+        company_id: currentUserProfile?.company_id || professional?.company_id || null,
         full_name: form.nome,
         email: form.email,
         phone: form.telefone,

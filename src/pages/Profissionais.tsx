@@ -187,13 +187,12 @@ import EmptyState from "@/components/EmptyState";
              <tbody>{filteredRows.map((p)=>{ const role = p.user_roles?.[0]?.role as AppRole | undefined; return (
                 <tr key={p.id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors group">
                   <td className="px-4 py-3">
-                    <div className="h-9 w-9 rounded-full bg-primary/5 flex items-center justify-center overflow-hidden border shadow-inner mx-auto">
-                     {p.foto_url ? (
-                       <img src={p.foto_url} alt={p.nome} className="h-full w-full object-cover" />
-                     ) : (
-                        <span className="text-xs font-bold text-primary/60">{p.nome?.substring(0, 2).toUpperCase()}</span>
-                     )}
-                   </div>
+                    <Avatar className="h-10 w-10 border shadow-sm mx-auto">
+                      <AvatarImage src={p.foto_url} className="object-cover" />
+                      <AvatarFallback className="bg-primary/5 text-primary text-xs font-bold">
+                        {p.nome?.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                  </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col">

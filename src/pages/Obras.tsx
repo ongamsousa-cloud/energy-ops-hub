@@ -11,7 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
- import { Plus, Search, Upload, Trash2, Edit } from "lucide-react";
+  import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
+   async function clearAll() {
+     if (!confirm("AVISO CRÍTICO: Isso irá excluir TODAS as obras cadastradas. Deseja continuar?")) return;
+     const { error } = await supabase.from("obras").delete().neq("id", "00000000-0000-0000-0000-000000000000" as any); // Delete all
+     if (error) return toast.error(error.message);
+     toast.success("Todas as obras foram removidas");
+     load();
+   }
+
  import { useAuth } from "@/lib/auth";
  import { cepService } from "@/services";
  import * as XLSX from 'xlsx';
@@ -182,9 +190,12 @@ export default function Obras() {
                id="import-obras"
                onChange={handleImport}
              />
-             <Button variant="outline" size="sm" onClick={() => document.getElementById('import-obras')?.click()}>
-               <Upload className="mr-1 h-3.5 w-3.5" /> Importar Planilha
-             </Button>
+              <Button variant="outline" size="sm" onClick={() => document.getElementById('import-obras')?.click()} title="Importar de CSV ou Excel">
+                <Upload className="mr-1 h-3.5 w-3.5" /> Importar
+              </Button>
+              <Button variant="destructive" size="sm" onClick={clearAll} title="Limpar todas as obras">
+                <Trash className="h-3.5 w-3.5" />
+              </Button>
              <Dialog open={open} onOpenChange={(val) => {
                setOpen(val);
                if (!val) {

@@ -157,35 +157,31 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const fetchSupervisorsAndServices = async () => {
     try {
-      // Fetch both from employees and profiles to ensure all potential supervisors are listed
-      const [empsRes, rolesRes, servsRes] = await Promise.all([
-        supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
-        supabase.from("user_roles").select("user_id, role").in("role", ["supervisor", "admin", "gestor", "developer"]),
-        supabase.from("servicos").select("id, nome").eq("ativo", true)
-      ]);
+      const { data: rolesData } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["supervisor", "admin", "gestor", "developer"]);
+        
+      const userIds = rolesData?.map(r => r.user_id) || [];
       
-      const supervisorUserIds = rolesRes.data?.map(r => r.user_id) || [];
-      
-      // Filter employees that are supervisors/admins
-      const supervisorList = empsRes.data?.filter(emp => 
-        emp.user_id && supervisorUserIds.includes(emp.user_id)
-      ) || [];
-      
-      // Fallback: fetch names from profiles for any missing supervisors who aren't in employees table yet
-      const missingIds = supervisorUserIds.filter(id => !supervisorList.find(s => s.user_id === id));
-      if (missingIds.length > 0) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, nome")
-          .in("id", missingIds);
-          
-        profs?.forEach(p => {
-          supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
-        });
-      }
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("id, nome")
+        .in("id", userIds);
+        
+      const { data: servicesData } = await supabase
+        .from("servicos")
+        .select("id, nome")
+        .eq("ativo", true);
+
+      const supervisorList = (profilesData || []).map(p => ({
+        id: p.id,
+        full_name: p.nome,
+        user_id: p.id
+      }));
 
       setSupervisors(supervisorList);
-      setAllServices(servsRes.data ?? []);
+      setAllServices(servicesData ?? []);
     } catch (err) {
       console.error("Erro ao carregar supervisores:", err);
       toast.error("Erro ao carregar lista de supervisores");

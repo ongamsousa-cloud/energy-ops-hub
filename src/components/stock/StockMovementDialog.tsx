@@ -137,7 +137,7 @@ export default function StockMovementDialog({ open, onOpenChange, onSuccess, mat
              <p className="text-primary-foreground/70 text-sm mt-1">Registre o fluxo de entrada e saída de materiais.</p>
            </div>
          </DialogHeader>
-        <form onSubmit={submit} className="space-y-3 pt-2">
+         <form onSubmit={submit} className="p-8 space-y-5 bg-background overflow-y-auto max-h-[65vh]">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Tipo</Label>
               <Select value={form.type} onValueChange={(v: MovType)=>setForm({...form, type: v, from_warehouse_id: "", to_warehouse_id: ""})}>

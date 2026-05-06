@@ -352,8 +352,10 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                        />
                      </div>
                    </div>
-                    <div className="md:col-span-2 space-y-2">
-                      <Label>Obra / Código (Manual ou Busca)</Label>
+                     <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
+                       <div className="flex items-center justify-between">
+                         <h3 className="text-sm font-semibold">Identificação da Obra</h3>
+                       </div>
                       <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
                         <PopoverTrigger asChild>
                           <Button

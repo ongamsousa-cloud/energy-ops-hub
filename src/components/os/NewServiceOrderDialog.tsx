@@ -535,18 +535,29 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                  </div>
                </div>
               </div>
-              <Button className="w-full" onClick={() => {
-                if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
-                  return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
-                }
-                setStep(2);
-              }}>Próximo Passo</Button>
-            </div>
-          )}
+               <div className="pt-4 border-t flex justify-end">
+                 <Button 
+                   className="px-8 font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all" 
+                   onClick={() => {
+                     if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
+                       return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
+                     }
+                     setStep(2);
+                   }}
+                 >
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
-          {step === 2 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+           {step === 2 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <Clock className="h-5 w-5 text-primary" />
+                 <h3 className="text-lg font-bold">Agendamento e Responsabilidade</h3>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-6 rounded-xl border">
                 <div className="space-y-2">
                   <Label>Data Programada</Label>
                   <Input type="date" value={formData.data_agendada} onChange={(e) => setFormData({...formData, data_agendada: e.target.value})} />
@@ -579,16 +590,23 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   </Select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>Voltar</Button>
-                <Button className="flex-1" onClick={() => setStep(3)}>Próximo Passo</Button>
-              </div>
-            </div>
-          )}
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(1)}>Voltar</Button>
+                 <Button className="px-8 font-bold shadow-lg shadow-primary/20" onClick={() => setStep(3)}>
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
+           {step === 3 && (
+             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+               <div className="flex items-center gap-2 mb-2">
+                 <LayoutList className="h-5 w-5 text-primary" />
+                 <h3 className="text-lg font-bold">Tipo de Serviço</h3>
+               </div>
+               <div className="grid gap-6 bg-muted/20 p-6 rounded-xl border">
+                 <div className="space-y-2">
                 <Label>Serviço Principal <span className="text-destructive">*</span></Label>
                 <Select value={selectedServicoId} onValueChange={(v) => setSelectedServicoId(v)}>
                   <SelectTrigger><SelectValue placeholder="Selecione o serviço" /></SelectTrigger>
@@ -613,12 +631,15 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                   </Select>
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>Voltar</Button>
-                <Button className="flex-1" onClick={() => setStep(4)}>Próximo Passo</Button>
-              </div>
-            </div>
-          )}
+               </div>
+               <div className="pt-4 border-t flex justify-between gap-4">
+                 <Button variant="outline" className="px-8" onClick={() => setStep(2)}>Voltar</Button>
+                 <Button className="px-8 font-bold shadow-lg shadow-primary/20" onClick={() => setStep(4)}>
+                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
+                 </Button>
+               </div>
+             </div>
+           )}
 
           {step === 4 && (
             <div className="space-y-4">

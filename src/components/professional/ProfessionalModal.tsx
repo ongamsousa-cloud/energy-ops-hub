@@ -246,8 +246,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         fotoUrl = await uploadPhoto(actualEmployeeId || targetUserId);
       }
 
-      const employeeData = {
-        company_id: currentUserProfile?.company_id || professional?.company_id || null,
+      const employeeData: any = {
+        company_id: currentUserProfile?.company_id || professional?.company_id || '00000000-0000-0000-0000-000000000000',
         full_name: form.nome,
         email: form.email,
         phone: form.telefone,

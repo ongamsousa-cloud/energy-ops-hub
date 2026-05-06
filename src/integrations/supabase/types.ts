@@ -962,6 +962,151 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_audit_logs: {
+        Row: {
+          action: string
+          changed_at: string | null
+          changed_by: string | null
+          company_id: string
+          employee_id: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+        }
+        Insert: {
+          action: string
+          changed_at?: string | null
+          changed_by?: string | null
+          company_id: string
+          employee_id: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Update: {
+          action?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          company_id?: string
+          employee_id?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_audit_logs_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          access_level: string | null
+          admission_date: string | null
+          can_access_system: boolean | null
+          can_close_service_orders: boolean | null
+          can_manage_materials: boolean | null
+          can_receive_service_orders: boolean | null
+          can_view_financial_data: boolean | null
+          can_view_reports: boolean | null
+          company_id: string
+          created_at: string | null
+          department_id: string | null
+          department_name: string | null
+          document_cpf: string | null
+          email: string | null
+          employee_type: string | null
+          full_name: string
+          id: string
+          internal_company_code: string | null
+          is_active: boolean | null
+          job_title: string | null
+          notes: string | null
+          operational_role: string | null
+          phone: string | null
+          photo_url: string | null
+          service_code: string | null
+          status: string | null
+          termination_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_level?: string | null
+          admission_date?: string | null
+          can_access_system?: boolean | null
+          can_close_service_orders?: boolean | null
+          can_manage_materials?: boolean | null
+          can_receive_service_orders?: boolean | null
+          can_view_financial_data?: boolean | null
+          can_view_reports?: boolean | null
+          company_id?: string
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string | null
+          document_cpf?: string | null
+          email?: string | null
+          employee_type?: string | null
+          full_name: string
+          id?: string
+          internal_company_code?: string | null
+          is_active?: boolean | null
+          job_title?: string | null
+          notes?: string | null
+          operational_role?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          service_code?: string | null
+          status?: string | null
+          termination_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_level?: string | null
+          admission_date?: string | null
+          can_access_system?: boolean | null
+          can_close_service_orders?: boolean | null
+          can_manage_materials?: boolean | null
+          can_receive_service_orders?: boolean | null
+          can_view_financial_data?: boolean | null
+          can_view_reports?: boolean | null
+          company_id?: string
+          created_at?: string | null
+          department_id?: string | null
+          department_name?: string | null
+          document_cpf?: string | null
+          email?: string | null
+          employee_type?: string | null
+          full_name?: string
+          id?: string
+          internal_company_code?: string | null
+          is_active?: boolean | null
+          job_title?: string | null
+          notes?: string | null
+          operational_role?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          service_code?: string | null
+          status?: string | null
+          termination_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipe_membros: {
         Row: {
           created_at: string
@@ -3204,6 +3349,69 @@ export type Database = {
             columns: ["service_order_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_order_employees: {
+        Row: {
+          assigned_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          employee_id: string
+          employee_internal_code: string
+          employee_service_code: string
+          id: string
+          paused_at: string | null
+          role_in_service: string | null
+          service_order_id: string
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id: string
+          employee_internal_code: string
+          employee_service_code: string
+          id?: string
+          paused_at?: string | null
+          role_in_service?: string | null
+          service_order_id: string
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          employee_id?: string
+          employee_internal_code?: string
+          employee_service_code?: string
+          id?: string
+          paused_at?: string | null
+          role_in_service?: string | null
+          service_order_id?: string
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_order_employees_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_order_employees_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
             referencedColumns: ["id"]
           },
         ]

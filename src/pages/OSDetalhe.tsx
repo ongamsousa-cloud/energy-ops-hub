@@ -427,7 +427,30 @@ export default function OSDetalhe() {
       const { error } = await supabase.from("ordens_servico").update(update).eq("id", id);
       if (error) throw error;
       await registrarAuditoria(status, reviewDialog.type === "reprovar" ? "reprovacao" : "solicitacao_correcao", { comment: reviewDialog.comment });
-      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada" : "Correção solicitada");
+      
+      // Create non-conformity if requested
+      await supabase.from("non_conformities").insert({
+        os_id: id,
+        title: reviewDialog.type === "reprovar" ? "OS Reprovada" : "Correção Solicitada",
+        description: reviewDialog.comment,
+        severity: reviewDialog.type === "reprovar" ? "alta" : "media",
+        assigned_to: os.profissional_id,
+        created_by: user!.id,
+        status: 'aberta'
+      });
+
+      // Create corrective task for professional
+      await supabase.from("department_tasks").insert({
+        os_id: id,
+        assigned_to: os.profissional_id,
+        task_type: "solicitar_correcao",
+        title: "Correção Necessária na OS",
+        description: reviewDialog.comment,
+        priority: reviewDialog.type === "reprovar" ? "alta" : "normal",
+        created_by: user!.id
+      });
+
+      toast.success(reviewDialog.type === "reprovar" ? "OS reprovada e não conformidade registrada" : "Correção solicitada ao profissional");
       setReviewDialog(prev => ({ ...prev, open: false }));
       load();
     } catch (err: any) {

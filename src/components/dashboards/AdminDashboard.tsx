@@ -147,8 +147,8 @@ import { useState } from "react";
               <p className="text-sm font-medium text-muted-foreground">Equipes</p>
               <Users className="h-4 w-4 text-purple-500" />
             </div>
-            <div className="text-2xl font-bold">{stats.equipes}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.profs} profissionais ativos</p>
+            <div className="text-2xl font-bold">{stats.profs}</div>
+            <p className="text-xs text-muted-foreground mt-1">{stats.equipes} equipes cadastradas</p>
           </CardContent>
         </Card>
 

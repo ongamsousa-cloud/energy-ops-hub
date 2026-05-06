@@ -54,9 +54,10 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const canWrite = hasRole(["admin","gestor","supervisor","estoque"]);
   const [loading, setLoading] = useState(true);
   const [materials, setMaterials] = useState<any[]>([]);
-  const [movements, setMovements] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
-  const [reservations, setReservations] = useState<any[]>([]);
+    const [movements, setMovements] = useState<any[]>([]);
+    const [warehouses, setWarehouses] = useState<any[]>([]);
+    const [reservations, setReservations] = useState<any[]>([]);
+    const [waitingReleaseOS, setWaitingReleaseOS] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
    const [search, setSearch] = useState("");
    const [osFilter, setOsFilter] = useState("all");
@@ -160,6 +161,43 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        loadWarehouses(), 
        loadReservations(), 
        loadAlerts(),
+       loadWaitingReleaseOS(),
+   async function loadWaitingReleaseOS() {
+     const { data } = await supabase.from("ordens_servico")
+       .select("*, obra:obras(numero, nome), materials:os_materials(*, materials(name, code, unit))")
+       .eq("operational_status", "aguardando_liberacao_estoque")
+       .order("created_at", { ascending: true });
+     setWaitingReleaseOS(data ?? []);
+   }
+
+   async function releaseMaterials(osId: string) {
+     setLoading(true);
+     try {
+       const { error } = await supabase.from("ordens_servico").update({
+         operational_status: "material_liberado"
+       }).eq("id", osId);
+       
+       if (error) throw error;
+
+       // Log in audit
+       await (supabase.from("os_audit_logs") as any).insert({
+         os_id: osId,
+         user_id: (await supabase.auth.getUser()).data.user?.id,
+         action: 'status_change',
+         old_value: 'aguardando_liberacao_estoque',
+         new_value: 'material_liberado',
+         details: { message: 'Materiais liberados pelo almoxarifado' }
+       });
+
+       toast.success("Materiais liberados com sucesso!");
+       loadWaitingReleaseOS();
+     } catch (err: any) {
+       toast.error("Erro ao liberar materiais: " + err.message);
+     } finally {
+       setLoading(false);
+     }
+   }
+
        supabase.from("obras").select("id, numero, nome").eq("ativo", true).then(({data}) => setAllObras(data ?? [])),
        supabase.from("equipes").select("id, nome").eq("ativo", true).then(({data}) => setAllEquipes(data ?? []))
      ]);
@@ -334,7 +372,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
          <TabsList className="flex w-full overflow-x-auto bg-muted/50 p-1 mb-4">
            <TabsTrigger value="overview" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
            <TabsTrigger value="entradas" className="flex-1 min-w-[120px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-           <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Liberações (OS)</TabsTrigger>
+            <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Pendentes Liberação {waitingReleaseOS.length > 0 && <Badge className="ml-2 scale-75" variant="secondary">{waitingReleaseOS.length}</Badge>}</TabsTrigger>
            <TabsTrigger value="materials" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
            <TabsTrigger value="warehouses" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
            <TabsTrigger value="movements" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>

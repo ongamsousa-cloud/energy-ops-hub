@@ -149,8 +149,9 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     setLoading(true);
     try {
       // In Profissionais.tsx, professional.id is the employee ID
-      const employeeId = professional?.employee_id || professional?.id;
-      const targetUserId = professional?.profile_id || professional?.user_id;
+      // Identificadores consistentes
+      const employeeId = professional?.employee_id || (professional?.id && !professional?.profile_id ? professional.id : null);
+      const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id && professional?.profile_id === undefined ? null : professional.id);
       let fotoUrl = professional?.foto_url;
 
       if (photoFile && (employeeId || targetUserId)) {
@@ -180,7 +181,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl || professional?.foto_url || null,
-        user_id: targetUserId || null,
+        user_id: finalUserId || null,
         document_rg: form.rg,
         birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
         postal_code: form.cep,
@@ -240,6 +241,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
          if (form.password) updateData.must_change_password = true;
  
           const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", finalUserId);
+          
+          if (profileError) {
+             console.error("Erro ao atualizar profile:", profileError);
+             // Não travar se for apenas erro de update no profile, mas avisar
+             toast.warning("Dados do funcionário salvos, mas houve um erro ao sincronizar o perfil de acesso.");
+          }
          if (profileError) throw profileError;
  
           await supabase.from("user_roles").delete().eq("user_id", finalUserId);

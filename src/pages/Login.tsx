@@ -102,8 +102,12 @@ export default function Login() {
            },
          });
         if (error) throw error;
-        toast.success("Cadastro enviado! Aguarde a aprovação do administrador para acessar o sistema.");
-        setMode("login");
+         toast.success("Cadastro enviado! Aguarde a aprovação do administrador para acessar o sistema.");
+         setMode("login");
+         setEmail("");
+         setPassword("");
+         setNome("");
+         setSelectedRole("campo");
       }
     } catch (e: any) {
       toast.error(e.message ?? "Erro ao autenticar");

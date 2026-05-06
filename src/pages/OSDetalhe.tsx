@@ -359,7 +359,7 @@ export default function OSDetalhe() {
       const geo = await getGeo();
        const { error } = await supabase.from("ordens_servico").update({
          operational_status: "aguardando_validacao_supervisor", 
-         status: "concluida_campo", // Keeping status for legacy compatibility but updating correctly
+         status: "aguardando_revisao", 
          fim_em: new Date().toISOString(),
          fim_lat: geo.lat, 
          fim_lng: geo.lng,

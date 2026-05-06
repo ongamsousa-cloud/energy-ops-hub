@@ -91,9 +91,26 @@ class OSService {
     }
 
     // 3. User association and permissions
-    if (os.profissional_id !== userId) {
-      blocked_by.push("user_not_assigned");
-    }
+     if (os.profissional_id !== userId) {
+       blocked_by.push("user_not_assigned");
+     }
+
+     // 3.1. Fetch User Profile for further checks
+     const { data: profile } = await supabase.from("profiles").select("department_id").eq("id", userId).single();
+     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+     const userRoles = roles?.map(r => r.role) || [];
+
+     // 3.2 Department check
+     if (os.department_id && profile?.department_id !== os.department_id && !userRoles.includes('admin')) {
+       blocked_by.push("invalid_department");
+     }
+
+     // 3.3 Role check (must have 'campo' or be admin/supervisor)
+     if (!userRoles.some(r => ['campo', 'supervisor', 'admin', 'gestor', 'developer'].includes(r))) {
+       blocked_by.push("no_field_permission");
+     }
+       invalid_department: "Você não pertence ao departamento responsável por esta OS.",
+       no_field_permission: "Seu perfil não possui permissão para execução de campo.",
 
     // 4. Non-conformities check
     const { data: nc } = await supabase

@@ -39,13 +39,18 @@ export default function OSList() {
 
      const fetchRows = async () => {
       supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
-       let query = supabase.from("ordens_servico")
-        .select(`
-           *,
-            department:departments(name, acronym),
-          obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
-          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
-        `);
+        const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor", "developer"]);
+        let query = supabase.from("ordens_servico")
+          .select(`
+             *,
+             department:departments(name, acronym),
+             obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
+             profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+          `);
+
+        if (isCampo) {
+          query = query.eq("profissional_id", user.id);
+        }
 
       query.order("created_at", { ascending: false }).limit(500)
         .then(({ data }) => setRows(data ?? []));

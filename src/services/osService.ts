@@ -3,10 +3,16 @@
  import { OSStatus } from "@/shared/status/os-status";
 
 class OSService {
-   async updateStatus(osId: string, status: OSStatus, userId: string, details?: any) {
+   async updateStatus(osId: string, status: OSStatus, userId: string, details: {
+     action?: string;
+     comentario?: string;
+     from_department_id?: string;
+     to_department_id?: string;
+     payload?: any;
+   } = {}) {
      const { data: currentOS, error: fetchError } = await supabase
        .from("ordens_servico")
-       .select("operational_status")
+       .select("operational_status, department_id")
        .eq("id", osId)
        .single();
 
@@ -22,25 +28,18 @@ class OSService {
 
      if (updateError) throw updateError;
 
-      // Log the change in os_audit_logs (using as any to bypass type mismatch until regeneration)
-      await (supabase.from("os_audit_logs") as any).insert({
-        os_id: osId,
-        user_id: userId,
-        action: 'status_change',
-        old_value: currentOS?.operational_status,
-        new_value: status,
-        details: details || {}
-      });
-
-      // Also update os_history if it exists for legacy compatibility
-      await (supabase.from("os_history") as any).insert({
-        os_id: osId,
-        user_id: userId,
-        action: `Alteração de status para ${status}`,
-        old_status: currentOS?.operational_status,
-        new_status: status,
-        details: details || {}
-      });
+     // Log the change in os_audit_logs
+     await supabase.from("os_audit_logs").insert({
+       os_id: osId,
+       user_id: userId,
+       status_anterior: currentOS?.operational_status,
+       status_novo: status,
+       comentario: details.comentario || "",
+       action: details.action || 'status_change',
+       from_department_id: details.from_department_id || currentOS?.department_id,
+       to_department_id: details.to_department_id,
+       payload: details.payload || {}
+     });
    }
 
    async getOS(osId: string) {
@@ -92,9 +91,24 @@ class OSService {
     }
 
     // 3. User association and permissions
-    if (os.profissional_id !== userId) {
-      blocked_by.push("user_not_assigned");
-    }
+     if (os.profissional_id !== userId) {
+       blocked_by.push("user_not_assigned");
+     }
+
+     // 3.1. Fetch User Profile for further checks
+     const { data: profile } = await supabase.from("profiles").select("department_id").eq("id", userId).single();
+     const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+     const userRoles = roles?.map(r => r.role) || [];
+
+     // 3.2 Department check
+     if (os.department_id && profile?.department_id !== os.department_id && !userRoles.includes('admin')) {
+       blocked_by.push("invalid_department");
+     }
+
+     // 3.3 Role check (must have 'campo' or be admin/supervisor)
+      if (!userRoles.some(r => ['campo', 'supervisor', 'admin', 'gestor', 'developer'].includes(r))) {
+        blocked_by.push("no_field_permission");
+      }
 
     // 4. Non-conformities check
     const { data: nc } = await supabase
@@ -125,8 +139,10 @@ class OSService {
       user_not_assigned: "Você não é o profissional atribuído a esta OS.",
       open_non_conformities: "Existem não conformidades abertas para esta OS.",
       critical_non_conformities: "Existem pendências críticas de conformidade.",
-      materials_not_released: "Existem materiais pendentes de liberação no estoque."
-    };
+       materials_not_released: "Existem materiais pendentes de liberação no estoque.",
+       invalid_department: "Você não pertence ao departamento responsável por esta OS.",
+       no_field_permission: "Seu perfil não possui permissão para execução de campo."
+     };
 
     const can_start = blocked_by.length === 0;
     

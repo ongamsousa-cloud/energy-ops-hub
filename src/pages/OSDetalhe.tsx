@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { Card } from "@/components/ui/card";
+ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -618,7 +618,7 @@ export default function OSDetalhe() {
       }
 
       try {
-        await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+        await osService.updateStatus(os.id, newStatus, user!.id, { comentario: "Mudança manual de status via fluxo operacional" });
         
         // Handle task automation based on status
         if (newStatus === 'aguardando_aprovacao_departamento') {
@@ -643,21 +643,21 @@ export default function OSDetalhe() {
 
    if (!os) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-   return (
-     <div className="space-y-6">
-       <PageHeader
+    return (
+      <div className="space-y-6">
+        <PageHeader
          title={
            <div className="flex flex-col gap-0.5">
-             <div className="flex items-center gap-2">
-               <span className="text-primary font-mono font-black">OS {os.numero}</span>
-               <StatusBadge status={os.operational_status || os.status} />
-             </div>
+              <div className="flex items-center gap-2">
+                <span className="text-primary font-mono font-black">{os.titulo || `OS ${os.numero}`}</span>
+                <StatusBadge status={os.operational_status || os.status} />
+              </div>
              <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold font-mono">
                  PROJETO: {os.obra?.numero || "S/N"}
                </Badge>
                <span className="opacity-50">|</span>
-               <span className="font-medium">{os.obra?.nome}</span>
+                <span className="font-medium">{os.titulo ? `${os.numero} - ${os.obra?.nome}` : os.obra?.nome}</span>
              </div>
            </div>
          }
@@ -697,8 +697,17 @@ export default function OSDetalhe() {
               </Dialog>
             )}
           </div>
-        }
-      />
+          }
+        />
+
+        {os.descricao && (
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <h3 className="text-sm font-semibold mb-2">Descrição da OS</h3>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{os.descricao}</p>
+            </CardContent>
+          </Card>
+        )}
 
        {/* Operational Flow Action Bar */}
        {nextPossibleStatuses.length > 0 && (isGestor || hasRole(['admin', 'supervisor'])) && (

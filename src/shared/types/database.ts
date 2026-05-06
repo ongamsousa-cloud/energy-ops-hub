@@ -2580,6 +2580,7 @@ export type Database = {
           criticality_level: string | null
           data_agendada: string | null
           department_id: string | null
+          descricao: string | null
           due_at: string | null
           endereco: string | null
           endereco_completo: string | null
@@ -2622,6 +2623,7 @@ export type Database = {
           status_financeiro: string | null
           status_workflow: string | null
           supervisor_id: string | null
+          titulo: string | null
           total_umd: number
           total_umd_aprovada: number
           updated_at: string
@@ -2650,6 +2652,7 @@ export type Database = {
           criticality_level?: string | null
           data_agendada?: string | null
           department_id?: string | null
+          descricao?: string | null
           due_at?: string | null
           endereco?: string | null
           endereco_completo?: string | null
@@ -2692,6 +2695,7 @@ export type Database = {
           status_financeiro?: string | null
           status_workflow?: string | null
           supervisor_id?: string | null
+          titulo?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
@@ -2720,6 +2724,7 @@ export type Database = {
           criticality_level?: string | null
           data_agendada?: string | null
           department_id?: string | null
+          descricao?: string | null
           due_at?: string | null
           endereco?: string | null
           endereco_completo?: string | null
@@ -2762,6 +2767,7 @@ export type Database = {
           status_financeiro?: string | null
           status_workflow?: string | null
           supervisor_id?: string | null
+          titulo?: string | null
           total_umd?: number
           total_umd_aprovada?: number
           updated_at?: string
@@ -2963,38 +2969,64 @@ export type Database = {
       }
       os_audit_logs: {
         Row: {
+          action: string | null
           comentario: string | null
           created_at: string | null
+          from_department_id: string | null
           id: string
           os_id: string | null
+          payload: Json | null
           status_anterior: string | null
           status_novo: string
+          to_department_id: string | null
           user_id: string | null
         }
         Insert: {
+          action?: string | null
           comentario?: string | null
           created_at?: string | null
+          from_department_id?: string | null
           id?: string
           os_id?: string | null
+          payload?: Json | null
           status_anterior?: string | null
           status_novo: string
+          to_department_id?: string | null
           user_id?: string | null
         }
         Update: {
+          action?: string | null
           comentario?: string | null
           created_at?: string | null
+          from_department_id?: string | null
           id?: string
           os_id?: string | null
+          payload?: Json | null
           status_anterior?: string | null
           status_novo?: string
+          to_department_id?: string | null
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "os_audit_logs_from_department_id_fkey"
+            columns: ["from_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "os_audit_logs_os_id_fkey"
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "os_audit_logs_to_department_id_fkey"
+            columns: ["to_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
             referencedColumns: ["id"]
           },
         ]

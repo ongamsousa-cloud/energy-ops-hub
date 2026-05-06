@@ -141,8 +141,10 @@ class OSService {
       user_not_assigned: "Você não é o profissional atribuído a esta OS.",
       open_non_conformities: "Existem não conformidades abertas para esta OS.",
       critical_non_conformities: "Existem pendências críticas de conformidade.",
-      materials_not_released: "Existem materiais pendentes de liberação no estoque."
-    };
+       materials_not_released: "Existem materiais pendentes de liberação no estoque.",
+       invalid_department: "Você não pertence ao departamento responsável por esta OS.",
+       no_field_permission: "Seu perfil não possui permissão para execução de campo."
+     };
 
     const can_start = blocked_by.length === 0;
     

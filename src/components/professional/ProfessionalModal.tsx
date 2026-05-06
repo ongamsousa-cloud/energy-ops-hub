@@ -141,11 +141,21 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: servs }] = await Promise.all([
-      supabase.from("employees").select("id, full_name").eq("status", "active"),
+    const [{ data: emps }, { data: profs }, { data: servs }] = await Promise.all([
+      supabase.from("employees").select("id, full_name, user_id").eq("status", "active"),
+      supabase.from("profiles").select("id, nome").in("user_roles.role", ["admin", "gestor", "supervisor"]),
       supabase.from("servicos").select("id, nome").eq("ativo", true)
     ]);
-    setSupervisors(emps ?? []);
+    
+    // Combine active employees and relevant profiles for the supervisor list
+    const supervisorList = [...(emps ?? [])];
+    (profs ?? []).forEach(p => {
+      if (!supervisorList.find(e => e.user_id === p.id)) {
+        supervisorList.push({ id: p.id, full_name: p.nome });
+      }
+    });
+
+    setSupervisors(supervisorList);
     setAllServices(servs ?? []);
   };
 

@@ -321,9 +321,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
                 <TabsContent value="geral" className="space-y-6 pb-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="md:col-span-2 space-y-1.5">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Especialidade / Certificações</Label>
+                      <Input 
+                        value={form.especialidade} 
+                        onChange={(e) => setForm({ ...form, especialidade: e.target.value })} 
+                        placeholder="Ex: NR10, NR35, Redes MT" 
+                      />
                     </div>
                      <div className="space-y-1.5">
                        <Label className="text-xs font-medium">Email Corporativo *</Label>

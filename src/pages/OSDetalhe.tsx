@@ -789,8 +789,9 @@ export default function OSDetalhe() {
                          />
                        </div>
                        
-                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade}>
-                         Confirmar Lançamento
+                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade || busy}>
+                         {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
+                         {busy ? "Processando..." : "Confirmar Lançamento"}
                        </Button>
                      </div>
                    </DialogContent>
@@ -1100,32 +1101,38 @@ export default function OSDetalhe() {
       {/* Ações de fluxo */}
        <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3">
          {canEdit && os.status !== "aguardando_revisao" && (
-           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar}>
-             <CheckCircle className="mr-2 h-5 w-5" />
-             Finalizar e enviar para revisão
+           <Button size="lg" className="h-14 sm:h-10 text-base font-bold shadow-lg shadow-primary/20" onClick={finalizar} disabled={busy}>
+             {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+             {busy ? "Finalizando..." : "Finalizar e enviar para revisão"}
            </Button>
          )}
          
           {/* Fluxo de Aceite e Início */}
-           {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
-             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" onClick={async () => {
-               const update: any = { 
-                 operational_status: "Iniciada" as any,
-                 status: "iniciada"
-               };
-               // Se não houver profissional ou for diferente do atual, assume a OS
-               if (!os.profissional_id || os.profissional_id !== user!.id) {
-                 update.profissional_id = user!.id;
-               }
-               await supabase.from("ordens_servico").update(update).eq("id", id);
-               await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
-               toast.success("Ordem de Serviço Aceita e Iniciada");
-               load();
-             }}>
-              <CheckCircle className="mr-2 h-5 w-5" />
-              Dar o Aceite na OS
-            </Button>
-          )}
+            {((os.operational_status || os.status)?.toLowerCase() === "pendente") && (isOwner || isFromDept) && (
+              <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-blue-600 hover:bg-blue-700" disabled={busy} onClick={async () => {
+                setBusy(true);
+                try {
+                  const update: any = { 
+                    operational_status: "Iniciada" as any,
+                    status: "iniciada"
+                  };
+                  if (!os.profissional_id || os.profissional_id !== user!.id) {
+                    update.profissional_id = user!.id;
+                  }
+                  await supabase.from("ordens_servico").update(update).eq("id", id);
+                  await registrarAuditoria("Iniciada", `Profissional ${profile?.nome} deu o aceite na Ordem de Serviço`);
+                  toast.success("Ordem de Serviço Aceita e Iniciada");
+                  load();
+                } catch (e: any) {
+                  toast.error(e.message || "Erro ao iniciar OS");
+                } finally {
+                  setBusy(false);
+                }
+              }}>
+               {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+               Dar o Aceite na OS
+             </Button>
+           )}
 
           {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
             <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {

@@ -168,30 +168,46 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const fetchSupervisorsAndServices = async () => {
     try {
+      // Buscar funcionários que podem ser supervisores (role supervisor, gestor ou admin)
+      const { data: employeesData, error: empError } = await supabase
+        .from("employees")
+        .select("id, full_name, email, user_id")
+        .eq("is_active", true)
+        .order("full_name");
+      
+      if (empError) throw empError;
+
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("user_id, role")
         .in("role", ["supervisor", "admin", "gestor", "developer"]);
         
-      const userIds = rolesData?.map(r => r.user_id) || [];
+      const supervisorUserIds = rolesData?.map(r => r.user_id) || [];
       
-      const { data: profilesData } = await supabase
-        .from("profiles")
-        .select("id, nome")
-        .in("id", userIds);
-        
+      // Filtrar funcionários que têm uma dessas roles
+      const supervisorList = (employeesData || []).filter(emp => 
+        emp.user_id && supervisorUserIds.includes(emp.user_id)
+      ).map(emp => ({
+        id: emp.id, // ID da tabela employees
+        full_name: emp.full_name,
+        user_id: emp.user_id
+      }));
+
+      // Se a lista estiver vazia, permitir selecionar qualquer funcionário ativo para não travar
+      const finalSupervisorList = supervisorList.length > 0 
+        ? supervisorList 
+        : (employeesData || []).map(emp => ({
+            id: emp.id,
+            full_name: emp.full_name,
+            user_id: emp.user_id
+          }));
+
       const { data: servicesData } = await supabase
         .from("servicos")
         .select("id, nome")
         .eq("ativo", true);
 
-      const supervisorList = (profilesData || []).map(p => ({
-        id: p.id,
-        full_name: p.nome,
-        user_id: p.id
-      }));
-
-      setSupervisors(supervisorList);
+      setSupervisors(finalSupervisorList);
       setAllServices(servicesData ?? []);
     } catch (err) {
       console.error("Erro ao carregar supervisores:", err);

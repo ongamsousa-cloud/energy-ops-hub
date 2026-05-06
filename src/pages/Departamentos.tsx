@@ -18,12 +18,12 @@ export default function Departamentos() {
   const [modalOpen, setModalOpen] = useState(false);
    const [editingDep, setEditingDep] = useState<any>(null);
    const [managers, setManagers] = useState<any[]>([]);
-   const [formData, setFormData] = useState({ 
-     name: "", 
-     description: "", 
-     active: true,
-     manager_id: "" 
-   });
+    const [formData, setFormData] = useState({
+      name: "",
+      description: "",
+      active: true,
+      manager_id: "none"
+    });
 
    const fetchDeps = async () => {
      setLoading(true);
@@ -54,46 +54,59 @@ export default function Departamentos() {
    }, []);
 
   const handleSave = async () => {
-    if (!formData.name) return toast.error("Nome é obrigatório");
-    
+    if (!formData.name.trim()) return toast.error("Nome é obrigatório");
+
     try {
+      const dataToSave = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        active: formData.active,
+        manager_id: formData.manager_id === "none" || !formData.manager_id ? null : formData.manager_id
+      };
+
       if (editingDep) {
         const { error } = await supabase
           .from("departments")
-          .update(formData)
+          .update(dataToSave)
           .eq("id", editingDep.id);
         if (error) throw error;
         toast.success("Departamento atualizado");
       } else {
         const { error } = await supabase
           .from("departments")
-          .insert(formData);
+          .insert(dataToSave);
         if (error) throw error;
         toast.success("Departamento criado");
       }
       setModalOpen(false);
       fetchDeps();
     } catch (e: any) {
-      toast.error(e.message);
+      console.error("Erro ao salvar departamento:", e);
+      toast.error(e.message || "Erro ao salvar alterações");
     }
   };
 
-   const openEdit = (dep: any) => {
-     setEditingDep(dep);
-     setFormData({ 
-       name: dep.name, 
-       description: dep.description || "", 
-       active: dep.active,
-       manager_id: dep.manager_id || ""
-     });
-     setModalOpen(true);
-   };
+  const openEdit = (dep: any) => {
+    setEditingDep(dep);
+    setFormData({
+      name: dep.name,
+      description: dep.description || "",
+      active: dep.active === false ? false : true,
+      manager_id: dep.manager_id || "none"
+    });
+    setModalOpen(true);
+  };
 
-   const openNew = () => {
-     setEditingDep(null);
-     setFormData({ name: "", description: "", active: true, manager_id: "" });
-     setModalOpen(true);
-   };
+  const openNew = () => {
+    setEditingDep(null);
+    setFormData({
+      name: "",
+      description: "",
+      active: true,
+      manager_id: "none"
+    });
+    setModalOpen(true);
+  };
 
   return (
     <div className="space-y-6">

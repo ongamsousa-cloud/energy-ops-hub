@@ -345,11 +345,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         matricula: form.matricula,
         unidade_filial: form.unidade_filial,
         tipo_vinculo: form.tipo_vinculo,
-        supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
-        regiao_atuacao: form.regiao_atuacao,
-        veiculo_vinculado: form.veiculo_vinculado,
-        horario_trabalho: form.horario_trabalho,
-        servicos_habilitados: form.servicos_habilitados
+        supervisor_id: form.supervisor_id === "" || form.supervisor_id === "none" ? null : form.supervisor_id,
+        regiao_atuacao: form.regiao_atuacao || "",
+        veiculo_vinculado: form.veiculo_vinculado || "",
+        horario_trabalho: form.horario_trabalho || "",
+        servicos_habilitados: form.servicos_habilitados || []
       };
 
       let res;
@@ -368,28 +368,31 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
        if (res.error) throw res.error;
 
        // Also update profile to keep them in sync
-       if (finalUserId) {
-         const profileData: any = {
-           nome: form.nome,
-           email: form.email,
-           telefone: form.telefone,
-           cpf: form.cpf,
-           rg: form.rg,
-           cargo: form.cargo,
-           data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
-           data_admissao: (form.admission_date || form.data_admissao) === "" ? null : (form.admission_date || form.data_admissao),
-           cep: form.cep,
-           endereco_residencial: form.endereco_residencial,
-           bairro: form.bairro,
-           cidade: form.cidade,
-           estado: form.estado,
-           foto_url: fotoUrl,
-            department_id: form.department_id === "" ? null : form.department_id,
-            supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
-            ativo: form.is_active
-          };
-          await supabase.from("profiles").update(profileData).eq("id", finalUserId);
-       }
+      if (finalUserId) {
+        const selectedSupervisor = supervisors.find(s => s.id === form.supervisor_id);
+        const supervisorAuthId = selectedSupervisor?.user_id || null;
+
+        const profileData: any = {
+          nome: form.nome,
+          email: form.email,
+          telefone: form.telefone,
+          cpf: form.cpf,
+          rg: form.rg,
+          cargo: form.cargo,
+          data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
+          data_admissao: (form.admission_date || form.data_admissao) === "" ? null : (form.admission_date || form.data_admissao),
+          cep: form.cep,
+          endereco_residencial: form.endereco_residencial,
+          bairro: form.bairro,
+          cidade: form.cidade,
+          estado: form.estado,
+          foto_url: fotoUrl,
+          department_id: form.department_id === "" || form.department_id === "none" ? null : form.department_id,
+          supervisor_id: supervisorAuthId,
+          ativo: form.is_active
+        };
+        await supabase.from("profiles").update(profileData).eq("id", finalUserId);
+      }
 
 
        // Gerenciamento de usuário via Edge Function

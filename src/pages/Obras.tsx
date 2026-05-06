@@ -26,16 +26,23 @@ export default function Obras() {
    const [open, setOpen] = useState(false);
    const [editingId, setEditingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
-   const [form, setForm] = useState<any>({ 
-     numero: "", 
-     nome: "", 
-     cidade: "", 
-     estado: "", 
-     status: "aberta",
-     cep: "",
-     bairro: "",
-     endereco: ""
-   });
+  const [supervisors, setSupervisors] = useState<any[]>([]);
+  const [form, setForm] = useState<any>({
+    numero: "",
+    nome: "",
+    cliente: "",
+    cep: "",
+    endereco: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    status: "aberta",
+    descricao: "",
+    data_inicio: "",
+    previsao_conclusao: "",
+    responsavel_tecnico: "",
+    supervisor_id: "none"
+  });
    const [searchingCep, setSearchingCep] = useState(false);
 
    async function clearAll() {
@@ -46,9 +53,12 @@ export default function Obras() {
      load();
    }
 
-   async function handleCepSearch() {
-     const cep = form.cep?.replace(/\D/g, "");
-     if (cep?.length !== 8) return toast.error("CEP inválido");
+    async function handleCepSearch(forcedCep?: string) {
+      const cep = (forcedCep || form.cep)?.replace(/\D/g, "");
+      if (cep?.length !== 8) {
+        if (!forcedCep) toast.error("CEP inválido");
+        return;
+      }
      setSearchingCep(true);
      try {
        const data = await cepService.buscarCep(cep);
@@ -71,30 +81,63 @@ export default function Obras() {
      }
    }
  
-   async function load() {
-    const { data } = await supabase.from("obras").select("*").order("created_at", { ascending: false });
-    setRows(data ?? []);
+  async function load() {
+    const [{ data: obrasData }, { data: supervisorsData }] = await Promise.all([
+      supabase.from("obras").select("*").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, nome").eq("role", "supervisor").order("nome")
+    ]);
+    setRows(obrasData ?? []);
+    setSupervisors(supervisorsData ?? []);
   }
   useEffect(() => { load(); }, []);
 
-   async function save() {
-     if (!form.numero || !form.nome) return toast.error("Número e nome são obrigatórios");
-     
-     if (editingId) {
-       const { error } = await supabase.from("obras").update(form).eq("id", editingId);
-       if (error) return toast.error(error.message);
-       toast.success("Obra atualizada");
-     } else {
-       const { error } = await supabase.from("obras").insert(form);
-       if (error) return toast.error(error.message);
-       toast.success("Obra criada");
-     }
-     
-     setOpen(false);
-     setEditingId(null);
-     setForm({ numero: "", nome: "", cidade: "", estado: "", status: "aberta", cep: "", bairro: "", endereco: "", cliente: "", descricao: "" });
-     load();
-   }
+  async function save() {
+    if (!form.numero?.trim() || !form.nome?.trim()) return toast.error("Número e nome são obrigatórios");
+
+    const dataToSave = {
+      ...form,
+      numero: form.numero.trim(),
+      nome: form.nome.trim(),
+      supervisor_id: form.supervisor_id === "none" || !form.supervisor_id ? null : form.supervisor_id,
+      data_inicio: form.data_inicio || null,
+      previsao_conclusao: form.previsao_conclusao || null
+    };
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from("obras").update(dataToSave).eq("id", editingId);
+        if (error) throw error;
+        toast.success("Obra atualizada com sucesso");
+      } else {
+        const { error } = await supabase.from("obras").insert(dataToSave);
+        if (error) throw error;
+        toast.success("Obra criada com sucesso");
+      }
+
+      setOpen(false);
+      setEditingId(null);
+      setForm({
+        numero: "",
+        nome: "",
+        cliente: "",
+        cep: "",
+        endereco: "",
+        bairro: "",
+        cidade: "",
+        estado: "",
+        status: "aberta",
+        descricao: "",
+        data_inicio: "",
+        previsao_conclusao: "",
+        responsavel_tecnico: "",
+        supervisor_id: "none"
+      });
+      load();
+    } catch (error: any) {
+      console.error("Erro ao salvar obra:", error);
+      toast.error(error.message || "Erro ao salvar obra");
+    }
+  }
 
    async function remove(id: string) {
      if (!confirm("Tem certeza que deseja excluir esta obra?")) return;
@@ -104,22 +147,26 @@ export default function Obras() {
      load();
    }
 
-   function edit(obra: any) {
-     setForm({
-       numero: obra.numero,
-       nome: obra.nome,
-       cliente: obra.cliente || "",
-       cep: obra.cep || "",
-       endereco: obra.endereco || "",
-       bairro: obra.bairro || "",
-       cidade: obra.cidade || "",
-       estado: obra.estado || "",
-       status: obra.status,
-       descricao: obra.descricao || ""
-     });
-     setEditingId(obra.id);
-     setOpen(true);
-   }
+  function edit(obra: any) {
+    setForm({
+      numero: obra.numero,
+      nome: obra.nome,
+      cliente: obra.cliente || "",
+      cep: obra.cep || "",
+      endereco: obra.endereco || "",
+      bairro: obra.bairro || "",
+      cidade: obra.cidade || "",
+      estado: obra.estado || "",
+      status: obra.status,
+      descricao: obra.descricao || "",
+      data_inicio: obra.data_inicio || "",
+      previsao_conclusao: obra.previsao_conclusao || "",
+      responsavel_tecnico: obra.responsavel_tecnico || "",
+      supervisor_id: obra.supervisor_id || "none"
+    });
+    setEditingId(obra.id);
+    setOpen(true);
+  }
 
    async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
      const file = e.target.files?.[0];
@@ -142,18 +189,26 @@ export default function Obras() {
 
        if (data.length === 0) return toast.error("Planilha vazia ou inválida");
 
-       const toInsert = data.map((item: any) => ({
-         numero: String(item.numero || item.Numero || item.code || ""),
-         nome: String(item.nome || item.Nome || item.description || ""),
-         cliente: String(item.cliente || item.Cliente || ""),
-         endereco: String(item.endereco || item.Endereço || ""),
-         bairro: String(item.bairro || item.Bairro || ""),
-         cidade: String(item.cidade || item.Cidade || ""),
-         estado: String(item.estado || item.Estado || ""),
-         cep: String(item.cep || item.CEP || ""),
-         status: "aberta" as any,
-         ativo: true
-       })).filter(i => i.numero && i.nome);
+        const toInsert = data.map((item: any) => {
+          // Normalize keys to lowercase for easier mapping
+          const normalizedItem: any = {};
+          Object.keys(item).forEach(key => {
+            normalizedItem[key.toLowerCase().trim()] = item[key];
+          });
+
+          return {
+            numero: String(normalizedItem.numero || normalizedItem.codigo || normalizedItem.code || normalizedItem['nº obra'] || ""),
+            nome: String(normalizedItem.nome || normalizedItem.obra || normalizedItem.descrição || normalizedItem.description || ""),
+            cliente: String(normalizedItem.cliente || normalizedItem.customer || ""),
+            endereco: String(normalizedItem.endereco || normalizedItem.endereço || normalizedItem.address || normalizedItem.logradouro || ""),
+            bairro: String(normalizedItem.bairro || normalizedItem.neighborhood || ""),
+            cidade: String(normalizedItem.cidade || normalizedItem.city || ""),
+            estado: String(normalizedItem.estado || normalizedItem.uf || normalizedItem.state || ""),
+            cep: String(normalizedItem.cep || normalizedItem.zipcode || ""),
+            status: "aberta" as any,
+            ativo: true
+          };
+        }).filter(i => i.numero && i.nome && i.numero !== "undefined" && i.nome !== "undefined");
 
        if (toInsert.length === 0) return toast.error("Nenhum dado válido encontrado na planilha. Verifique se as colunas 'numero' e 'nome' existem.");
 
@@ -208,32 +263,119 @@ export default function Obras() {
                </DialogTrigger>
                <DialogContent>
                  <DialogHeader><DialogTitle>{editingId ? "Editar obra" : "Nova obra"}</DialogTitle></DialogHeader>
-               <div className="grid gap-3 sm:grid-cols-2 max-h-[60vh] overflow-y-auto pr-2">
-                 <div><Label>Número da Obra *</Label><Input value={form.numero} onChange={(e)=>setForm({...form, numero: e.target.value})} /></div>
-                 <div><Label>Nome da Obra *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})} /></div>
-                 <div className="sm:col-span-2">
-                   <Label>CEP</Label>
-                   <div className="flex gap-2">
-                     <Input placeholder="00000-000" value={form.cep} onChange={(e)=>setForm({...form, cep: e.target.value})} />
-                     <Button size="icon" variant="outline" type="button" onClick={handleCepSearch} disabled={searchingCep}>
-                       <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
-                     </Button>
-                   </div>
-                 </div>
-                 <div className="sm:col-span-2"><Label>Cliente</Label><Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} /></div>
-                 <div className="sm:col-span-2"><Label>Endereço</Label><Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} /></div>
-                 <div><Label>Bairro</Label><Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} /></div>
-                 <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} /></div>
-                  <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
-                 <div>
-                   <Label>Status</Label>
-                   <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
-                     <SelectTrigger><SelectValue/></SelectTrigger>
-                     <SelectContent>{STATUS.map((s)=>(<SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>))}</SelectContent>
-                   </Select>
-                 </div>
-                 <div className="sm:col-span-2"><Label>Descrição</Label><Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} /></div>
-              </div>
+                <div className="grid gap-4 sm:grid-cols-2 max-h-[70vh] overflow-y-auto pr-2">
+                  <div className="space-y-2">
+                    <Label>Código / Número da Obra *</Label>
+                    <Input 
+                      placeholder="Ex: OB-2024-001" 
+                      value={form.numero} 
+                      onChange={(e)=>setForm({...form, numero: e.target.value})} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nome da Obra *</Label>
+                    <Input 
+                      placeholder="Ex: Reforma Centro" 
+                      value={form.nome} 
+                      onChange={(e)=>setForm({...form, nome: e.target.value})} 
+                    />
+                  </div>
+                  
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>CEP</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="00000-000" 
+                        value={form.cep} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setForm({...form, cep: val});
+                          if (val.replace(/\D/g, "").length === 8) {
+                            // Auto-search if 8 digits
+                            setTimeout(() => {
+                              const currentCep = val.replace(/\D/g, "");
+                              if (currentCep.length === 8) handleCepSearch(currentCep);
+                            }, 500);
+                          }
+                        }} 
+                      />
+                      <Button size="icon" variant="outline" type="button" onClick={() => handleCepSearch()} disabled={searchingCep}>
+                        <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Cliente</Label>
+                    <Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Endereço</Label>
+                    <Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Bairro</Label>
+                    <Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Cidade</Label>
+                    <Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Estado</Label>
+                    <Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
+                      <SelectTrigger><SelectValue/></SelectTrigger>
+                      <SelectContent>
+                        {STATUS.map((s)=>(
+                          <SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Supervisor Responsável</Label>
+                    <Select 
+                      value={form.supervisor_id} 
+                      onValueChange={(v)=>setForm({...form, supervisor_id: v})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um supervisor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem supervisor</SelectItem>
+                        {supervisors.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Responsável Técnico</Label>
+                    <Input value={form.responsavel_tecnico ?? ""} onChange={(e)=>setForm({...form, responsavel_tecnico: e.target.value})} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Data de Início</Label>
+                    <Input type="date" value={form.data_inicio ?? ""} onChange={(e)=>setForm({...form, data_inicio: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Previsão de Conclusão</Label>
+                    <Input type="date" value={form.previsao_conclusao ?? ""} onChange={(e)=>setForm({...form, previsao_conclusao: e.target.value})} />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Descrição / Observações</Label>
+                    <Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} />
+                  </div>
+                </div>
                <Button onClick={save}>Salvar</Button>
              </DialogContent>
            </Dialog>

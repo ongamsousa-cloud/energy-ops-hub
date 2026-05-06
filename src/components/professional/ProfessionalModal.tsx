@@ -41,6 +41,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     cpf: "",
     rg: "",
     telefone: "",
+    whatsapp: "",
     data_nascimento: "",
     endereco_residencial: "",
     bairro: "",
@@ -51,9 +52,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     department_id: "",
     role: "campo" as AppRole,
     internal_company_code: "",
+    matricula: "",
     service_code: "",
     operational_role: "",
-    employee_type: "field_worker",
+    unidade_filial: "",
+    tipo_vinculo: "CLT",
+    supervisor_id: "",
+    regiao_atuacao: "",
+    veiculo_vinculado: "",
+    horario_trabalho: "",
+    servicos_habilitados: [] as string[],
+    employee_type: "field_worker" as any,
     status: "active",
     is_active: true,
     can_access_system: false,
@@ -70,9 +79,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
   const [form, setForm] = useState(initialFormState);
   const [showPassword, setShowPassword] = useState(false);
+  const [supervisors, setSupervisors] = useState<any[]>([]);
+  const [allServices, setAllServices] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
+      fetchSupervisorsAndServices();
       if (professional) {
         setForm({
           nome: professional.nome || "",
@@ -82,6 +94,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cpf: professional.cpf || "",
           rg: professional.rg || "",
           telefone: professional.telefone || "",
+          whatsapp: professional.whatsapp || "",
             data_nascimento: professional.birth_date || professional.data_nascimento || "",
             endereco_residencial: professional.residential_address || professional.endereco_residencial || "",
             bairro: professional.neighborhood || professional.bairro || "",
@@ -92,8 +105,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           department_id: professional.department_id || "",
           role: (professional.user_roles?.[0]?.role as AppRole) || "campo",
           internal_company_code: professional.internal_company_code || "",
+          matricula: professional.matricula || "",
           service_code: professional.service_code || "",
           operational_role: professional.operational_role || "",
+          unidade_filial: professional.unidade_filial || "",
+          tipo_vinculo: professional.tipo_vinculo || "CLT",
+          supervisor_id: professional.supervisor_id || "",
+          regiao_atuacao: professional.regiao_atuacao || "",
+          veiculo_vinculado: professional.veiculo_vinculado || "",
+          horario_trabalho: professional.horario_trabalho || "",
+          servicos_habilitados: professional.servicos_habilitados || [],
           employee_type: professional.employee_type || "field_worker",
           status: professional.status || "active",
           is_active: professional.is_active ?? true,
@@ -115,6 +136,15 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       }
     }
   }, [open, professional]);
+
+  const fetchSupervisorsAndServices = async () => {
+    const [{ data: emps }, { data: servs }] = await Promise.all([
+      supabase.from("employees").select("id, full_name").eq("status", "active"),
+      supabase.from("servicos").select("id, nome").eq("ativo", true)
+    ]);
+    setSupervisors(emps ?? []);
+    setAllServices(servs ?? []);
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -203,7 +233,16 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         residential_address: form.endereco_residencial,
         neighborhood: form.bairro,
         city: form.cidade,
-        state: form.estado
+        state: form.estado,
+        whatsapp: form.whatsapp,
+        matricula: form.matricula,
+        unidade_filial: form.unidade_filial,
+        tipo_vinculo: form.tipo_vinculo,
+        supervisor_id: form.supervisor_id === "" ? null : form.supervisor_id,
+        regiao_atuacao: form.regiao_atuacao,
+        veiculo_vinculado: form.veiculo_vinculado,
+        horario_trabalho: form.horario_trabalho,
+        servicos_habilitados: form.servicos_habilitados
       };
 
       let res;

@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { Card } from "@/components/ui/card";
+ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

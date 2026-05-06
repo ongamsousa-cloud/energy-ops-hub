@@ -81,8 +81,16 @@ export default function OSDetalhe() {
     const isDeptManager = hasRole(["gestor"]) && os?.department_id === profile?.department_id;
     const canApprove = isSystemAdmin || isDeptManager || hasRole(["supervisor"]);
     const isGestor = isSystemAdmin || isDeptManager;
-    const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
-                   ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes(os?.status || os?.operational_status);
+  const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
+                 ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
+
+  const [startValidation, setStartValidation] = useState<{ can_start: boolean, blocked_by: string[], message: string } | null>(null);
+
+  useEffect(() => {
+    if (os && user) {
+      osService.canStartWorkOrder(os.id, user.id).then(setStartValidation);
+    }
+  }, [os, user]);
 
    const load = useCallback(async () => {
        const { data: o, error: osError } = await supabase.from("ordens_servico")

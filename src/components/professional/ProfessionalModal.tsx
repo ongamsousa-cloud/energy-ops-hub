@@ -167,9 +167,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     }
   };
 
-  const handleCepBlur = async () => {
+  const handleCepSearch = async () => {
     const cep = form.cep.replace(/\D/g, "");
-    if (cep.length !== 8) return;
+    if (cep.length !== 8) {
+      toast.error("CEP inválido. Digite 8 números.");
+      return;
+    }
 
     setSearchingCep(true);
     try {
@@ -179,18 +182,28 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           ...prev,
           endereco_residencial: data.logradouro || prev.endereco_residencial,
           bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          estado: data.uf || prev.estado
+          cidade: data.localidade || prev.city || data.localidade || prev.cidade,
+          estado: data.uf || data.state || data.uf || prev.estado
         }));
-        toast.success("Endereço preenchido automaticamente");
+        toast.success("Endereço localizado com sucesso!");
       } else {
-        toast.error("CEP não encontrado");
+        toast.error("CEP não encontrado nas bases oficiais.");
       }
     } catch (error) {
-      toast.error("Erro ao buscar CEP");
+      console.error("Erro ao buscar CEP:", error);
+      toast.error("Erro de conexão ao buscar CEP");
     } finally {
       setSearchingCep(false);
     }
+  };
+
+  const generateTemporaryPassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
+    let pass = "";
+    for (let i = 0; i < 10; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    setForm(prev => ({ ...prev, password: pass }));
+    setShowPassword(true);
+    toast.success("Senha provisória gerada");
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -221,8 +234,8 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   };
 
   const handleSave = async () => {
-    if (!form.nome || !form.email || !form.internal_company_code || !form.service_code) {
-      return toast.error("Nome, E-mail, Cód. Interno e Cód. Serviço são obrigatórios para um cadastro profissional.");
+    if (!form.nome || !form.email) {
+      return toast.error("Nome e E-mail são campos obrigatórios.");
     }
     
     setLoading(true);

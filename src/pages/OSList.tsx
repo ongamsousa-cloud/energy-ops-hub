@@ -5,10 +5,11 @@ import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
-  import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard } from "lucide-react";
+ import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard, MoreHorizontal, FileText, MapPin, Building2, User } from "lucide-react";
  import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Badge } from "@/components/ui/badge";
+ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Calendar as CalendarComponent } from "@/components/ui/calendar";
  import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
@@ -295,42 +296,94 @@ export default function OSList() {
           </div>
         </div>
 
-       {filteredRows.length === 0 ? (
-         <EmptyState title="Nenhuma OS encontrada" description="Tente ajustar os filtros ou pesquisar por outro termo." />
-       ) : (
-         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-           {filteredRows.map((r) => (
-             <Link key={r.id} to={`/app/os/${r.id}`} className="block group">
-               <div className="rounded-xl border border-border bg-card p-4 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
-                 <div className="flex justify-between items-start mb-3">
-                   <div className="font-mono text-xs font-bold text-primary">{r.numero}</div>
-                    <StatusBadge status={r.operational_status || r.status} />
-                 </div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-sm line-clamp-1">{r.obra?.nome}</h3>
-                    {r.department?.name && (
-                      <Badge variant="secondary" className="text-[9px] h-4 px-1">
-                        {r.department.acronym ? `${r.department.acronym} - ` : ""}{r.department.name}
-                      </Badge>
-                    )}
-                  </div>
-                 <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
-                   {r.cidade || r.obra?.cidade || 'Local não informado'} · {r.bairro || r.obra?.bairro || 'Bairro'}
-                 </p>
-                 <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                     <Calendar className="h-3.5 w-3.5" />
-                     {new Date(r.created_at).toLocaleDateString()}
-                   </div>
-                   <div className="text-xs font-medium px-2 py-0.5 rounded-full bg-muted">
-                     {r.prioridade?.toUpperCase() || 'MÉDIA'}
-                   </div>
-                 </div>
-               </div>
-             </Link>
-           ))}
-         </div>
-       )}
+        {filteredRows.length === 0 ? (
+          <EmptyState title="Nenhuma OS encontrada" description="Tente ajustar os filtros ou pesquisar por outro termo." />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left">N° OS</th>
+                  <th className="px-4 py-3 text-left">Obra / Cliente</th>
+                  <th className="px-4 py-3 text-left">Localização</th>
+                  <th className="px-4 py-3 text-left">Setor</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Data</th>
+                  <th className="px-4 py-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {filteredRows.map((r) => (
+                  <tr key={r.id} className="hover:bg-accent/30 transition-colors group">
+                    <td className="px-4 py-4">
+                      <div className="font-mono font-bold text-primary text-xs">{r.numero || `OS-${r.id.substring(0,6).toUpperCase()}`}</div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-foreground line-clamp-1">{r.obra?.nome || r.titulo || "Sem nome"}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" />
+                        <span className="text-xs line-clamp-1">
+                          {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      {r.department?.name ? (
+                        <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">
+                          {r.department.acronym || r.department.name}
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Geral</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
+                      <StatusBadge status={r.operational_status || r.status} />
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem asChild>
+                            <Link to={`/app/os/${r.id}`} className="flex items-center">
+                              <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
+                              <Building2 className="mr-2 h-4 w-4" /> Ver Obra
+                            </Link>
+                          </DropdownMenuItem>
+                          {r.profissional_id && (
+                            <DropdownMenuItem className="flex items-center">
+                              <User className="mr-2 h-4 w-4" /> Profissional: {r.profissional?.nome || "Carregando..."}
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
     </div>
   );
 }

@@ -306,10 +306,15 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                       <Label className="text-xs font-medium">Data de Admissão</Label>
                       <Input type="date" value={form.admission_date} onChange={(e) => setForm({ ...form, admission_date: e.target.value })} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cargo / Função Administrativa</Label>
-                      <Input value={form.cargo} onChange={(e) => setForm({ ...form, cargo: e.target.value })} placeholder="Ex: Engenheiro de Campo" />
-                    </div>
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold uppercase text-muted-foreground">Cargo / Função Administrativa</Label>
+                       <Input 
+                         className="h-10 text-sm border-primary/20 bg-primary/5 focus:ring-primary/20 font-medium" 
+                         value={form.cargo} 
+                         onChange={(e) => setForm({ ...form, cargo: e.target.value })} 
+                         placeholder="Ex: Engenheiro de Campo" 
+                       />
+                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Departamento</Label>
                       <Select value={form.department_id} onValueChange={(v) => setForm({ ...form, department_id: v })}>

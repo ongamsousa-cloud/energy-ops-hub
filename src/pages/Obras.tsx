@@ -186,18 +186,26 @@ export default function Obras() {
 
        if (data.length === 0) return toast.error("Planilha vazia ou inválida");
 
-       const toInsert = data.map((item: any) => ({
-         numero: String(item.numero || item.Numero || item.code || ""),
-         nome: String(item.nome || item.Nome || item.description || ""),
-         cliente: String(item.cliente || item.Cliente || ""),
-         endereco: String(item.endereco || item.Endereço || ""),
-         bairro: String(item.bairro || item.Bairro || ""),
-         cidade: String(item.cidade || item.Cidade || ""),
-         estado: String(item.estado || item.Estado || ""),
-         cep: String(item.cep || item.CEP || ""),
-         status: "aberta" as any,
-         ativo: true
-       })).filter(i => i.numero && i.nome);
+        const toInsert = data.map((item: any) => {
+          // Normalize keys to lowercase for easier mapping
+          const normalizedItem: any = {};
+          Object.keys(item).forEach(key => {
+            normalizedItem[key.toLowerCase().trim()] = item[key];
+          });
+
+          return {
+            numero: String(normalizedItem.numero || normalizedItem.codigo || normalizedItem.code || normalizedItem['nº obra'] || ""),
+            nome: String(normalizedItem.nome || normalizedItem.obra || normalizedItem.descrição || normalizedItem.description || ""),
+            cliente: String(normalizedItem.cliente || normalizedItem.customer || ""),
+            endereco: String(normalizedItem.endereco || normalizedItem.endereço || normalizedItem.address || normalizedItem.logradouro || ""),
+            bairro: String(normalizedItem.bairro || normalizedItem.neighborhood || ""),
+            cidade: String(normalizedItem.cidade || normalizedItem.city || ""),
+            estado: String(normalizedItem.estado || normalizedItem.uf || normalizedItem.state || ""),
+            cep: String(normalizedItem.cep || normalizedItem.zipcode || ""),
+            status: "aberta" as any,
+            ativo: true
+          };
+        }).filter(i => i.numero && i.nome && i.numero !== "undefined" && i.nome !== "undefined");
 
        if (toInsert.length === 0) return toast.error("Nenhum dado válido encontrado na planilha. Verifique se as colunas 'numero' e 'nome' existem.");
 
@@ -276,9 +284,19 @@ export default function Obras() {
                       <Input 
                         placeholder="00000-000" 
                         value={form.cep} 
-                        onChange={(e)=>setForm({...form, cep: e.target.value})} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setForm({...form, cep: val});
+                          if (val.replace(/\D/g, "").length === 8) {
+                            // Auto-search if 8 digits
+                            setTimeout(() => {
+                              const currentCep = val.replace(/\D/g, "");
+                              if (currentCep.length === 8) handleCepSearch(currentCep);
+                            }, 500);
+                          }
+                        }} 
                       />
-                      <Button size="icon" variant="outline" type="button" onClick={handleCepSearch} disabled={searchingCep}>
+                      <Button size="icon" variant="outline" type="button" onClick={() => handleCepSearch()} disabled={searchingCep}>
                         <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
                       </Button>
                     </div>

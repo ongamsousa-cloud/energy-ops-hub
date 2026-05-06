@@ -252,32 +252,109 @@ export default function Obras() {
                </DialogTrigger>
                <DialogContent>
                  <DialogHeader><DialogTitle>{editingId ? "Editar obra" : "Nova obra"}</DialogTitle></DialogHeader>
-               <div className="grid gap-3 sm:grid-cols-2 max-h-[60vh] overflow-y-auto pr-2">
-                 <div><Label>Número da Obra *</Label><Input value={form.numero} onChange={(e)=>setForm({...form, numero: e.target.value})} /></div>
-                 <div><Label>Nome da Obra *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})} /></div>
-                 <div className="sm:col-span-2">
-                   <Label>CEP</Label>
-                   <div className="flex gap-2">
-                     <Input placeholder="00000-000" value={form.cep} onChange={(e)=>setForm({...form, cep: e.target.value})} />
-                     <Button size="icon" variant="outline" type="button" onClick={handleCepSearch} disabled={searchingCep}>
-                       <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
-                     </Button>
-                   </div>
-                 </div>
-                 <div className="sm:col-span-2"><Label>Cliente</Label><Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} /></div>
-                 <div className="sm:col-span-2"><Label>Endereço</Label><Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} /></div>
-                 <div><Label>Bairro</Label><Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} /></div>
-                 <div><Label>Cidade</Label><Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} /></div>
-                  <div><Label>Estado</Label><Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} /></div>
-                 <div>
-                   <Label>Status</Label>
-                   <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
-                     <SelectTrigger><SelectValue/></SelectTrigger>
-                     <SelectContent>{STATUS.map((s)=>(<SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>))}</SelectContent>
-                   </Select>
-                 </div>
-                 <div className="sm:col-span-2"><Label>Descrição</Label><Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} /></div>
-              </div>
+                <div className="grid gap-4 sm:grid-cols-2 max-h-[70vh] overflow-y-auto pr-2">
+                  <div className="space-y-2">
+                    <Label>Código / Número da Obra *</Label>
+                    <Input 
+                      placeholder="Ex: OB-2024-001" 
+                      value={form.numero} 
+                      onChange={(e)=>setForm({...form, numero: e.target.value})} 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nome da Obra *</Label>
+                    <Input 
+                      placeholder="Ex: Reforma Centro" 
+                      value={form.nome} 
+                      onChange={(e)=>setForm({...form, nome: e.target.value})} 
+                    />
+                  </div>
+                  
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>CEP</Label>
+                    <div className="flex gap-2">
+                      <Input 
+                        placeholder="00000-000" 
+                        value={form.cep} 
+                        onChange={(e)=>setForm({...form, cep: e.target.value})} 
+                      />
+                      <Button size="icon" variant="outline" type="button" onClick={handleCepSearch} disabled={searchingCep}>
+                        <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Cliente</Label>
+                    <Input value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Endereço</Label>
+                    <Input value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Bairro</Label>
+                    <Input value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Cidade</Label>
+                    <Input value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Estado</Label>
+                    <Input value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Status</Label>
+                    <Select value={form.status} onValueChange={(v)=>setForm({...form, status: v})}>
+                      <SelectTrigger><SelectValue/></SelectTrigger>
+                      <SelectContent>
+                        {STATUS.map((s)=>(
+                          <SelectItem key={s} value={s}>{s.replace(/_/g," ")}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Supervisor Responsável</Label>
+                    <Select 
+                      value={form.supervisor_id} 
+                      onValueChange={(v)=>setForm({...form, supervisor_id: v})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um supervisor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem supervisor</SelectItem>
+                        {supervisors.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.nome}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Responsável Técnico</Label>
+                    <Input value={form.responsavel_tecnico ?? ""} onChange={(e)=>setForm({...form, responsavel_tecnico: e.target.value})} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Data de Início</Label>
+                    <Input type="date" value={form.data_inicio ?? ""} onChange={(e)=>setForm({...form, data_inicio: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Previsão de Conclusão</Label>
+                    <Input type="date" value={form.previsao_conclusao ?? ""} onChange={(e)=>setForm({...form, previsao_conclusao: e.target.value})} />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Descrição / Observações</Label>
+                    <Textarea value={form.descricao ?? ""} onChange={(e)=>setForm({...form, descricao: e.target.value})} />
+                  </div>
+                </div>
                <Button onClick={save}>Salvar</Button>
              </DialogContent>
            </Dialog>

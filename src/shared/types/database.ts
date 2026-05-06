@@ -2397,6 +2397,7 @@ export type Database = {
           longitude: number | null
           nome: string
           numero: string
+          numero_endereco: string | null
           observacoes: string | null
           previsao_conclusao: string | null
           responsavel_tecnico: string | null
@@ -2422,6 +2423,7 @@ export type Database = {
           longitude?: number | null
           nome: string
           numero: string
+          numero_endereco?: string | null
           observacoes?: string | null
           previsao_conclusao?: string | null
           responsavel_tecnico?: string | null
@@ -2447,6 +2449,7 @@ export type Database = {
           longitude?: number | null
           nome?: string
           numero?: string
+          numero_endereco?: string | null
           observacoes?: string | null
           previsao_conclusao?: string | null
           responsavel_tecnico?: string | null
@@ -2605,6 +2608,7 @@ export type Database = {
           localizacao_gps: Json | null
           motivo_reprovacao: string | null
           numero: string
+          numero_endereco: string | null
           obra_id: string
           observacao_supervisor: string | null
           observacoes: string | null
@@ -2677,6 +2681,7 @@ export type Database = {
           localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
+          numero_endereco?: string | null
           obra_id: string
           observacao_supervisor?: string | null
           observacoes?: string | null
@@ -2749,6 +2754,7 @@ export type Database = {
           localizacao_gps?: Json | null
           motivo_reprovacao?: string | null
           numero?: string
+          numero_endereco?: string | null
           obra_id?: string
           observacao_supervisor?: string | null
           observacoes?: string | null

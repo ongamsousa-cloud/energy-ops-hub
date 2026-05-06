@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Switch } from "@/components/ui/switch";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Textarea } from "@/components/ui/textarea";
+import { maskCPF, maskPhone } from "@/lib/utils/masks";
 
 interface ProfessionalModalProps {
   open: boolean;
@@ -173,7 +174,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden flex flex-col">
-         <DialogHeader className="p-[20px] pb-2 border-b bg-muted/30">
+         <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             {professional ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
             {professional ? "Perfil do Funcionário" : "Cadastrar Novo Funcionário"}
@@ -184,7 +185,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         </DialogHeader>
 
         <ScrollArea className="flex-1">
-          <div className="p-[20px] grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8">
             <div className="md:col-span-3 flex flex-col items-center gap-4 border-r pr-6">
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-muted shadow-sm">
@@ -263,11 +264,19 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Telefone / WhatsApp</Label>
-                      <Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} placeholder="(00) 00000-0000" />
+                      <Input 
+                         value={form.telefone} 
+                         onChange={(e) => setForm({ ...form, telefone: maskPhone(e.target.value) })} 
+                         placeholder="+55 (00) 00000-0000" 
+                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">CPF</Label>
-                      <Input value={form.cpf} onChange={(e) => setForm({ ...form, cpf: e.target.value })} placeholder="000.000.000-00" />
+                      <Input 
+                         value={form.cpf} 
+                         onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} 
+                         placeholder="000.000.000-00" 
+                       />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Data de Admissão</Label>
@@ -450,7 +459,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           </div>
         </ScrollArea>
 
-        <DialogFooter className="p-[15px] border-t bg-muted/30">
+        <DialogFooter className="p-6 border-t bg-muted/30">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Cancelar
           </Button>

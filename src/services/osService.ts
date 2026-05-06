@@ -3,10 +3,16 @@
  import { OSStatus } from "@/shared/status/os-status";
 
 class OSService {
-   async updateStatus(osId: string, status: OSStatus, userId: string, details?: any) {
+   async updateStatus(osId: string, status: OSStatus, userId: string, details: {
+     action?: string;
+     comentario?: string;
+     from_department_id?: string;
+     to_department_id?: string;
+     payload?: any;
+   } = {}) {
      const { data: currentOS, error: fetchError } = await supabase
        .from("ordens_servico")
-       .select("operational_status")
+       .select("operational_status, department_id")
        .eq("id", osId)
        .single();
 
@@ -22,25 +28,18 @@ class OSService {
 
      if (updateError) throw updateError;
 
-      // Log the change in os_audit_logs (using as any to bypass type mismatch until regeneration)
-      await (supabase.from("os_audit_logs") as any).insert({
-        os_id: osId,
-        user_id: userId,
-        action: 'status_change',
-        old_value: currentOS?.operational_status,
-        new_value: status,
-        details: details || {}
-      });
-
-      // Also update os_history if it exists for legacy compatibility
-      await (supabase.from("os_history") as any).insert({
-        os_id: osId,
-        user_id: userId,
-        action: `Alteração de status para ${status}`,
-        old_status: currentOS?.operational_status,
-        new_status: status,
-        details: details || {}
-      });
+     // Log the change in os_audit_logs
+     await supabase.from("os_audit_logs").insert({
+       os_id: osId,
+       user_id: userId,
+       status_anterior: currentOS?.operational_status,
+       status_novo: status,
+       comentario: details.comentario || "",
+       action: details.action || 'status_change',
+       from_department_id: details.from_department_id || currentOS?.department_id,
+       to_department_id: details.to_department_id,
+       payload: details.payload || {}
+     });
    }
 
    async getOS(osId: string) {

@@ -36,6 +36,7 @@ export default function Obras() {
     bairro: "",
     cidade: "",
     estado: "",
+    numero_endereco: "",
     status: "aberta",
     descricao: "",
     data_inicio: "",
@@ -157,6 +158,7 @@ export default function Obras() {
       bairro: obra.bairro || "",
       cidade: obra.cidade || "",
       estado: obra.estado || "",
+      numero_endereco: obra.numero_endereco || "",
       status: obra.status,
       descricao: obra.descricao || "",
       data_inicio: obra.data_inicio || "",
@@ -294,55 +296,67 @@ export default function Obras() {
                      </div>
                    </div>
  
-                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-4 border-t border-dashed">
-                     <div className="md:col-span-4 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
-                       <div className="relative">
-                         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                         <Input 
-                           placeholder="00000-000" 
-                           className="pl-9 h-11 border-primary/10"
-                           value={form.cep} 
-                           onChange={(e) => {
-                             const val = e.target.value;
-                             setForm({...form, cep: val});
-                             if (val.replace(/\D/g, "").length === 8) {
-                               setTimeout(() => {
-                                 const currentCep = val.replace(/\D/g, "");
-                                 if (currentCep.length === 8) handleCepSearch(currentCep);
-                               }, 500);
-                             }
-                           }} 
-                         />
-                       </div>
-                     </div>
-                     <div className="md:col-span-8 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cliente</Label>
-                       <div className="relative">
-                         <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                         <Input className="pl-9 h-11 border-primary/10" value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} placeholder="Nome do Cliente/Empresa" />
-                       </div>
-                     </div>
-                     <div className="md:col-span-12 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço</Label>
-                       <div className="relative">
-                         <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                         <Input className="pl-9 h-11 border-primary/10" value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} placeholder="Rua, número, complemento..." />
-                       </div>
-                     </div>
-                     <div className="md:col-span-4 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
-                       <Input className="h-11 border-primary/10" value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
-                     </div>
-                     <div className="md:col-span-5 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
-                       <Input className="h-11 border-primary/10" value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
-                     </div>
-                     <div className="md:col-span-3 space-y-2">
-                       <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
-                       <Input className="h-11 border-primary/10" value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
-                     </div>
-                   </div>
+                    <div className="space-y-4 pt-4 border-t border-dashed">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="md:col-span-3 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
+                          <div className="relative">
+                            <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input 
+                              placeholder="00000-000" 
+                              className="pl-7 h-10 border-primary/10 text-sm"
+                              value={form.cep} 
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setForm({...form, cep: val});
+                                if (val.replace(/\D/g, "").length === 8) {
+                                  setTimeout(() => {
+                                    const currentCep = val.replace(/\D/g, "");
+                                    if (currentCep.length === 8) handleCepSearch(currentCep);
+                                  }, 500);
+                                }
+                              }} 
+                            />
+                          </div>
+                        </div>
+                        <div className="md:col-span-6 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Endereço</Label>
+                          <div className="relative">
+                            <MapPin className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input className="pl-7 h-10 border-primary/10 text-sm" value={form.endereco ?? ""} onChange={(e)=>setForm({...form, endereco: e.target.value})} placeholder="Rua, Av, etc..." />
+                          </div>
+                        </div>
+                        <div className="md:col-span-3 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Número</Label>
+                          <Input className="h-10 border-primary/10 text-sm" value={form.numero_endereco ?? ""} onChange={(e)=>setForm({...form, numero_endereco: e.target.value})} placeholder="Ex: 123" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div className="md:col-span-4 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
+                          <Input className="h-10 border-primary/10 text-sm" value={form.bairro ?? ""} onChange={(e)=>setForm({...form, bairro: e.target.value})} />
+                        </div>
+                        <div className="md:col-span-5 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
+                          <Input className="h-10 border-primary/10 text-sm" value={form.cidade} onChange={(e)=>setForm({...form, cidade: e.target.value})} />
+                        </div>
+                        <div className="md:col-span-3 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
+                          <Input className="h-10 border-primary/10 text-sm" value={form.estado} onChange={(e)=>setForm({...form, estado: e.target.value})} />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 border-t border-dashed">
+                        <div className="md:col-span-12 space-y-2">
+                          <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Cliente</Label>
+                          <div className="relative">
+                            <User className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input className="pl-7 h-10 border-primary/10 text-sm" value={form.cliente ?? ""} onChange={(e)=>setForm({...form, cliente: e.target.value})} placeholder="Nome do Cliente/Empresa" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
  
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-dashed">
                      <div className="space-y-2">

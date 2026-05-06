@@ -1,3 +1,76 @@
+
+/* International Phone Input Styles */
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+}
+
+.PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  background-color: hsl(var(--muted));
+  padding: 0 0.75rem;
+  height: 2.5rem;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--input));
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.PhoneInputCountry:hover {
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--ring));
+}
+
+.PhoneInputCountrySelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.PhoneInputCountryIcon {
+  width: 1.5rem;
+  height: 1rem;
+  box-shadow: 0 0 1px 0 rgba(0,0,0,0.5);
+}
+
+.PhoneInputCountryIcon--border {
+  background-color: rgba(0,0,0,0.1);
+}
+
+.PhoneInputCountryIconImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.PhoneInputCountrySelectArrow {
+  display: block;
+  content: '';
+  width: 0;
+  height: 0;
+  margin-left: 0.5rem;
+  border-left: 0.2rem solid transparent;
+  border-right: 0.2rem solid transparent;
+  border-top: 0.3rem solid currentColor;
+  opacity: 0.5;
+}
  @layer base {
    html, body {
      @apply overflow-x-hidden;

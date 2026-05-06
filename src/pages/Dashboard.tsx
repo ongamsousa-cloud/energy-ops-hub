@@ -91,7 +91,7 @@
            })(),
            supabase.from("os_audit_logs").select("*, profile:profiles(nome), ordens_servico(numero)").order("created_at", { ascending: false }).limit(5),
             (() => {
-              let q = supabase.from("ordens_servico").select("id, numero, status, total_umd, obra:obras(nome)").order("created_at", { ascending: false }).limit(5);
+               let q = supabase.from("ordens_servico").select("id, numero, status, total_umd, obra:obras(nome, numero)").order("created_at", { ascending: false }).limit(5);
               if (isCampo) q = q.eq("profissional_id", user.id);
               if (isDeptManager && profile?.department_id) q = q.eq("department_id", profile.department_id);
               if (hasRole("supervisor") && !hasRole(["admin", "gestor"])) q = q.eq("assigned_supervisor_id", user.id);

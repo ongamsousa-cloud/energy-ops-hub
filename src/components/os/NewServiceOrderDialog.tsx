@@ -317,11 +317,16 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      <Label>Obra (Preenche automático)</Label>
                      <Select value={formData.obraId} onValueChange={handleObraChange}>
                        <SelectTrigger><SelectValue placeholder="Selecione uma obra existente" /></SelectTrigger>
-                       <SelectContent>
-                         {obras.map((o) => (
-                           <SelectItem key={o.id} value={o.id}>{o.numero} — {o.nome}</SelectItem>
-                         ))}
-                       </SelectContent>
+                        <SelectContent className="max-h-[300px]">
+                          {obras.map((o) => (
+                            <SelectItem key={o.id} value={o.id}>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-xs">{o.numero}</span>
+                                <span className="text-xs text-muted-foreground">{o.nome}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
                      </Select>
                    </div>
                    <div className="md:col-span-2 space-y-2">

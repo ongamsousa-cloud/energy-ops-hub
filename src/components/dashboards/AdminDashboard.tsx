@@ -274,7 +274,7 @@ import { useState } from "react";
                 <Link key={os.id} to={`/app/os/${os.id}`} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors group">
                   <div className="flex flex-col">
                     <span className="text-xs font-bold">#{os.numero}</span>
-                    <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{os.obra?.nome}</span>
+                    <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">{os.obra?.numero ? `[${os.obra.numero}] ` : ""}{os.obra?.nome}</span>
                   </div>
                   <Badge variant="outline" className="text-[9px] uppercase">{os.status?.replace('_', ' ')}</Badge>
                 </Link>

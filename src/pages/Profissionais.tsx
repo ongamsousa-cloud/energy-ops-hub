@@ -39,22 +39,31 @@ import EmptyState from "@/components/EmptyState";
        .select("*, user_roles(role), departments(id, name)")
        .order("nome");
 
-     // Combinar dados dos perfis (usuários com login) e funcionários (todos profissionais)
-      const combined = (employees ?? []).map(emp => {
-        const profile = (profiles ?? []).find(p => p.id === emp.user_id || (emp.email && p.email === emp.email));
-        return {
-          ...emp,
-          ...profile,
-          profile_id: profile?.id || null,
-          employee_id: emp.id,
-          nome: emp.full_name || profile?.nome || "",
-          email: emp.email || profile?.email || "",
-          cargo: emp.job_title || profile?.cargo || "",
-          department_id: emp.department_id || profile?.department_id || "",
-           foto_url: profile?.foto_url || emp.photo_url || null,
-          user_roles: profile?.user_roles || []
-        };
-      });
+      // Combinar dados garantindo que campos de profiles sobrescrevam funcionários apenas se existirem
+       const combined = (employees ?? []).map(emp => {
+         const p = (profiles ?? []).find(pr => pr.id === emp.user_id || (emp.email && pr.email === emp.email));
+         return {
+           ...emp,
+           profile_id: p?.id || null,
+           employee_id: emp.id,
+           nome: p?.nome || emp.full_name || "",
+           email: p?.email || emp.email || "",
+           cargo: p?.cargo || emp.job_title || "",
+           cpf: p?.cpf || emp.document_cpf || "",
+           rg: p?.rg || emp.document_rg || "",
+           telefone: p?.telefone || emp.phone || "",
+           data_nascimento: p?.data_nascimento || emp.birth_date || "",
+           data_admissao: p?.data_admissao || emp.admission_date || "",
+           cep: p?.cep || emp.postal_code || "",
+           endereco_residencial: p?.endereco_residencial || emp.residential_address || "",
+           bairro: p?.bairro || emp.neighborhood || "",
+           cidade: p?.cidade || emp.city || "",
+           estado: p?.estado || emp.state || "",
+           department_id: p?.department_id || emp.department_id || "",
+           foto_url: p?.foto_url || emp.photo_url || null,
+           user_roles: p?.user_roles || []
+         };
+       });
      
      setRows(combined);
     const { data: depts } = await supabase.from("departments").select("id,name").eq("active", true).order("name");

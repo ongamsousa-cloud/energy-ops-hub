@@ -5,6 +5,7 @@ import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ROLE_LABEL, AppRole } from "@/lib/auth";
+import { notificationService } from "@/services";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
 

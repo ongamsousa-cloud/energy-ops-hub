@@ -348,7 +348,7 @@ export default function OSDetalhe() {
     try {
       const geo = await getGeo();
       const { error } = await supabase.from("ordens_servico").update({
-        status: "aguardando_revisao", 
+        operational_status: "aguardando_validacao_supervisor", 
         fim_em: new Date().toISOString(),
         fim_lat: geo.lat, 
         fim_lng: geo.lng,
@@ -356,8 +356,8 @@ export default function OSDetalhe() {
       
       if (error) throw error;
       
-      await registrarAuditoria("aguardando_revisao", "OS finalizada pelo profissional e enviada para revisão.");
-      toast.success("OS enviada para revisão com sucesso!");
+      await registrarAuditoria("aguardando_validacao_supervisor", "finalizacao_profissional", { message: "OS finalizada pelo profissional e enviada para revisão do supervisor." });
+      toast.success("OS enviada para validação do supervisor!");
       load();
     } catch (err: any) {
       toast.error("Erro ao finalizar OS: " + err.message);

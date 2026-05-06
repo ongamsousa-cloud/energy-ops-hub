@@ -300,14 +300,15 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                          <p className="text-[10px] text-destructive font-medium mt-1">Número de telefone inválido para o país selecionado</p>
                        )}
                      </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">CPF</Label>
-                      <Input 
-                         value={form.cpf} 
-                         onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} 
-                         placeholder="000.000.000-00" 
-                       />
-                    </div>
+                     <div className="space-y-1.5">
+                       <Label className="text-xs font-medium">CPF</Label>
+                       <Input 
+                          value={form.cpf} 
+                          onChange={(e) => setForm({ ...form, cpf: maskCPF(e.target.value) })} 
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                        />
+                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Data de Admissão</Label>
                       <Input type="date" value={form.admission_date} onChange={(e) => setForm({ ...form, admission_date: e.target.value })} />

@@ -151,10 +151,24 @@ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pen
      switch (status) {
        case 'active': return <CheckCircle2 className="h-3 w-3 text-green-500" />;
        case 'inactive': return <XCircle className="h-3 w-3 text-red-500" />;
+       case 'afastado':
        case 'blocked': return <AlertCircle className="h-3 w-3 text-amber-500" />;
+       case 'desligado': return <UserX className="h-3 w-3 text-gray-500" />;
        case 'vacation': return <Clock className="h-3 w-3 text-blue-500" />;
-       default: return null;
+       default: return <AlertCircle className="h-3 w-3 text-gray-300" />;
      }
+   };
+
+   const getStatusLabel = (status: string) => {
+     const labels: Record<string, string> = {
+       active: 'Ativo',
+       inactive: 'Inativo',
+       afastado: 'Afastado',
+       blocked: 'Bloqueado',
+       desligado: 'Desligado',
+       vacation: 'Férias'
+     };
+     return labels[status] || status;
    };
 
    const openEdit = (prof: any) => {
@@ -283,7 +297,7 @@ import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pen
                   <td className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       {getStatusIcon(p.status)}
-                      <span className="text-[11px] font-medium capitalize">{p.status === 'active' ? 'Ativo' : p.status === 'inactive' ? 'Inativo' : p.status === 'blocked' ? 'Bloqueado' : 'Férias'}</span>
+                      <span className="text-[11px] font-medium">{getStatusLabel(p.status)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">

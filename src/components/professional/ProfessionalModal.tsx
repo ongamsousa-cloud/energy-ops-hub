@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,42 +31,87 @@ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro"
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
   const [loading, setLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(professional?.foto_url || null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
-  const [form, setForm] = useState({
-    nome: professional?.nome || "",
-    email: professional?.email || "",
-    cargo: professional?.cargo || "",
-    especialidade: professional?.especialidade || "",
-    cpf: professional?.cpf || "",
-    rg: professional?.rg || "",
-    telefone: professional?.telefone || "",
-    data_nascimento: professional?.data_nascimento || "",
-    endereco_residencial: professional?.endereco_residencial || "",
-    bairro: professional?.bairro || "",
-    cidade: professional?.cidade || "",
-    estado: professional?.estado || "",
-    cep: professional?.cep || "",
-    data_admissao: professional?.data_admissao || "",
-    department_id: professional?.department_id || "",
-    role: (professional?.user_roles?.[0]?.role as AppRole) || ("campo" as AppRole),
-    // Novas propriedades da tabela employees
-    internal_company_code: professional?.internal_company_code || "",
-    service_code: professional?.service_code || "",
-    operational_role: professional?.operational_role || "",
-    employee_type: professional?.employee_type || "field_worker",
-    status: professional?.status || "active",
-    is_active: professional?.is_active ?? true,
-    can_access_system: professional?.can_access_system ?? false,
-    can_receive_service_orders: professional?.can_receive_service_orders ?? true,
-    can_manage_materials: professional?.can_manage_materials ?? false,
-    can_close_service_orders: professional?.can_close_service_orders ?? false,
-    can_view_financial_data: professional?.can_view_financial_data ?? false,
-    can_view_reports: professional?.can_view_reports ?? false,
-    notes: professional?.notes || "",
-    admission_date: professional?.admission_date || professional?.data_admissao || "",
-    termination_date: professional?.termination_date || "",
-  });
+  const initialFormState = {
+    nome: "",
+    email: "",
+    cargo: "",
+    especialidade: "",
+    cpf: "",
+    rg: "",
+    telefone: "",
+    data_nascimento: "",
+    endereco_residencial: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    cep: "",
+    data_admissao: "",
+    department_id: "",
+    role: "campo" as AppRole,
+    internal_company_code: "",
+    service_code: "",
+    operational_role: "",
+    employee_type: "field_worker",
+    status: "active",
+    is_active: true,
+    can_access_system: false,
+    can_receive_service_orders: true,
+    can_manage_materials: false,
+    can_close_service_orders: false,
+    can_view_financial_data: false,
+    can_view_reports: false,
+    notes: "",
+    admission_date: "",
+    termination_date: "",
+  };
+
+  const [form, setForm] = useState(initialFormState);
+
+  useEffect(() => {
+    if (open) {
+      if (professional) {
+        setForm({
+          nome: professional.nome || "",
+          email: professional.email || "",
+          cargo: professional.cargo || "",
+          especialidade: professional.especialidade || "",
+          cpf: professional.cpf || "",
+          rg: professional.rg || "",
+          telefone: professional.telefone || "",
+          data_nascimento: professional.data_nascimento || "",
+          endereco_residencial: professional.endereco_residencial || "",
+          bairro: professional.bairro || "",
+          cidade: professional.cidade || "",
+          estado: professional.estado || "",
+          cep: professional.cep || "",
+          data_admissao: professional.data_admissao || "",
+          department_id: professional.department_id || "",
+          role: (professional.user_roles?.[0]?.role as AppRole) || "campo",
+          internal_company_code: professional.internal_company_code || "",
+          service_code: professional.service_code || "",
+          operational_role: professional.operational_role || "",
+          employee_type: professional.employee_type || "field_worker",
+          status: professional.status || "active",
+          is_active: professional.is_active ?? true,
+          can_access_system: professional.can_access_system ?? false,
+          can_receive_service_orders: professional.can_receive_service_orders ?? true,
+          can_manage_materials: professional.can_manage_materials ?? false,
+          can_close_service_orders: professional.can_close_service_orders ?? false,
+          can_view_financial_data: professional.can_view_financial_data ?? false,
+          can_view_reports: professional.can_view_reports ?? false,
+          notes: professional.notes || "",
+          admission_date: professional.admission_date || professional.data_admissao || "",
+          termination_date: professional.termination_date || "",
+        });
+        setPhotoPreview(professional.foto_url || null);
+      } else {
+        setForm(initialFormState);
+        setPhotoPreview(null);
+      }
+    }
+  }, [open, professional]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

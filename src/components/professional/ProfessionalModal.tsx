@@ -148,12 +148,13 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     
     setLoading(true);
     try {
-      const userId = professional?.id; // Este é o ID do profile (se existir)
-      const employeeId = professional?.employee_id;
+      // In Profissionais.tsx, professional.id is the employee ID
+      const employeeId = professional?.employee_id || professional?.id;
+      const targetUserId = professional?.profile_id || professional?.user_id;
       let fotoUrl = professional?.foto_url;
 
-      if (photoFile && employeeId) {
-        fotoUrl = await uploadPhoto(employeeId);
+      if (photoFile && (employeeId || targetUserId)) {
+        fotoUrl = await uploadPhoto(employeeId || targetUserId);
       }
 
       const employeeData = {
@@ -179,7 +180,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
         photo_url: fotoUrl || professional?.foto_url || null,
-        user_id: userId || (professional?.user_id) || null,
+        user_id: targetUserId || null,
         document_rg: form.rg,
         birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
         postal_code: form.cep,
@@ -205,18 +206,18 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
        if (res.error) throw res.error;
  
-       let targetUserId = userId || (professional?.user_id);
-       
-       if (!targetUserId && form.email) {
+       // If we don't have a targetUserId, try to find one by email
+       let finalUserId = targetUserId;
+       if (!finalUserId && form.email) {
          const { data: profileByEmail } = await supabase
            .from("profiles")
            .select("id")
            .eq("email", form.email)
            .maybeSingle();
-         if (profileByEmail) targetUserId = profileByEmail.id;
+         if (profileByEmail) finalUserId = profileByEmail.id;
        }
- 
-       if (targetUserId) {
+
+       if (finalUserId) {
          const updateData: any = {
            nome: form.nome,
            cargo: form.cargo,
@@ -238,15 +239,18 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
  
          if (form.password) updateData.must_change_password = true;
  
-         const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", targetUserId);
+          const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", finalUserId);
          if (profileError) throw profileError;
  
-         await supabase.from("user_roles").delete().eq("user_id", targetUserId);
-         await supabase.from("user_roles").insert({ user_id: targetUserId, role: form.role as any });
-         
-         if (employeeId) {
-           await supabase.from("employees").update({ user_id: targetUserId }).eq("id", employeeId);
-         }
+          await supabase.from("user_roles").delete().eq("user_id", finalUserId);
+          await supabase.from("user_roles").insert({ user_id: finalUserId, role: form.role as any });
+          
+          if (employeeId || res.data?.id) {
+            await supabase.from("employees").update({ user_id: finalUserId }).eq("id", employeeId || res.data.id);
+          }
+        }
+
+        if (form.can_access_system && form.email && form.password && !finalUserId) {
        }
  
        if (form.can_access_system && form.email && form.password && !targetUserId) {

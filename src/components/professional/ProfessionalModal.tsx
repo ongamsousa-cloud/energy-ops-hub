@@ -32,6 +32,18 @@ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro"
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
   const { profile: currentUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const targetUserId = useMemo(() => {
+    if (!professional) return null;
+    return professional.profile_id || professional.user_id || (professional.id?.length > 30 ? professional.id : null);
+  }, [professional]);
+
+  const actualEmployeeId = useMemo(() => {
+    if (!professional) return null;
+    const employeeId = professional.employee_id || (professional.id?.length > 30 ? null : professional.id);
+    return employeeId || (professional.id && !targetUserId ? professional.id : null);
+  }, [professional, targetUserId]);
+
   const [searchingCep, setSearchingCep] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -225,13 +237,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       // In Profissionais.tsx, professional.id is the employee ID
       // Identificadores consistentes
       // Identificadores consistentes baseados no objeto recebido do Profissionais.tsx
-      const employeeId = professional?.employee_id || (professional?.id?.length > 30 ? null : professional?.id); 
-      const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id?.length > 30 ? professional.id : null);
-
-      // Se não temos employeeId mas temos professional.id, e ele não é um UUID de profile, ele é o employeeId
-      const actualEmployeeId = employeeId || (professional?.id && !targetUserId ? professional.id : null);
-
-      // Resolve finalUserId early for use in both updates
       let finalUserId = targetUserId;
       if (!finalUserId && form.email) {
         const { data: profileByEmail } = await supabase

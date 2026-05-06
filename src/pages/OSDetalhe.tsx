@@ -608,11 +608,33 @@ export default function OSDetalhe() {
 
    async function handleStatusTransition(newStatus: OSStatus) {
      setBusy(true);
-     try {
-       await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
-       toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
-       load();
-     } catch (err: any) {
+      // If transitioning to 'iniciada', check the gate
+      if (newStatus === 'iniciada') {
+        const validation = await osService.canStartWorkOrder(os.id, user!.id);
+        if (!validation.can_start) {
+          toast.error(validation.message);
+          return;
+        }
+      }
+
+      try {
+        await osService.updateStatus(os.id, newStatus, user!.id, { reason: "Mudança manual de status via fluxo operacional" });
+        
+        // Handle task automation based on status
+        if (newStatus === 'aguardando_aprovacao_departamento') {
+          await supabase.from("department_tasks").insert({
+            os_id: os.id,
+            to_department_id: os.department_id,
+            task_type: "aprovar_os",
+            title: "Aprovação de OS",
+            description: "OS aguardando aprovação departamental.",
+            created_by: user!.id
+          });
+        }
+
+        toast.success(`OS movida para: ${OS_STATUS_FLOW[newStatus].label}`);
+        load();
+      } catch (err: any) {
        toast.error("Erro na transição: " + err.message);
      } finally {
        setBusy(false);

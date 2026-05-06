@@ -633,32 +633,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                   </div>
                 </TabsContent>
 
-                <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { id: 'can_access_system', label: 'Acesso ao Sistema' },
-                      { id: 'can_receive_service_orders', label: 'Receber O.S.' },
-                      { id: 'can_manage_materials', label: 'Estoque' },
-                      { id: 'can_close_service_orders', label: 'Fechar O.S.' },
-                      { id: 'can_view_financial_data', label: 'Financeiro' },
-                      { id: 'can_view_reports', label: 'Relatórios' }
-                    ].map(p => (
-                      <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
-                        <Label htmlFor={p.id}>{p.label}</Label>
-                        <Switch id={p.id} checked={(form as any)[p.id]} onCheckedChange={(v) => setForm({...form, [p.id]: v})} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Perfil de Acesso</Label>
-                    <Select value={form.role} onValueChange={(v) => setForm({...form, role: v as AppRole})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TabsContent>
 
                 <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

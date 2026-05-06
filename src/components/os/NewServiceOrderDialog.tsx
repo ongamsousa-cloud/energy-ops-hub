@@ -19,12 +19,6 @@ interface NewServiceOrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: (id: string) => void;
-}
-
-interface NewServiceOrderDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: (id: string) => void;
   initialObraId?: string;
 }
 
@@ -320,164 +314,190 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl">
-         <DialogHeader className="p-8 pb-6 bg-primary text-primary-foreground relative overflow-hidden">
-           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-             <ClipboardList className="h-32 w-32" />
-           </div>
-           <div className="relative z-10">
-             <DialogTitle className="text-2xl font-bold mb-1">Nova Ordem de Serviço</DialogTitle>
-             <DialogDescription className="text-primary-foreground/80">
-               Siga os passos para criar uma nova solicitação de trabalho.
-             </DialogDescription>
-           </div>
-           
-           {/* Stepper Visual */}
-           <div className="flex items-center gap-2 mt-6 relative z-10">
-             {[1, 2, 3, 4, 5].map((s) => (
-               <div key={s} className="flex items-center gap-2">
-                 <div className={cn(
-                   "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
-                   step === s ? "bg-white text-primary scale-110 shadow-lg" : 
-                   step > s ? "bg-primary-foreground/40 text-primary-foreground" : "bg-primary-foreground/10 text-primary-foreground/40"
-                 )}>
-                   {step > s ? <CheckCircle2 className="h-5 w-5" /> : s}
-                 </div>
-                 {s < 5 && <div className={cn("h-0.5 w-6 rounded-full", step > s ? "bg-primary-foreground/40" : "bg-primary-foreground/10")} />}
-               </div>
-             ))}
-           </div>
-         </DialogHeader>
-         
-         <div className="flex-1 overflow-y-auto p-8 bg-background">
-           {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Título da OS <span className="text-destructive">*</span></Label>
-                  <Input 
-                    placeholder="Ex: Manutenção Preventiva - Torre A" 
-                    value={formData.titulo} 
-                    onChange={(e) => setFormData({...formData, titulo: e.target.value})} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Descrição Detalhada <span className="text-destructive">*</span></Label>
-                  <Textarea 
-                    placeholder="Descreva o que precisa ser feito..." 
-                    value={formData.descricao} 
-                    onChange={(e) => setFormData({...formData, descricao: e.target.value})}
-                    className="min-h-[80px]"
-                  />
-                </div>
+        <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+          <DialogHeader className="p-0 relative overflow-hidden border-b">
+            <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 pb-10 text-primary-foreground relative">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">
+                <ClipboardList className="h-48 w-48" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Profissional Solicitante</Label>
-                  <Input value={profile?.nome ?? ""} disabled className="bg-muted/50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <DialogTitle className="text-3xl font-extrabold tracking-tight">Nova Ordem de Serviço</DialogTitle>
                 </div>
-                <div className="space-y-2">
-                  <Label>Departamento Responsável <span className="text-destructive">*</span></Label>
-                  <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
-                    <SelectTrigger><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-                    <SelectContent className="max-h-[300px]">
-                      {departamentos.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-               <div className="space-y-2 md:col-span-2 border-t pt-4">
-                 <h3 className="text-sm font-semibold">Localização e Contato</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                   <div className="space-y-2">
-                     <Label>CEP</Label>
-                     <div className="flex gap-2">
-                       <Input 
-                         placeholder="00000-000" 
-                         value={formData.cep} 
-                         onChange={(e) => {
-                           setFormData({...formData, cep: e.target.value});
-                           if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
-                         }} 
-                       />
-                     </div>
-                   </div>
-                     <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4 text-primary" />
-                            <h3 className="text-sm font-bold uppercase tracking-tight">Identificação da Obra</h3>
+                <DialogDescription className="text-primary-foreground/90 text-base font-medium max-w-lg">
+                  Preencha as informações abaixo para registrar uma nova solicitação operacional.
+                </DialogDescription>
+              </div>
+              
+              {/* Stepper Visual Modernizado */}
+              <div className="flex items-center justify-between max-w-2xl mt-10 relative z-10 px-4">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <div key={s} className="flex flex-col items-center gap-2 relative">
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500 border-2 shadow-inner",
+                      step === s ? "bg-white text-primary border-white scale-125 shadow-[0_0_20px_rgba(255,255,255,0.4)]" : 
+                      step > s ? "bg-emerald-500 text-white border-emerald-500" : "bg-primary/20 text-white/40 border-white/10"
+                    )}>
+                      {step > s ? <CheckCircle2 className="h-6 w-6" /> : s}
+                    </div>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest absolute -bottom-6 whitespace-nowrap transition-colors",
+                      step === s ? "text-white" : "text-white/40"
+                    )}>
+                      {s === 1 ? "Dados" : s === 2 ? "Agendamento" : s === 3 ? "Serviços" : s === 4 ? "Materiais" : "Resumo"}
+                    </span>
+                    {s < 5 && (
+                      <div className="absolute left-[calc(100%+8px)] top-5 w-[calc(100%-8px)] h-[2px] pointer-events-none">
+                        <div className={cn("h-full w-full rounded-full transition-all duration-500", step > s ? "bg-emerald-500" : "bg-white/10")} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </DialogHeader>
+         
+          <div className="flex-1 overflow-y-auto p-8 bg-muted/10">
+            {step === 1 && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="md:col-span-2 space-y-6">
+                    <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 mb-2 border-b pb-3">
+                        <LayoutList className="h-5 w-5 text-primary" />
+                        <h3 className="font-bold text-lg">Informações Básicas</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold text-muted-foreground">Título da OS <span className="text-destructive">*</span></Label>
+                        <Input 
+                          placeholder="Ex: Manutenção Preventiva - Torre A" 
+                          value={formData.titulo} 
+                          onChange={(e) => setFormData({...formData, titulo: e.target.value})}
+                          className="h-12 text-lg focus-visible:ring-primary/30"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold text-muted-foreground">Descrição Detalhada <span className="text-destructive">*</span></Label>
+                        <Textarea 
+                          placeholder="Descreva o que precisa ser feito..." 
+                          value={formData.descricao} 
+                          onChange={(e) => setFormData({...formData, descricao: e.target.value})}
+                          className="min-h-[120px] resize-none focus-visible:ring-primary/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+ 
+                  <div className="space-y-6">
+                    <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 mb-2 border-b pb-3">
+                        <Building2 className="h-5 w-5 text-primary" />
+                        <h3 className="font-bold text-lg">Responsável</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Setor Executor <span className="text-destructive">*</span></Label>
+                        <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
+                          <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {departamentos.map((d) => (
+                              <SelectItem key={d.id} value={d.id}>
+                                {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante</Label>
+                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl border border-dashed">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User2 className="h-4 w-4 text-primary" />
                           </div>
-                          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => nav('/app/obras')}>
-                            Gerenciar Obras
-                          </Button>
+                          <span className="text-sm font-bold">{profile?.nome ?? "---"}</span>
                         </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-primary/10">
-                          <div className="space-y-2">
-                            <Label className="text-xs font-bold">Código da Obra <span className="text-destructive">*</span></Label>
-                            <div className="relative group">
-                              <Input 
-                                placeholder="Digite o código manualmente..." 
-                                className="pr-10 border-primary/20 focus-visible:ring-primary shadow-sm"
-                                value={selectedObra?.numero || customObraNumero || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  const found = obras.find(o => o.numero === val);
-                                  if (found) {
-                                    handleObraChange(found.id);
-                                    setCustomObraNumero("");
-                                  } else {
-                                    setSelectedObra(null);
-                                    setFormData(prev => ({ ...prev, obraId: "new" }));
-                                    setCustomObraNumero(val);
-                                  }
-                                }}
-                              />
-                              <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
-                                <PopoverTrigger asChild>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    type="button" 
-                                    className="absolute right-0 top-0 h-full text-muted-foreground hover:text-primary transition-colors"
-                                    title="Pesquisar obras cadastradas"
-                                  >
-                                    <Search className="h-4 w-4" />
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[350px] p-0 shadow-xl" align="end">
-                                  <Command className="rounded-lg">
-                                    <CommandInput placeholder="Pesquisar por número ou nome..." className="h-11" />
-                                    <CommandList className="max-h-[300px]">
-                                      <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
-                                      <CommandGroup heading="Obras Cadastradas">
-                                       {obras.map((o) => (
-                                         <CommandItem
-                                           key={o.id}
-                                           value={`${o.numero} ${o.nome}`}
-                                           onSelect={() => {
-                                             handleObraChange(o.id);
-                                             setObraSearchOpen(false);
-                                           }}
-                                         >
-                                           <span className="font-bold mr-2">{o.numero}</span>
-                                           <span className="text-xs truncate">{o.nome}</span>
-                                         </CommandItem>
-                                       ))}
-                                     </CommandGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+ 
+                <div className="bg-card p-6 rounded-2xl border shadow-sm space-y-6">
+                   <div className="flex items-center justify-between border-b pb-4">
+                     <div className="flex items-center gap-2">
+                       <MapPin className="h-5 w-5 text-primary" />
+                       <h3 className="font-bold text-lg">Localização e Obra</h3>
+                     </div>
+                     <Button variant="ghost" size="sm" className="h-auto p-2 text-primary font-bold hover:bg-primary/5" onClick={() => nav('/app/obras')}>
+                       <Plus className="h-3.5 w-3.5 mr-1" /> Gerenciar Todas Obras
+                     </Button>
+                   </div>
+ 
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                     <div className="space-y-4">
+                       <div className="bg-muted/30 p-4 rounded-xl border border-primary/10 space-y-4">
+                         <div className="space-y-2">
+                           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código da Obra <span className="text-destructive">*</span></Label>
+                           <div className="relative group">
+                             <Input 
+                               placeholder="Digite ou pesquise..." 
+                               className="h-11 pr-10 border-primary/20 focus-visible:ring-primary shadow-sm font-mono font-bold"
+                               value={selectedObra?.numero || customObraNumero || ""}
+                               onChange={(e) => {
+                                 const val = e.target.value;
+                                 const found = obras.find(o => o.numero === val);
+                                 if (found) {
+                                   handleObraChange(found.id);
+                                   setCustomObraNumero("");
+                                 } else {
+                                   setSelectedObra(null);
+                                   setFormData(prev => ({ ...prev, obraId: "new" }));
+                                   setCustomObraNumero(val);
+                                 }
+                               }}
+                             />
+                             <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
+                               <PopoverTrigger asChild>
+                                 <Button 
+                                   variant="ghost" 
+                                   size="icon" 
+                                   type="button" 
+                                   className="absolute right-0 top-0 h-full text-muted-foreground hover:text-primary transition-colors"
+                                   title="Pesquisar obras cadastradas"
+                                 >
+                                   <Search className="h-4 w-4" />
+                                 </Button>
+                               </PopoverTrigger>
+                               <PopoverContent className="w-[350px] p-0 shadow-xl" align="end">
+                                 <Command className="rounded-lg">
+                                   <CommandInput placeholder="Pesquisar por número ou nome..." className="h-11" />
+                                   <CommandList className="max-h-[300px]">
+                                     <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                                     <CommandGroup heading="Obras Cadastradas">
+                                      {obras.map((o) => (
+                                        <CommandItem
+                                          key={o.id}
+                                          value={`${o.numero} ${o.nome}`}
+                                          onSelect={() => {
+                                            handleObraChange(o.id);
+                                            setObraSearchOpen(false);
+                                          }}
+                                        >
+                                          <span className="font-bold mr-2">{o.numero}</span>
+                                          <span className="text-xs truncate">{o.nome}</span>
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
                                    </CommandList>
                                  </Command>
                                </PopoverContent>
                              </Popover>
                            </div>
                          </div>
-
+ 
                          <div className="space-y-2">
-                           <Label>Nome / Descrição da Obra <span className="text-destructive">*</span></Label>
+                           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nome / Descrição da Obra <span className="text-destructive">*</span></Label>
                            <Input 
                              placeholder="Ex: Edifício Horizonte" 
                              value={selectedObra?.nome || customObraNome || ""}
@@ -485,74 +505,96 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                                const val = e.target.value;
                                if (!selectedObra) {
                                  setCustomObraNome(val);
-                                 setFormData(prev => ({ ...prev }));
                                }
                              }}
                              disabled={!!selectedObra}
-                             className={selectedObra ? "bg-muted" : ""}
+                             className={cn("h-11", selectedObra ? "bg-muted font-semibold" : "border-primary/10")}
                            />
                          </div>
-
-                         <div className="space-y-2 md:col-span-2">
-                           <Label>Nome do Cliente</Label>
+ 
+                         <div className="space-y-2">
+                           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nome do Cliente</Label>
                            <Input 
                              placeholder="Ex: Construtora Silva" 
                              value={formData.client_name}
                              onChange={(e) => setFormData({...formData, client_name: e.target.value})}
                              disabled={!!selectedObra}
-                             className={selectedObra ? "bg-muted" : ""}
+                             className={cn("h-11", selectedObra ? "bg-muted font-semibold" : "border-primary/10")}
                            />
                          </div>
                        </div>
                      </div>
-                   <div className="md:col-span-2 space-y-2">
-                     <Label>Endereço <span className="text-destructive">*</span></Label>
-                     <Input value={formData.endereco} onChange={(e) => setFormData({...formData, endereco: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Bairro</Label>
-                     <Input value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Cidade</Label>
-                     <Input value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Estado</Label>
-                     <Input value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Ponto de Referência</Label>
-                     <Input value={formData.ponto_referencia} onChange={(e) => setFormData({...formData, ponto_referencia: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Nome do Solicitante</Label>
-                     <Input value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Telefone</Label>
-                     <Input value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
+ 
+                     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                       <div className="md:col-span-2 space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Endereço Completo <span className="text-destructive">*</span></Label>
+                         <div className="relative">
+                           <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                           <Input 
+                             className="pl-9 h-11 border-primary/10" 
+                             value={formData.endereco} 
+                             onChange={(e) => setFormData({...formData, endereco: e.target.value})} 
+                             placeholder="Rua, número, complemento..."
+                           />
+                         </div>
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CEP</Label>
+                         <Input 
+                           placeholder="00000-000" 
+                           value={formData.cep} 
+                           onChange={(e) => {
+                             setFormData({...formData, cep: e.target.value});
+                             if (e.target.value.replace(/\D/g, "").length === 8) fetchAddress(e.target.value);
+                           }}
+                           className="h-11 border-primary/10"
+                         />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Bairro</Label>
+                         <Input className="h-11 border-primary/10" value={formData.bairro} onChange={(e) => setFormData({...formData, bairro: e.target.value})} />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cidade</Label>
+                         <Input className="h-11 border-primary/10" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</Label>
+                         <Input className="h-11 border-primary/10" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} />
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Nome)</Label>
+                         <div className="relative">
+                           <User2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                           <Input className="pl-9 h-11 border-primary/10" value={formData.solicitante_nome} onChange={(e) => setFormData({...formData, solicitante_nome: e.target.value})} />
+                         </div>
+                       </div>
+                       <div className="space-y-2">
+                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante (Telefone)</Label>
+                         <Input className="h-11 border-primary/10" value={formData.solicitante_telefone} onChange={(e) => setFormData({...formData, solicitante_telefone: e.target.value})} />
+                       </div>
+                     </div>
                    </div>
                  </div>
+                 
+                 <div className="pt-4 flex justify-end">
+                   <Button 
+                     size="lg"
+                     className="px-10 font-bold shadow-xl shadow-primary/20 hover:scale-105 transition-all bg-primary h-12 rounded-xl" 
+                     onClick={() => {
+                       if(!formData.titulo || !formData.descricao || !formData.departmentId || (!formData.obraId && !customObraNumero)) {
+                         return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
+                       }
+                       setStep(2);
+                     }}
+                   >
+                     Próximo Passo <ChevronRight className="ml-2 h-5 w-5" />
+                   </Button>
+                 </div>
                </div>
-              </div>
-               <div className="pt-4 border-t flex justify-end">
-                 <Button 
-                   className="px-8 font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all" 
-                   onClick={() => {
-                     if(!formData.titulo || !formData.descricao || !formData.departmentId || !formData.obraId) {
-                       return toast.error("Preencha todos os campos obrigatórios (Título, Descrição, Setor e Obra)");
-                     }
-                     setStep(2);
-                   }}
-                 >
-                   Próximo Passo <ChevronRight className="ml-2 h-4 w-4" />
-                 </Button>
-               </div>
-             </div>
-           )}
-
-           {step === 2 && (
+             )}
+ 
+             {step === 2 && (
              <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                <div className="flex items-center gap-2 mb-2">
                  <Clock className="h-5 w-5 text-primary" />

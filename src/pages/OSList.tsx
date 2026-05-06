@@ -1,17 +1,18 @@
- import { useEffect, useState, useMemo } from "react";
+ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
- import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard, MoreHorizontal, FileText, MapPin, Building2, User } from "lucide-react";
+ import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard, MoreHorizontal, FileText, MapPin, Building2, User, Briefcase, ListTodo, ChevronRight } from "lucide-react";
  import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Badge } from "@/components/ui/badge";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
  import { ptBR } from "date-fns/locale";
  import { DateRange } from "react-day-picker";
@@ -19,11 +20,13 @@ import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/lib/auth";
 
-export default function OSList() {
-  const { user, hasRole } = useAuth();
-  const [rows, setRows] = useState<any[]>([]);
-  const [deps, setDeps] = useState<any[]>([]);
-    const [filters, setFilters] = useState({
+ export default function OSList() {
+   const { user, hasRole } = useAuth();
+   const [rows, setRows] = useState<any[]>([]);
+   const [obras, setObras] = useState<any[]>([]);
+   const [deps, setDeps] = useState<any[]>([]);
+   const [activeTab, setActiveTab] = useState("ordens");
+   const [filters, setFilters] = useState({
       operational_status: "all",
       financial_status: "all",
       audit_status: "all",
@@ -35,34 +38,46 @@ export default function OSList() {
        dateRange: undefined as DateRange | undefined
     });
 
-  useEffect(() => {
-    if (!user) return;
-
-     const fetchRows = async () => {
-      supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
-        const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor", "developer"]);
-        let query = supabase.from("ordens_servico")
-          .select(`
-             *,
-             department:departments(name, acronym),
-             obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
-             profissional:profiles!ordens_servico_profissional_id_fkey(nome)
-          `);
-
-        if (isCampo) {
-          query = query.eq("profissional_id", user.id);
-        }
-
-      query.order("created_at", { ascending: false }).limit(500)
-        .then(({ data }) => setRows(data ?? []));
-    };
-    fetchRows();
+   const fetchAll = useCallback(async () => {
+     if (!user) return;
+     
+     // Fetch Departments
+     supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
+     
+     // Fetch OS Rows
+     const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor", "developer"]);
+     let query = supabase.from("ordens_servico")
+       .select(`
+          *,
+          department:departments(name, acronym),
+          obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
+          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+       `);
+ 
+     if (isCampo) {
+       query = query.eq("profissional_id", user.id);
+     }
+ 
+     query.order("created_at", { ascending: false }).limit(500)
+       .then(({ data }) => setRows(data ?? []));
+ 
+     // Fetch Obras
+     supabase.from("obras")
+       .select("*, os_count:ordens_servico(count)")
+       .eq("ativo", true)
+       .order("created_at", { ascending: false })
+       .then(({ data }) => setObras(data ?? []));
+   }, [user, hasRole]);
+ 
+   useEffect(() => {
+     fetchAll();
     const ch = supabase
       .channel("os-list-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico" }, fetchRows)
+       .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico" }, fetchAll)
+       .on("postgres_changes", { event: "*", schema: "public", table: "obras" }, fetchAll)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, hasRole]);
+   }, [fetchAll]);
 
     const filteredRows = useMemo(() => {
       return rows.filter(r => {
@@ -122,13 +137,41 @@ export default function OSList() {
       };
     }, [filteredRows]);
 
-  return (
+   const filteredObras = useMemo(() => {
+     const searchLower = filters.search.toLowerCase();
+     return obras.filter(o => 
+       !filters.search || 
+       o.numero?.toLowerCase().includes(searchLower) || 
+       o.nome?.toLowerCase().includes(searchLower) ||
+       o.cliente?.toLowerCase().includes(searchLower)
+     );
+   }, [obras, filters.search]);
+ 
+   return (
      <div className="flex flex-col gap-6">
-      <PageHeader title="Gestão de Ordens de Serviço" actions={
-        <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
-      } />
-
-        {/* Dashboards Rápidos */}
+       <PageHeader title="Gestão de Operações" actions={
+         <div className="flex gap-2">
+           <Link to="/app/obras"><Button variant="outline" size="sm"><Briefcase className="mr-1 h-3.5 w-3.5"/>Ver Obras</Button></Link>
+           <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
+         </div>
+       } />
+ 
+       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+         <div className="flex items-center justify-between mb-4 bg-muted/30 p-1 rounded-lg border">
+           <TabsList className="grid grid-cols-2 w-full max-w-md">
+             <TabsTrigger value="ordens" className="gap-2">
+               <ListTodo className="h-4 w-4" />
+               Ordens de Serviço
+             </TabsTrigger>
+             <TabsTrigger value="obras" className="gap-2">
+               <Briefcase className="h-4 w-4" />
+               Obras Cadastradas
+             </TabsTrigger>
+           </TabsList>
+         </div>
+ 
+         <TabsContent value="ordens" className="space-y-6 mt-0">
+           {/* Dashboards Rápidos */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-card border rounded-xl p-4 shadow-sm">
             <div className="flex items-center gap-3 text-muted-foreground mb-1">
@@ -158,9 +201,9 @@ export default function OSList() {
             </div>
             <div className="text-2xl font-bold">{stats.concluidas}</div>
           </div>
-        </div>
+           </div>
  
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-end bg-muted/20 p-4 rounded-lg border">
+           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-end bg-muted/20 p-4 rounded-lg border">
           <div className="space-y-1.5 lg:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
             <div className="relative">
@@ -309,81 +352,141 @@ export default function OSList() {
                   <th className="px-4 py-3 text-left">Setor</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Data</th>
-                  <th className="px-4 py-3 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {filteredRows.map((r) => (
-                  <tr key={r.id} className="hover:bg-accent/30 transition-colors group">
-                    <td className="px-4 py-4">
-                      <div className="font-mono font-bold text-primary text-xs">{r.numero || `OS-${r.id.substring(0,6).toUpperCase()}`}</div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground line-clamp-1">{r.obra?.nome || r.titulo || "Sem nome"}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 shrink-0" />
-                        <span className="text-xs line-clamp-1">
-                          {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      {r.department?.name ? (
-                        <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">
-                          {r.department.acronym || r.department.name}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground italic">Geral</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <StatusBadge status={r.operational_status || r.status} />
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {new Date(r.created_at).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to={`/app/os/${r.id}`} className="flex items-center">
-                              <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
-                              <Building2 className="mr-2 h-4 w-4" /> Ver Obra
-                            </Link>
-                          </DropdownMenuItem>
-                          {r.profissional_id && (
-                            <DropdownMenuItem className="flex items-center">
-                              <User className="mr-2 h-4 w-4" /> Profissional: {r.profissional?.nome || "Carregando..."}
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-    </div>
-  );
-}
+                   <th className="px-4 py-3 text-right">Ações</th>
+                 </tr>
+               </thead>
+               <tbody className="divide-y">
+                 {filteredRows.map((r) => (
+                   <tr key={r.id} className="hover:bg-accent/30 transition-colors group">
+                     <td className="px-4 py-4">
+                       <div className="font-mono font-bold text-primary text-xs">{r.numero || `OS-${r.id.substring(0,6).toUpperCase()}`}</div>
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex flex-col">
+                         <span className="font-semibold text-foreground line-clamp-1">{r.obra?.nome || r.titulo || "Sem nome"}</span>
+                         <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
+                       </div>
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex items-center gap-1.5 text-muted-foreground">
+                         <MapPin className="h-3.5 w-3.5 shrink-0" />
+                         <span className="text-xs line-clamp-1">
+                           {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
+                         </span>
+                       </div>
+                     </td>
+                     <td className="px-4 py-4">
+                       {r.department?.name ? (
+                         <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">
+                           {r.department.acronym || r.department.name}
+                         </Badge>
+                       ) : (
+                         <span className="text-xs text-muted-foreground italic">Geral</span>
+                       )}
+                     </td>
+                     <td className="px-4 py-4">
+                       <StatusBadge status={r.operational_status || r.status} />
+                     </td>
+                     <td className="px-4 py-4">
+                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                         <Calendar className="h-3.5 w-3.5" />
+                         {new Date(r.created_at).toLocaleDateString()}
+                       </div>
+                     </td>
+                     <td className="px-4 py-4 text-right">
+                       <DropdownMenu>
+                         <DropdownMenuTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8">
+                             <MoreHorizontal className="h-4 w-4" />
+                           </Button>
+                         </DropdownMenuTrigger>
+                         <DropdownMenuContent align="end" className="w-48">
+                           <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
+                           <DropdownMenuSeparator />
+                           <DropdownMenuItem asChild>
+                             <Link to={`/app/os/${r.id}`} className="flex items-center">
+                               <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
+                             </Link>
+                           </DropdownMenuItem>
+                           <DropdownMenuItem asChild>
+                             <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
+                               <Building2 className="mr-2 h-4 w-4" /> Ver Obra
+                             </Link>
+                           </DropdownMenuItem>
+                           {r.profissional_id && (
+                             <DropdownMenuItem className="flex items-center">
+                               <User className="mr-2 h-4 w-4" /> Profissional: {r.profissional?.nome || "Carregando..."}
+                             </DropdownMenuItem>
+                           )}
+                         </DropdownMenuContent>
+                       </DropdownMenu>
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           </div>
+         )}
+           </TabsContent>
+ 
+           <TabsContent value="obras" className="space-y-4 mt-0">
+             <div className="relative mb-4">
+               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+               <Input 
+                 placeholder="Pesquisar por código ou nome da obra..." 
+                 className="pl-9"
+                 value={filters.search}
+                 onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
+               />
+             </div>
+ 
+             {filteredObras.length === 0 ? (
+               <EmptyState title="Nenhuma obra encontrada" description="Tente ajustar sua pesquisa." />
+             ) : (
+               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                 {filteredObras.map((obra) => (
+                   <div key={obra.id} className="bg-card border rounded-xl p-5 shadow-sm hover:shadow-md transition-all group border-l-4 border-l-primary/30">
+                     <div className="flex justify-between items-start mb-3">
+                       <div className="flex flex-col">
+                         <span className="font-mono font-bold text-primary text-sm uppercase tracking-wider">{obra.numero}</span>
+                         <h3 className="font-bold text-lg line-clamp-1">{obra.nome}</h3>
+                       </div>
+                       <StatusBadge status={obra.status} />
+                     </div>
+                     
+                     <div className="space-y-2 mb-4">
+                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                         <User className="h-3.5 w-3.5" />
+                         <span className="truncate">{obra.cliente || "Consumidor Final"}</span>
+                       </div>
+                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                         <MapPin className="h-3.5 w-3.5" />
+                         <span className="truncate">{obra.cidade || '---'}, {obra.bairro || '---'}</span>
+                       </div>
+                       <div className="flex items-center gap-2 text-xs font-semibold text-primary/80 bg-primary/5 px-2 py-1 rounded-md w-fit">
+                         <FileText className="h-3.5 w-3.5" />
+                         <span>{obra.os_count?.[0]?.count || 0} Ordens de Serviço</span>
+                       </div>
+                     </div>
+ 
+                     <div className="flex gap-2 pt-2 border-t border-muted">
+                       <Link to={`/app/os/nova?obraId=${obra.id}`} className="flex-1">
+                         <Button size="sm" className="w-full gap-1.5 h-9 font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors border-none shadow-none">
+                           <Plus className="h-3.5 w-3.5" /> Iniciar OS
+                         </Button>
+                       </Link>
+                       <Link to={`/app/obras/${obra.id}`}>
+                         <Button variant="outline" size="sm" className="h-9 font-medium hover:bg-accent transition-colors">
+                           Detalhes <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                         </Button>
+                       </Link>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+           </TabsContent>
+         </Tabs>
+       </div>
+     );
+   }

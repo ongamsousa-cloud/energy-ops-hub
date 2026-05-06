@@ -306,44 +306,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
        if (res.error) throw res.error;
  
 
-       if (finalUserId) {
-         const updateData: any = {
-           nome: form.nome,
-           cargo: form.cargo,
-           especialidade: form.especialidade,
-           cpf: form.cpf,
-           rg: form.rg,
-           telefone: form.telefone,
-           data_nascimento: form.data_nascimento === "" ? null : form.data_nascimento,
-           endereco_residencial: form.endereco_residencial,
-           bairro: form.bairro,
-           cidade: form.cidade,
-           estado: form.estado,
-           cep: form.cep,
-           data_admissao: form.admission_date === "" ? null : form.admission_date,
-           department_id: form.department_id === "" ? null : form.department_id,
-           foto_url: fotoUrl,
-           email: form.email
-         };
- 
-         if (form.password) updateData.must_change_password = true;
- 
-          const { error: profileError } = await supabase.from("profiles").update(updateData).eq("id", finalUserId);
-          
-          if (profileError) {
-             console.error("Erro ao atualizar profile:", profileError);
-             // Não travar se for apenas erro de update no profile, mas avisar
-             toast.warning("Dados do funcionário salvos, mas houve um erro ao sincronizar o perfil de acesso.");
-          }
-         if (profileError) throw profileError;
- 
-          await supabase.from("user_roles").delete().eq("user_id", finalUserId);
-          await supabase.from("user_roles").insert({ user_id: finalUserId, role: form.role as any });
-          
-          if (actualEmployeeId || res.data?.id) {
-            await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
-          }
-        }
 
        // Gerenciamento de usuário via Edge Function
        if (form.can_access_system && form.email && !finalUserId) {

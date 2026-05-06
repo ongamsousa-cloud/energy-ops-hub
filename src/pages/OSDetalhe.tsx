@@ -19,7 +19,7 @@ import { toast } from "sonner";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { cn } from "@/lib/utils";
  import { getEvidenceRules, validateFile, checkEvidenceCompleteness, type EvidenceRules, type EvidenceCheck } from "@/lib/evidenceRules";
- import { OS_STATUS_FLOW, type OSStatus } from "@/modules/work-orders/status/os-status";
+ import { OS_STATUS_FLOW, type OSStatus } from "@/shared/status/os-status";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 

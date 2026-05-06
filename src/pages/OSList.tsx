@@ -68,7 +68,9 @@ export default function OSList() {
         if (!filters.showArchived && r.arquivada) return false;
         if (filters.showArchived && !r.arquivada) return false;
 
-        const matchOp = filters.operational_status === "all" || (r.operational_status || r.status)?.toLowerCase() === filters.operational_status.toLowerCase();
+        const matchOp = filters.operational_status === "all" || 
+                        r.operational_status?.toLowerCase() === filters.operational_status.toLowerCase() ||
+                        r.status?.toLowerCase() === filters.operational_status.toLowerCase();
         const matchFin = filters.financial_status === "all" || r.financial_status === filters.financial_status;
         const matchAudit = filters.audit_status === "all" || r.audit_status?.toLowerCase() === filters.audit_status.toLowerCase();
         const matchPriority = filters.priority === "all" || r.prioridade === filters.priority;
@@ -82,31 +84,40 @@ export default function OSList() {
           r.bairro?.toLowerCase().includes(searchLower);
 
         let matchPeriod = true;
-        const createdAt = new Date(r.created_at);
-        const now = new Date();
-         if (filters.period === "today") {
-           matchPeriod = createdAt.toDateString() === now.toDateString();
-         } else if (filters.period === "week") {
-           const weekAgo = new Date();
-           weekAgo.setDate(now.getDate() - 7);
-           matchPeriod = createdAt >= weekAgo;
-         } else if (filters.period === "month") {
-           matchPeriod = createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
-         } else if (filters.period === "custom" && filters.dateRange?.from) {
-           const start = startOfDay(filters.dateRange.from);
-           const end = filters.dateRange.to ? endOfDay(filters.dateRange.to) : endOfDay(filters.dateRange.from);
-           matchPeriod = isWithinInterval(createdAt, { start, end });
-         }
-         return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch && matchPeriod;
+        if (filters.period !== "all") {
+          const createdAt = new Date(r.created_at);
+          const now = new Date();
+          if (filters.period === "today") {
+            matchPeriod = createdAt.toDateString() === now.toDateString();
+          } else if (filters.period === "week") {
+            const weekAgo = new Date();
+            weekAgo.setDate(now.getDate() - 7);
+            matchPeriod = createdAt >= weekAgo;
+          } else if (filters.period === "month") {
+            matchPeriod = createdAt.getMonth() === now.getMonth() && createdAt.getFullYear() === now.getFullYear();
+          } else if (filters.period === "custom" && filters.dateRange?.from) {
+            const start = startOfDay(filters.dateRange.from);
+            const end = filters.dateRange.to ? endOfDay(filters.dateRange.to) : endOfDay(filters.dateRange.from);
+            matchPeriod = isWithinInterval(createdAt, { start, end });
+          }
+        }
+        return matchOp && matchFin && matchAudit && matchPriority && matchDep && matchSearch && matchPeriod;
        });
      }, [rows, filters]);
  
     const stats = useMemo(() => {
       return {
         total: filteredRows.length,
-       pendentes: filteredRows.filter(r => (r.operational_status || r.status)?.toLowerCase() === 'pendente').length,
-       emExecucao: filteredRows.filter(r => ['em execução', 'iniciada', 'em_execucao'].includes((r.operational_status || r.status)?.toLowerCase())).length,
-       concluidas: filteredRows.filter(r => ['concluída', 'concluida'].includes((r.operational_status || r.status)?.toLowerCase())).length,
+         pendentes: filteredRows.filter(r => 
+           (r.operational_status || r.status)?.toLowerCase() === 'pendente' || 
+           (r.operational_status || r.status)?.toLowerCase() === 'aguardando_revisao'
+         ).length,
+         emExecucao: filteredRows.filter(r => 
+           ['em execução', 'iniciada', 'em_execucao', 'em_andamento', 'em_deslocamento', 'chegou_ao_local'].includes((r.operational_status || r.status)?.toLowerCase())
+         ).length,
+         concluidas: filteredRows.filter(r => 
+           ['concluída', 'concluida', 'aprovada', 'aprovada_supervisor', 'aprovada_auditoria'].includes((r.operational_status || r.status)?.toLowerCase())
+         ).length,
       };
     }, [filteredRows]);
 

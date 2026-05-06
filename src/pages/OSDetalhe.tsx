@@ -787,16 +787,16 @@ export default function OSDetalhe() {
                  <Dialog open={add} onOpenChange={setAdd}>
                    <DialogTrigger asChild><Button size="sm" className="gap-2"><Plus className="h-4 w-4"/>Lançar Atividade</Button></DialogTrigger>
                    <DialogContent className="max-w-xl">
-                     <DialogHeader>
-                       <DialogTitle>Novo Lançamento Técnico</DialogTitle>
-                       <DialogDescription>Selecione a atividade do catálogo e informe a produtividade realizada.</DialogDescription>
-                     </DialogHeader>
-                     <div className="grid gap-4 py-4">
-                       <div className="space-y-2">
-                         <Label className="text-sm font-semibold">Catálogo de Atividades</Label>
-                         <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
+                  <DialogHeader className="border-b pb-4">
+                    <DialogTitle className="text-xl font-bold text-primary">Novo Lançamento Técnico</DialogTitle>
+                    <DialogDescription className="text-muted-foreground">Selecione a atividade e informe a produtividade realizada.</DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-6 py-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Catálogo de Atividades</Label>
+                      <Popover open={activityPopoverOpen} onOpenChange={setActivityPopoverOpen}>
                            <PopoverTrigger asChild>
-                             <Button variant="outline" className="w-full justify-start text-left font-normal h-12">
+                            <Button variant="outline" className="w-full justify-start text-left font-normal h-14 border-2 hover:border-primary/50 transition-all">
                                {form.atividade_id ? (
                                  <div className="flex flex-col">
                                    <span className="font-bold text-primary text-xs">{allAtvs.find(a => a.id === form.atividade_id)?.codigo_item}</span>
@@ -866,42 +866,62 @@ export default function OSDetalhe() {
                          </Popover>
                        </div>
 
-                       <div className="grid grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                           <Label>Código Técnico</Label>
-                           <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
-                             <SelectTrigger><SelectValue placeholder="Opcional"/></SelectTrigger>
-                             <SelectContent>
-                               <SelectItem value="none">Nenhum</SelectItem>
-                               {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
-                             </SelectContent>
-                           </Select>
-                         </div>
-                         <div className="space-y-2">
-                           <Label>Quantidade ({ativSel?.unidade || "—"})</Label>
-                           <Input type="number" step="0.01" value={form.quantidade} onChange={(e)=>setForm({...form, quantidade: e.target.value})}/>
-                         </div>
-                       </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código Técnico</Label>
+                            <Select value={form.execution_code_id} onValueChange={(v)=>setForm({...form, execution_code_id: v})}>
+                              <SelectTrigger className="h-12 border-2"><SelectValue placeholder="Opcional"/></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Nenhum</SelectItem>
+                                {codes.map((c)=>(<SelectItem key={c.id} value={c.id}>{c.code} · {c.title}</SelectItem>))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quantidade ({ativSel?.unidade || "—"})</Label>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              value={form.quantidade} 
+                              onChange={(e)=>setForm({...form, quantidade: e.target.value})}
+                              className="h-12 text-lg font-bold border-2 focus-visible:ring-primary"
+                            />
+                          </div>
+                        </div>
 
                        <div className="p-3 bg-muted/20 rounded-md border border-dashed flex justify-between items-center">
                          <span className="text-xs text-muted-foreground uppercase font-bold">Produtividade Estimada</span>
                          <span className="text-lg font-mono font-bold text-primary">{umdTotal.toFixed(4)} <span className="text-xs font-normal">UMD</span></span>
                        </div>
 
-                       <div className="space-y-2">
-                         <Label>Observações</Label>
-                         <Textarea 
-                           placeholder="Detalhes adicionais..."
-                           value={form.observacao} 
-                           onChange={(e)=>setForm({...form, observacao: e.target.value})}
-                         />
-                       </div>
-                       
-                       <Button onClick={() => addItem()} className="w-full" disabled={!form.atividade_id || !form.quantidade || busy}>
-                         {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
-                         {busy ? "Processando..." : "Confirmar Lançamento"}
-                       </Button>
-                     </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Observações</Label>
+                          <Textarea 
+                            placeholder="Detalhes adicionais sobre este lançamento..."
+                            value={form.observacao} 
+                            onChange={(e)=>setForm({...form, observacao: e.target.value})}
+                            className="min-h-[100px] border-2 resize-none"
+                          />
+                        </div>
+                        
+                        <div className="flex gap-3 border-t pt-4">
+                          <Button 
+                            variant="outline"
+                            className="flex-1 h-12 font-bold uppercase tracking-wider" 
+                            onClick={() => setAdd(false)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            className="flex-[2] h-12 font-bold text-base uppercase tracking-wider shadow-lg shadow-primary/20" 
+                            onClick={() => addItem()} 
+                            disabled={!form.atividade_id || !form.quantidade || busy}
+                          >
+                            {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+                            {busy ? "Lançando..." : "Confirmar Lançamento"}
+                          </Button>
+                        </div>
+                      </div>
                    </DialogContent>
                  </Dialog>
                )}
@@ -1167,8 +1187,7 @@ export default function OSDetalhe() {
                </div>
              ) : (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-5">
-            <TabsTrigger value="atividades">Atividades</TabsTrigger>
-                  {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
+                   {evid.map((e)=>(<EvImg key={e.id} ev={e} onDelete={deleteEvidence} />))}
                 </div>
              )}
            </div>

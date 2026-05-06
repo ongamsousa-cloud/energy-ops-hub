@@ -491,10 +491,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
-                    </div>
-                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
                     </div>
@@ -575,10 +571,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <TabsContent value="profissional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
-                    </div>
-                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Matrícula</Label>
                       <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
                     </div>
@@ -620,10 +612,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
                 <TabsContent value="operacional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Cód. Serviço</Label>
-                      <Input value={form.service_code} onChange={(e) => setForm({ ...form, service_code: e.target.value })} placeholder="TEC-000" />
-                    </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Região de Atuação</Label>
                       <Input value={form.regiao_atuacao} onChange={(e) => setForm({ ...form, regiao_atuacao: e.target.value })} placeholder="Ex: SP Centro" />

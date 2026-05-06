@@ -461,12 +461,12 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
-                   <TabsTrigger value="geral">Dados Pessoais</TabsTrigger>
-                   <TabsTrigger value="profissional">Contrato & RH</TabsTrigger>
-                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
-                   <TabsTrigger value="permissoes">Acessos & Permissões</TabsTrigger>
-                   <TabsTrigger value="historico">Logs</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6 bg-muted/50 p-1">
+                   <TabsTrigger value="geral" className="gap-1.5 flex items-center"><Globe className="h-3.5 w-3.5" /> Gerais</TabsTrigger>
+                   <TabsTrigger value="profissional" className="gap-1.5 flex items-center"><Activity className="h-3.5 w-3.5" /> RH</TabsTrigger>
+                   <TabsTrigger value="operacional" className="gap-1.5 flex items-center"><Settings className="h-3.5 w-3.5" /> Operacional</TabsTrigger>
+                   <TabsTrigger value="permissoes" className="gap-1.5 flex items-center"><Shield className="h-3.5 w-3.5" /> Acessos</TabsTrigger>
+                   <TabsTrigger value="historico" className="gap-1.5 flex items-center"><History className="h-3.5 w-3.5" /> Logs</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
@@ -512,31 +512,33 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                   <div className="space-y-6 pt-6 border-t border-border">
                      <h4 className="text-base font-bold flex items-center gap-2 text-primary/80"><MapPin className="h-4 w-4 text-muted-foreground" /> Endereço</h4>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium">CEP</Label>
-                          <div className="flex gap-2">
-                            <div className="relative flex-1">
-                              <Input 
-                                value={form.cep} 
-                                onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
-                                 onBlur={handleCepSearch}
-                                placeholder="00000-000" 
-                                maxLength={9} 
-                              />
-                              {searchingCep && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
-                            </div>
-                            <Button 
-                              size="icon" 
-                              variant="outline" 
-                              type="button" 
-                              onClick={handleCepSearch} 
-                              disabled={searchingCep}
-                              className="shrink-0 h-10 w-10"
-                            >
-                              <Search className={`h-4 w-4 ${searchingCep ? 'animate-spin' : ''}`} />
-                            </Button>
-                          </div>
-                        </div>
+                       <div className="space-y-1.5">
+                         <Label className="text-xs font-medium flex items-center justify-between">
+                           CEP
+                           {searchingCep && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                         </Label>
+                         <div className="flex gap-2">
+                           <Input 
+                             value={form.cep} 
+                             onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })} 
+                             onBlur={handleCepSearch}
+                             placeholder="00000-000" 
+                             maxLength={9} 
+                             className="flex-1 font-mono h-10"
+                           />
+                           <Button 
+                             size="sm" 
+                             variant="secondary" 
+                             type="button" 
+                             onClick={handleCepSearch} 
+                             disabled={searchingCep}
+                             className="gap-2 px-3 shrink-0 h-10"
+                           >
+                             <Search className="h-4 w-4" />
+                             <span className="hidden sm:inline">Buscar</span>
+                           </Button>
+                         </div>
+                       </div>
                        <div className="md:col-span-2 space-y-1.5">
                          <Label className="text-xs font-medium">Logradouro</Label>
                          <Input value={form.endereco_residencial} onChange={(e) => setForm({ ...form, endereco_residencial: e.target.value })} placeholder="Rua, número..." />
@@ -694,22 +696,36 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                             </div>
                             <div className="space-y-1.5">
                               <Label className="text-xs">{targetUserId ? "Resetar Senha" : "Senha Provisória"}</Label>
-                              <div className="relative">
-                                <Input 
-                                  type={showPassword ? "text" : "password"} 
-                                  value={form.password} 
-                                  onChange={(e) => setForm({...form, password: e.target.value})} 
-                                  placeholder={targetUserId ? "Deixe em branco para manter" : "Mudar@123"} 
-                                />
-                                <Button 
-                                  size="icon" 
-                                  variant="ghost" 
-                                  className="absolute right-0 top-0 h-full px-3" 
-                                  onClick={() => setShowPassword(!showPassword)}
-                                >
-                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </Button>
-                              </div>
+                             <div className="flex gap-2">
+                               <div className="relative flex-1">
+                                 <Input 
+                                   type={showPassword ? "text" : "password"} 
+                                   value={form.password} 
+                                   onChange={(e) => setForm({...form, password: e.target.value})} 
+                                   placeholder={targetUserId ? "Nova senha (opcional)" : "Mudar@123"} 
+                                   className="font-mono h-10"
+                                 />
+                                 <Button 
+                                   size="icon" 
+                                   variant="ghost" 
+                                   className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground" 
+                                   onClick={() => setShowPassword(!showPassword)}
+                                   type="button"
+                                 >
+                                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                 </Button>
+                               </div>
+                               <Button 
+                                 type="button" 
+                                 variant="outline" 
+                                 size="sm" 
+                                 onClick={generateTemporaryPassword}
+                                 className="gap-2 h-10 px-3 shrink-0"
+                               >
+                                 <Key className="h-3.5 w-3.5" />
+                                 <span className="hidden sm:inline">Gerar</span>
+                               </Button>
+                             </div>
                             </div>
                           </div>
                         )}

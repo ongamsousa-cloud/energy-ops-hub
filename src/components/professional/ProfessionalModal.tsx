@@ -211,9 +211,9 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           cidade: data.localidade || prev.cidade,
           estado: data.uf || prev.estado
         }));
-        toast.success("Endereço localizado com sucesso!");
+        toast.success("Endereço localizado!");
       } else {
-        toast.error("CEP não encontrado nas bases oficiais.");
+        toast.error("CEP não encontrado.");
       }
     } catch (error) {
       console.error("Erro ao buscar CEP:", error);

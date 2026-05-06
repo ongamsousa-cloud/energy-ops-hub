@@ -66,7 +66,7 @@ export default function Equipes() {
       <PageHeader title="Equipes" actions={
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Nova equipe</Button></DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader><DialogTitle>Nova equipe</DialogTitle></DialogHeader>
             <div className="grid gap-3">
               <div><Label>Nome *</Label><Input value={form.nome} onChange={(e)=>setForm({...form, nome: e.target.value})}/></div>
@@ -83,6 +83,33 @@ export default function Equipes() {
                    </SelectContent>
                  </Select>
                </div>
+
+                <div className="space-y-2">
+                  <Label>Membros da Equipe</Label>
+                  <ScrollArea className="h-[200px] rounded-md border p-2">
+                    <div className="space-y-2">
+                      {profs.length === 0 ? (
+                        <p className="text-xs text-muted-foreground p-2">Nenhum profissional ativo encontrado.</p>
+                      ) : (
+                        profs.map((p) => (
+                          <div key={p.id} className="flex items-center space-x-2 p-1 hover:bg-muted/50 rounded transition-colors">
+                            <Checkbox 
+                              id={`member-${p.id}`} 
+                              checked={selectedMembers.includes(p.id)}
+                              onCheckedChange={() => toggleMember(p.id)}
+                            />
+                            <label 
+                              htmlFor={`member-${p.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                            >
+                              {p.full_name}
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
             </div>
             <Button onClick={save}>Salvar</Button>
           </DialogContent>

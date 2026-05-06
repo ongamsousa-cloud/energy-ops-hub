@@ -668,6 +668,88 @@ export type Database = {
           },
         ]
       }
+      department_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          from_department_id: string | null
+          id: string
+          metadata: Json | null
+          os_id: string | null
+          priority: string
+          status: string
+          task_type: string
+          title: string
+          to_department_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          from_department_id?: string | null
+          id?: string
+          metadata?: Json | null
+          os_id?: string | null
+          priority?: string
+          status?: string
+          task_type: string
+          title: string
+          to_department_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          from_department_id?: string | null
+          id?: string
+          metadata?: Json | null
+          os_id?: string | null
+          priority?: string
+          status?: string
+          task_type?: string
+          title?: string
+          to_department_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_tasks_from_department_id_fkey"
+            columns: ["from_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_tasks_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_tasks_to_department_id_fkey"
+            columns: ["to_department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       departments: {
         Row: {
           acronym: string | null
@@ -1872,40 +1954,58 @@ export type Database = {
       }
       material_reservations: {
         Row: {
-          consumed_at: string | null
-          created_at: string
-          created_by: string
+          created_at: string | null
           id: string
-          material_id: string
-          os_id: string
+          lost_quantity: number
+          material_id: string | null
+          os_id: string | null
           quantity: number
-          released_at: string | null
+          received_by: string | null
+          released_by: string | null
+          released_quantity: number
+          requested_by: string | null
+          reserved_by: string | null
+          reserved_quantity: number
+          returned_quantity: number
           status: string
-          warehouse_id: string
+          updated_at: string | null
+          used_quantity: number
         }
         Insert: {
-          consumed_at?: string | null
-          created_at?: string
-          created_by: string
+          created_at?: string | null
           id?: string
-          material_id: string
-          os_id: string
+          lost_quantity?: number
+          material_id?: string | null
+          os_id?: string | null
           quantity: number
-          released_at?: string | null
+          received_by?: string | null
+          released_by?: string | null
+          released_quantity?: number
+          requested_by?: string | null
+          reserved_by?: string | null
+          reserved_quantity?: number
+          returned_quantity?: number
           status?: string
-          warehouse_id: string
+          updated_at?: string | null
+          used_quantity?: number
         }
         Update: {
-          consumed_at?: string | null
-          created_at?: string
-          created_by?: string
+          created_at?: string | null
           id?: string
-          material_id?: string
-          os_id?: string
+          lost_quantity?: number
+          material_id?: string | null
+          os_id?: string | null
           quantity?: number
-          released_at?: string | null
+          received_by?: string | null
+          released_by?: string | null
+          released_quantity?: number
+          requested_by?: string | null
+          reserved_by?: string | null
+          reserved_quantity?: number
+          returned_quantity?: number
           status?: string
-          warehouse_id?: string
+          updated_at?: string | null
+          used_quantity?: number
         }
         Relationships: [
           {
@@ -1920,13 +2020,6 @@ export type Database = {
             columns: ["os_id"]
             isOneToOne: false
             referencedRelation: "ordens_servico"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_reservations_warehouse_id_fkey"
-            columns: ["warehouse_id"]
-            isOneToOne: false
-            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
@@ -2075,6 +2168,94 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      non_conformities: {
+        Row: {
+          assigned_to: string | null
+          correction_deadline: string | null
+          correction_required: boolean | null
+          created_at: string | null
+          created_by: string | null
+          department_id: string | null
+          description: string
+          evidence_id: string | null
+          id: string
+          metadata: Json | null
+          os_id: string | null
+          reopened_at: string | null
+          reopened_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          correction_deadline?: string | null
+          correction_required?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          department_id?: string | null
+          description: string
+          evidence_id?: string | null
+          id?: string
+          metadata?: Json | null
+          os_id?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          correction_deadline?: string | null
+          correction_required?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          department_id?: string | null
+          description?: string
+          evidence_id?: string | null
+          id?: string
+          metadata?: Json | null
+          os_id?: string | null
+          reopened_at?: string | null
+          reopened_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "non_conformities_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "non_conformities_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "os_evidences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "non_conformities_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
           },
         ]
@@ -2951,6 +3132,59 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      os_location_logs: {
+        Row: {
+          accuracy: number | null
+          altitude: number | null
+          captured_at: string | null
+          created_at: string | null
+          heading: number | null
+          id: string
+          latitude: number
+          longitude: number
+          os_id: string | null
+          speed: number | null
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          accuracy?: number | null
+          altitude?: number | null
+          captured_at?: string | null
+          created_at?: string | null
+          heading?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          os_id?: string | null
+          speed?: number | null
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          accuracy?: number | null
+          altitude?: number | null
+          captured_at?: string | null
+          created_at?: string | null
+          heading?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          os_id?: string | null
+          speed?: number | null
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "os_location_logs_os_id_fkey"
+            columns: ["os_id"]
+            isOneToOne: false
+            referencedRelation: "ordens_servico"
             referencedColumns: ["id"]
           },
         ]

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -141,17 +141,22 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: profs }, { data: servs }] = await Promise.all([
-      supabase.from("employees").select("id, full_name, user_id").eq("status", "active"),
-      supabase.from("profiles").select("id, nome").in("user_roles.role", ["admin", "gestor", "supervisor"]),
+    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all([
+      supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
+      supabase.from("profiles").select("id, nome, user_roles(role)"),
       supabase.from("servicos").select("id, nome").eq("ativo", true)
     ]);
     
-    // Combine active employees and relevant profiles for the supervisor list
-    const supervisorList = [...(emps ?? [])];
-    (profs ?? []).forEach(p => {
+    // Get profiles with leadership roles
+    const leadershipProfs = (profs_roles ?? []).filter((p: any) => 
+      p.user_roles?.some((ur: any) => ["admin", "gestor", "supervisor"].includes(ur.role))
+    );
+
+    // Combine emps and profiles
+    const supervisorList: any[] = [...(emps ?? [])];
+    leadershipProfs.forEach(p => {
       if (!supervisorList.find(e => e.user_id === p.id)) {
-        supervisorList.push({ id: p.id, full_name: p.nome });
+        supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
       }
     });
 
@@ -357,19 +362,47 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
            
            if (signUpError) throw signUpError;
            
-           if (signUpData.user) {
-             finalUserId = signUpData.user.id;
-             // Vincular o novo usuário ao funcionário
-             if (actualEmployeeId || res.data?.id) {
-               await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
-             }
-             toast.success("Conta de acesso criada com sucesso! O usuário recebeu um e-mail de confirmação.");
-           }
-         } catch (authErr: any) {
-           console.error("Erro ao criar conta Auth:", authErr);
-           toast.warning("Dados do funcionário salvos, mas não foi possível criar a conta de acesso: " + authErr.message);
-         }
-       }
+      if (form.can_access_system && form.email && !finalUserId) {
+        try {
+          const { data, error } = await supabase.functions.invoke('manage-user', {
+            body: {
+              action: 'create',
+              email: form.email,
+              password: form.password || 'Mudar@123',
+              userData: { nome: form.nome, role: form.role }
+            }
+          });
+          
+          if (error) throw error;
+          
+          if (data?.user?.id) {
+            finalUserId = data.user.id;
+            if (actualEmployeeId || res.data?.id) {
+              await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
+            }
+            toast.success("Usuário criado e vinculado com sucesso!");
+          }
+        } catch (authErr: any) {
+          console.error("Erro ao gerenciar usuário:", authErr);
+          toast.warning("Dados salvos, mas houve erro ao criar acesso: " + (authErr.message || "Erro desconhecido"));
+        }
+      } else if (finalUserId && form.password) {
+        // Update existing user password
+        try {
+          const { error } = await supabase.functions.invoke('manage-user', {
+            body: {
+              action: 'update',
+              userId: finalUserId,
+              password: form.password
+            }
+          });
+          if (error) throw error;
+          toast.success("Senha do usuário atualizada com sucesso!");
+        } catch (authErr: any) {
+          console.error("Erro ao atualizar senha:", authErr);
+          toast.warning("Dados salvos, mas erro ao atualizar senha.");
+        }
+      }
 
       toast.success(actualEmployeeId ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");
       

@@ -137,13 +137,41 @@ import { useAuth } from "@/lib/auth";
       };
     }, [filteredRows]);
 
-  return (
+   const filteredObras = useMemo(() => {
+     const searchLower = filters.search.toLowerCase();
+     return obras.filter(o => 
+       !filters.search || 
+       o.numero?.toLowerCase().includes(searchLower) || 
+       o.nome?.toLowerCase().includes(searchLower) ||
+       o.cliente?.toLowerCase().includes(searchLower)
+     );
+   }, [obras, filters.search]);
+ 
+   return (
      <div className="flex flex-col gap-6">
-      <PageHeader title="Gestão de Ordens de Serviço" actions={
-        <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
-      } />
-
-        {/* Dashboards Rápidos */}
+       <PageHeader title="Gestão de Operações" actions={
+         <div className="flex gap-2">
+           <Link to="/app/obras"><Button variant="outline" size="sm"><Briefcase className="mr-1 h-3.5 w-3.5"/>Ver Obras</Button></Link>
+           <Link to="/app/os/nova"><Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Iniciar OS</Button></Link>
+         </div>
+       } />
+ 
+       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+         <div className="flex items-center justify-between mb-4 bg-muted/30 p-1 rounded-lg border">
+           <TabsList className="grid grid-cols-2 w-full max-w-md">
+             <TabsTrigger value="ordens" className="gap-2">
+               <ListTodo className="h-4 w-4" />
+               Ordens de Serviço
+             </TabsTrigger>
+             <TabsTrigger value="obras" className="gap-2">
+               <Briefcase className="h-4 w-4" />
+               Obras Cadastradas
+             </TabsTrigger>
+           </TabsList>
+         </div>
+ 
+         <TabsContent value="ordens" className="space-y-6 mt-0">
+           {/* Dashboards Rápidos */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-card border rounded-xl p-4 shadow-sm">
             <div className="flex items-center gap-3 text-muted-foreground mb-1">
@@ -173,9 +201,9 @@ import { useAuth } from "@/lib/auth";
             </div>
             <div className="text-2xl font-bold">{stats.concluidas}</div>
           </div>
-        </div>
+           </div>
  
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-end bg-muted/20 p-4 rounded-lg border">
+           <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 items-end bg-muted/20 p-4 rounded-lg border">
           <div className="space-y-1.5 lg:col-span-2">
             <label className="text-xs font-medium text-muted-foreground">Pesquisa</label>
             <div className="relative">

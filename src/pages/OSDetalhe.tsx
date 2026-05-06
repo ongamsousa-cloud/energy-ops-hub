@@ -82,7 +82,7 @@ export default function OSDetalhe() {
     const canApprove = isSystemAdmin || isDeptManager || hasRole(["supervisor"]);
     const isGestor = isSystemAdmin || isDeptManager;
   const canEdit = (isOwner || isGestor || (hasRole(["supervisor"]) && os?.department_id === profile?.department_id)) && 
-                 ["iniciada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao","pronta_para_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
+                  ["iniciada","os lançada","os lancada","em_andamento","correcao_solicitada","corrigida","rascunho","pendente","atribuida","em_deslocamento","chegou_ao_local","em_execucao","pronta_para_execucao"].includes((os?.operational_status || os?.status || "").toLowerCase());
 
   const [startValidation, setStartValidation] = useState<{ can_start: boolean, blocked_by: string[], message: string } | null>(null);
 
@@ -242,7 +242,7 @@ export default function OSDetalhe() {
       if (error) throw error;
 
       const currentStatus = (os.operational_status || os.status || "pendente").toLowerCase();
-      if (["pendente", "atribuida", "material_liberado", "pronta_para_execucao", "iniciada"].includes(currentStatus)) {
+      if (["pendente", "atribuida", "material_liberado", "pronta_para_execucao", "iniciada", "os lançada", "os lancada"].includes(currentStatus)) {
         await supabase.from("ordens_servico").update({
           operational_status: "em_execucao",
         }).eq("id", id);

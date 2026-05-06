@@ -8,7 +8,7 @@ import EmptyState from "@/components/EmptyState";
   import { Card, CardContent } from "@/components/ui/card";
   import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Badge } from "@/components/ui/badge";
- import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil, Download, Filter, FileSpreadsheet, FileText, CheckCircle2, XCircle, AlertCircle, Clock, ClipboardList, Activity } from "lucide-react";
+import { Shield, UserPlus, Search, MoreHorizontal, Settings, Key, UserMinus, Pencil, Download, Filter, FileSpreadsheet, FileText, CheckCircle2, XCircle, AlertCircle, Clock, ClipboardList, Activity, Users, UserCheck, UserX, UserMinus as UserAfastado } from "lucide-react";
   import ProfessionalModal from "@/components/professional/ProfessionalModal";
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";

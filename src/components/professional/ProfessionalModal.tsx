@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,18 @@ const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro"
 export default function ProfessionalModal({ open, onOpenChange, onSuccess, professional, departments }: ProfessionalModalProps) {
   const { profile: currentUserProfile } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  const targetUserId = useMemo(() => {
+    if (!professional) return null;
+    return professional.profile_id || professional.user_id || (professional.id?.length > 30 ? professional.id : null);
+  }, [professional]);
+
+  const actualEmployeeId = useMemo(() => {
+    if (!professional) return null;
+    const employeeId = professional.employee_id || (professional.id?.length > 30 ? null : professional.id);
+    return employeeId || (professional.id && !targetUserId ? professional.id : null);
+  }, [professional, targetUserId]);
+
   const [searchingCep, setSearchingCep] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -141,11 +153,26 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   }, [open, professional]);
 
   const fetchSupervisorsAndServices = async () => {
-    const [{ data: emps }, { data: servs }] = await Promise.all([
-      supabase.from("employees").select("id, full_name").eq("status", "active"),
+    const [{ data: emps }, { data: profs_roles }, { data: servs }] = await Promise.all<any>([
+      supabase.from("employees").select("id, full_name, user_id").neq("status", "desligado"),
+      supabase.from("profiles").select("id, nome, user_roles(role)"),
       supabase.from("servicos").select("id, nome").eq("ativo", true)
     ]);
-    setSupervisors(emps ?? []);
+    
+    // Get profiles with leadership roles
+    const leadershipProfs = (profs_roles ?? []).filter((p: any) => 
+      p.user_roles?.some((ur: any) => ["admin", "gestor", "supervisor"].includes(ur.role))
+    );
+
+    // Combine emps and profiles
+    const supervisorList: any[] = [...(emps ?? [])];
+    leadershipProfs.forEach(p => {
+      if (!supervisorList.find(e => e.user_id === p.id)) {
+        supervisorList.push({ id: p.id, full_name: p.nome, user_id: p.id });
+      }
+    });
+
+    setSupervisors(supervisorList);
     setAllServices(servs ?? []);
   };
 
@@ -210,13 +237,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
       // In Profissionais.tsx, professional.id is the employee ID
       // Identificadores consistentes
       // Identificadores consistentes baseados no objeto recebido do Profissionais.tsx
-      const employeeId = professional?.employee_id || (professional?.id?.length > 30 ? null : professional?.id); 
-      const targetUserId = professional?.profile_id || (professional?.user_id) || (professional?.id?.length > 30 ? professional.id : null);
-
-      // Se não temos employeeId mas temos professional.id, e ele não é um UUID de profile, ele é o employeeId
-      const actualEmployeeId = employeeId || (professional?.id && !targetUserId ? professional.id : null);
-
-      // Resolve finalUserId early for use in both updates
       let finalUserId = targetUserId;
       if (!finalUserId && form.email) {
         const { data: profileByEmail } = await supabase
@@ -331,35 +351,48 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
           }
         }
 
-       // Tentar criar usuário se solicitado e não existir
-       if (form.can_access_system && form.email && form.password && !finalUserId) {
-         try {
-           const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-             email: form.email,
-             password: form.password,
-             options: {
-               data: {
-                 nome: form.nome,
-                 role: form.role
-               }
-             }
-           });
-           
-           if (signUpError) throw signUpError;
-           
-           if (signUpData.user) {
-             finalUserId = signUpData.user.id;
-             // Vincular o novo usuário ao funcionário
-             if (actualEmployeeId || res.data?.id) {
-               await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
-             }
-             toast.success("Conta de acesso criada com sucesso! O usuário recebeu um e-mail de confirmação.");
-           }
-         } catch (authErr: any) {
-           console.error("Erro ao criar conta Auth:", authErr);
-           toast.warning("Dados do funcionário salvos, mas não foi possível criar a conta de acesso: " + authErr.message);
-         }
-       }
+       // Gerenciamento de usuário via Edge Function
+       if (form.can_access_system && form.email && !finalUserId) {
+        try {
+          const { data, error } = await supabase.functions.invoke('manage-user', {
+            body: {
+              action: 'create',
+              email: form.email,
+              password: form.password || 'Mudar@123',
+              userData: { nome: form.nome, role: form.role }
+            }
+          });
+          
+          if (error) throw error;
+          
+          if (data?.user?.id) {
+            finalUserId = data.user.id;
+            if (actualEmployeeId || res.data?.id) {
+              await supabase.from("employees").update({ user_id: finalUserId }).eq("id", actualEmployeeId || res.data.id);
+            }
+            toast.success("Usuário criado e vinculado com sucesso!");
+          }
+        } catch (authErr: any) {
+          console.error("Erro ao gerenciar usuário:", authErr);
+          toast.warning("Dados salvos, mas houve erro ao criar acesso: " + (authErr.message || "Erro desconhecido"));
+        }
+      } else if (finalUserId && form.password) {
+        // Update existing user password
+        try {
+          const { error } = await supabase.functions.invoke('manage-user', {
+            body: {
+              action: 'update',
+              userId: finalUserId,
+              password: form.password
+            }
+          });
+          if (error) throw error;
+          toast.success("Senha do usuário atualizada com sucesso!");
+        } catch (authErr: any) {
+          console.error("Erro ao atualizar senha:", authErr);
+          toast.warning("Dados salvos, mas erro ao atualizar senha.");
+        }
+      }
 
       toast.success(actualEmployeeId ? "Cadastro atualizado com sucesso" : "Funcionário cadastrado com sucesso");
       
@@ -425,45 +458,40 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                      </Select>
                    </div>
 
-                   <div className="space-y-3 pt-4 border-t border-border">
-                     <Label className="text-xs font-semibold uppercase text-muted-foreground">Identificação Profissional</Label>
-                     <div className="space-y-4">
-                       <div className="space-y-1.5">
-                         <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
-                         <Input 
-                           className="h-10 text-sm font-mono" 
-                           placeholder="FUNC-0000" 
-                           value={form.internal_company_code} 
-                           onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} 
-                         />
-                       </div>
-                       <div className="space-y-1.5">
-                         <Label className="text-xs font-medium">Cód. Serviço</Label>
-                         <Input 
-                           className="h-10 text-sm font-mono" 
-                           placeholder="TEC-000" 
-                           value={form.service_code} 
-                           onChange={(e) => setForm({ ...form, service_code: e.target.value })} 
-                         />
-                       </div>
-                     </div>
+                   <div className="space-y-4 pt-4 border-t border-border">
+                      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                        <p className="text-[10px] uppercase font-bold text-primary mb-2">Resumo Operacional</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Empresa</span>
+                            <span className="text-sm font-mono font-bold">{form.internal_company_code || '---'}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-muted-foreground uppercase">Cód. Serviço</span>
+                            <span className="text-sm font-mono font-bold text-primary">{form.service_code || '---'}</span>
+                          </div>
+                        </div>
+                      </div>
                    </div>
                  </div>
             </div>
 
             <div className="md:col-span-9">
               <Tabs defaultValue="geral" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-6">
-                  <TabsTrigger value="geral">Pessoal</TabsTrigger>
-                  <TabsTrigger value="profissional">Profissional</TabsTrigger>
-                  <TabsTrigger value="operacional">Operacional</TabsTrigger>
-                  <TabsTrigger value="permissoes">Acesso</TabsTrigger>
-                  <TabsTrigger value="config_acesso">Senha</TabsTrigger>
-                  <TabsTrigger value="historico">Histórico</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
+                   <TabsTrigger value="geral">Dados Pessoais</TabsTrigger>
+                   <TabsTrigger value="profissional">Contrato & RH</TabsTrigger>
+                   <TabsTrigger value="operacional">Operacional</TabsTrigger>
+                   <TabsTrigger value="permissoes">Acessos & Permissões</TabsTrigger>
+                   <TabsTrigger value="historico">Logs</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="geral" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
+                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
+                    </div>
                     <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Nome Completo *</Label>
                       <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} placeholder="Ex: João Silva" />
@@ -545,6 +573,10 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                 <TabsContent value="profissional" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Cód. Interno Empresa</Label>
+                      <Input value={form.internal_company_code} onChange={(e) => setForm({ ...form, internal_company_code: e.target.value })} placeholder="FUNC-0000" />
+                    </div>
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-medium">Matrícula</Label>
                       <Input value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} placeholder="00000" />
                     </div>
@@ -609,38 +641,73 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                   </div>
                 </TabsContent>
 
-                <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {[
-                      { id: 'can_access_system', label: 'Acesso ao Sistema' },
-                      { id: 'can_receive_service_orders', label: 'Receber O.S.' },
-                      { id: 'can_manage_materials', label: 'Estoque' },
-                      { id: 'can_close_service_orders', label: 'Fechar O.S.' },
-                      { id: 'can_view_financial_data', label: 'Financeiro' },
-                      { id: 'can_view_reports', label: 'Relatórios' }
-                    ].map(p => (
-                      <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
-                        <Label htmlFor={p.id}>{p.label}</Label>
-                        <Switch id={p.id} checked={(form as any)[p.id]} onCheckedChange={(v) => setForm({...form, [p.id]: v})} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Perfil de Acesso</Label>
-                    <Select value={form.role} onValueChange={(v) => setForm({...form, role: v as AppRole})}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </TabsContent>
 
-                <TabsContent value="config_acesso" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
-                   <div className="space-y-2">
-                      <Label>Senha Provisória</Label>
-                      <Input type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder="***" />
-                   </div>
+                <TabsContent value="permissoes" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-bold flex items-center gap-2 text-primary"><Shield className="h-4 w-4" /> Controle de Acesso</h4>
+                      <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label>Habilitar Login</Label>
+                            <p className="text-[10px] text-muted-foreground">Permitir que este funcionário acesse o sistema</p>
+                          </div>
+                          <Switch checked={form.can_access_system} onCheckedChange={(v) => setForm({...form, can_access_system: v})} />
+                        </div>
+                        
+                        {form.can_access_system && (
+                          <div className="space-y-3 pt-3 border-t">
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">Perfil do Usuário</Label>
+                              <Select value={form.role} onValueChange={(v) => setForm({...form, role: v as AppRole})}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  {ROLES.map(r => <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label className="text-xs">{targetUserId ? "Resetar Senha" : "Senha Provisória"}</Label>
+                              <div className="relative">
+                                <Input 
+                                  type={showPassword ? "text" : "password"} 
+                                  value={form.password} 
+                                  onChange={(e) => setForm({...form, password: e.target.value})} 
+                                  placeholder={targetUserId ? "Deixe em branco para manter" : "Mudar@123"} 
+                                />
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="absolute right-0 top-0 h-full px-3" 
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-bold flex items-center gap-2 text-primary"><Settings className="h-4 w-4" /> Permissões Específicas</h4>
+                      <div className="grid grid-cols-1 gap-3">
+                        {[
+                          { id: 'can_receive_service_orders', label: 'Receber Ordens de Serviço' },
+                          { id: 'can_manage_materials', label: 'Gestão de Materiais / Estoque' },
+                          { id: 'can_close_service_orders', label: 'Encerrar Ordens de Serviço' },
+                          { id: 'can_view_financial_data', label: 'Acesso a Dados Financeiros' },
+                          { id: 'can_view_reports', label: 'Visualizar Relatórios Gerenciais' }
+                        ].map(p => (
+                          <div key={p.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                            <Label className="text-xs" htmlFor={p.id}>{p.label}</Label>
+                            <Switch id={p.id} checked={(form as any)[p.id]} onCheckedChange={(v) => setForm({...form, [p.id]: v})} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="historico" className="space-y-6 pb-8 animate-in fade-in-50 duration-300">

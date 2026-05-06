@@ -43,8 +43,23 @@ export default function ObraDetalhe() {
   return (
     <div>
       <PageHeader 
-        title={obra.nome} 
-        description={`Obra ${obra.numero}`} 
+        title={
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-primary font-mono font-black">{obra.numero}</span>
+              <StatusBadge status={obra.status} />
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground text-xs font-normal">
+              <span className="font-bold text-foreground">{obra.nome}</span>
+              {obra.cliente && (
+                <>
+                  <span className="opacity-50">|</span>
+                  <span className="italic">Cliente: {obra.cliente}</span>
+                </>
+              )}
+            </div>
+          </div>
+        }
         actions={
           <div className="flex items-center gap-2">
             <StatusBadge status={obra.status} />

@@ -226,6 +226,11 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
   const handleSave = async () => {
     if (!form.nome || !form.email) return toast.error("Nome e E-mail são obrigatórios");
     
+    if (!form.internal_company_code || !form.service_code) {
+      const proceed = window.confirm("Os códigos de identificação (Empresa e Serviço) não foram preenchidos. Deseja continuar assim mesmo?");
+      if (!proceed) return;
+    }
+    
     setLoading(true);
     try {
       // In Profissionais.tsx, professional.id is the employee ID

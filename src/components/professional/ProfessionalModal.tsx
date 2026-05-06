@@ -100,9 +100,18 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
     
     setLoading(true);
     try {
-      const userId = professional?.id;
-      let fotoUrl = professional?.foto_url || photoPreview;
+      const userId = professional?.id; // Este é o ID do profile (se existir)
+      const employeeId = professional?.employee_id;
+      let fotoUrl = professional?.foto_url;
 
+      // Se for um novo funcionário ou se uma nova foto foi selecionada
+      if (photoFile) {
+        // Usamos o employeeId existente ou aguardamos o insert para novos
+        if (employeeId) {
+          fotoUrl = await uploadPhoto(employeeId);
+        }
+      }
+      
       const employeeData = {
         full_name: form.nome,
         email: form.email,
@@ -125,7 +134,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         admission_date: form.admission_date === "" ? null : form.admission_date,
         termination_date: form.termination_date === "" ? null : form.termination_date,
         notes: form.notes,
-        photo_url: fotoUrl,
+        photo_url: fotoUrl || professional?.foto_url || null,
                 user_id: userId || null,
         document_rg: form.rg,
         birth_date: form.data_nascimento === "" ? null : form.data_nascimento,
@@ -136,18 +145,17 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
         state: form.estado
       };
 
-            let res;
-      if (professional?.employee_id) {
-        fotoUrl = await uploadPhoto(professional.employee_id);
-        employeeData.photo_url = fotoUrl;
-        res = await supabase.from("employees").update(employeeData).eq("id", professional.employee_id);
+      let res;
+      if (employeeId) {
+        res = await supabase.from("employees").update(employeeData).eq("id", employeeId);
       } else {
-        // First insert without photo to get ID
         res = await supabase.from("employees").insert(employeeData).select().single();
         if (res.data && photoFile) {
           const newFotoUrl = await uploadPhoto(res.data.id);
           await supabase.from("employees").update({ photo_url: newFotoUrl }).eq("id", res.data.id);
           fotoUrl = newFotoUrl;
+        } else if (res.data) {
+          fotoUrl = res.data.photo_url;
         }
       }
 

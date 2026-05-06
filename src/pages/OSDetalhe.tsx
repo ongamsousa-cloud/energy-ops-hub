@@ -1135,17 +1135,47 @@ export default function OSDetalhe() {
            )}
 
           {(os.operational_status === "Iniciada" || os.status === "iniciada") && isOwner && (
-            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" onClick={async () => {
-              await supabase.from("ordens_servico").update({ 
-                operational_status: "em_deslocamento",
-                status: "em_andamento"
-              }).eq("id", id);
-              await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
-              toast.success("Deslocamento Iniciado");
-              load();
+            <Button size="lg" className="h-14 sm:h-10 text-base font-bold bg-amber-500 hover:bg-amber-600" disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                await supabase.from("ordens_servico").update({ 
+                  operational_status: "em_deslocamento",
+                  status: "em_andamento"
+                }).eq("id", id);
+                await registrarAuditoria("em_deslocamento", "Iniciado deslocamento para o local");
+                toast.success("Deslocamento Iniciado");
+                load();
+              } catch (e: any) {
+                toast.error(e.message || "Erro no deslocamento");
+              } finally {
+                setBusy(false);
+              }
             }}>
-              <MapPin className="mr-2 h-5 w-5" />
+              {busy ? <RefreshCw className="mr-2 h-5 w-5 animate-spin" /> : <MapPin className="mr-2 h-5 w-5" />}
               Iniciar Deslocamento
+            </Button>
+          )}
+
+          {os.operational_status === "em_deslocamento" && isOwner && (
+            <Button size="lg" variant="outline" className="h-14 sm:h-10 text-base" disabled={busy} onClick={async () => {
+              setBusy(true);
+              try {
+                const geo = await getGeo();
+                await supabase.from("ordens_servico").update({ 
+                  operational_status: "chegou_ao_local",
+                  status: "em_andamento",
+                  inicio_atendimento: new Date().toISOString()
+                }).eq("id", id);
+                toast.success("Atendimento iniciado");
+                load();
+              } catch (e: any) {
+                toast.error(e.message || "Erro ao registrar chegada");
+              } finally {
+                setBusy(false);
+              }
+            }}>
+              {busy ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Registrar Chegada ao Local
             </Button>
           )}
 

@@ -352,172 +352,134 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
                    </div>
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t">
-                    <h4 className="text-sm font-semibold flex items-center gap-2">
-                      <Settings className="h-4 w-4 text-muted-foreground" /> 
-                      Observações Internas
-                    </h4>
-                    <Textarea 
-                      placeholder="Anotações administrativas sobre o funcionário..." 
-                      className="min-h-[100px] text-sm"
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="permissoes" className="space-y-6">
-                  <div className="bg-muted/30 p-4 rounded-lg border space-y-4">
-                    <div className="flex items-center gap-3 border-b pb-4 mb-4">
-                      <Shield className="h-5 w-5 text-primary" />
-                      <div>
-                        <h4 className="font-semibold text-sm">Controle de Acesso</h4>
-                        <p className="text-xs text-muted-foreground">Defina o que este profissional pode fazer no sistema.</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Acesso ao Sistema</Label>
-                          <p className="text-[11px] text-muted-foreground">Permitir login no sistema/app</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_access_system} 
-                          onCheckedChange={(v) => setForm({ ...form, can_access_system: v })} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Receber O.S.</Label>
-                          <p className="text-[11px] text-muted-foreground">Pode ser vinculado como executor</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_receive_service_orders} 
-                          onCheckedChange={(v) => setForm({ ...form, can_receive_service_orders: v })} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Gerenciar Materiais</Label>
-                          <p className="text-[11px] text-muted-foreground">Solicitar e movimentar estoque</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_manage_materials} 
-                          onCheckedChange={(v) => setForm({ ...form, can_manage_materials: v })} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Encerrar O.S.</Label>
-                          <p className="text-[11px] text-muted-foreground">Permissão para finalizar serviços</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_close_service_orders} 
-                          onCheckedChange={(v) => setForm({ ...form, can_close_service_orders: v })} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Dados Financeiros</Label>
-                          <p className="text-[11px] text-muted-foreground">Visualizar custos e medição</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_view_financial_data} 
-                          onCheckedChange={(v) => setForm({ ...form, can_view_financial_data: v })} 
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded hover:bg-muted/50 transition-colors">
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Relatórios</Label>
-                          <p className="text-[11px] text-muted-foreground">Acesso ao módulo de BI e exportações</p>
-                        </div>
-                        <Switch 
-                          checked={form.can_view_reports} 
-                          onCheckedChange={(v) => setForm({ ...form, can_view_reports: v })} 
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t space-y-3">
-                      <Label className="text-xs font-semibold uppercase text-muted-foreground">Nível de Acesso Global</Label>
-                      <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as AppRole })}>
-                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {ROLES.map((r) => (
-                            <SelectItem key={r} value={r}>{ROLE_LABEL[r]}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <p className="text-[10px] text-muted-foreground italic">O perfil global determina a interface principal do usuário.</p>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="operacional" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Função Operacional</Label>
-                      <Input value={form.operational_role} onChange={(e) => setForm({ ...form, operational_role: e.target.value })} placeholder="Ex: Eletricista de Redes" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium">Tipo de Funcionário</Label>
-                      <Select value={form.employee_type} onValueChange={(v) => setForm({ ...form, employee_type: v })}>
-                        <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                                                                        <SelectContent>
-                          <SelectItem value="management">Gestor / Gerência</SelectItem>
-                          <SelectItem value="supervisor">Supervisor</SelectItem>
-                          <SelectItem value="field_worker">Técnico de Campo</SelectItem>
-                          <SelectItem value="auditor">Auditor</SelectItem>
-                          <SelectItem value="stock">Estoquista / Almoxarifado</SelectItem>
-                          <SelectItem value="admin">Administrativo</SelectItem>
-                          <SelectItem value="finance">Financeiro</SelectItem>
-                          <SelectItem value="purchasing">Comprador</SelectItem>
-                          <SelectItem value="engineering">Engenharia</SelectItem>
-                          <SelectItem value="quality">Qualidade / Segurança</SelectItem>
-                          <SelectItem value="rh">Recursos Humanos</SelectItem>
-                          <SelectItem value="sales">Comercial / Vendas</SelectItem>
-                          <SelectItem value="outsourced">Terceirizado</SelectItem>
-                          <SelectItem value="developer">Desenvolvedor / TI</SelectItem>
-                          <SelectItem value="other">Outros</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mt-6">
-                    <h4 className="text-sm font-semibold flex items-center gap-2 mb-4 text-primary">
-                      <Activity className="h-4 w-4" /> 
-                      Métricas e Disponibilidade
-                    </h4>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div className="bg-card p-3 rounded border shadow-sm">
-                        <div className="text-2xl font-bold text-primary">0</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">OS em Aberto</div>
-                      </div>
-                      <div className="bg-card p-3 rounded border shadow-sm">
-                        <div className="text-2xl font-bold text-green-600">0</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">Concluídas (Mês)</div>
-                      </div>
-                      <div className="bg-card p-3 rounded border shadow-sm">
-                        <div className="text-2xl font-bold text-amber-600">--</div>
-                        <div className="text-[10px] text-muted-foreground uppercase">Produtividade</div>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="historico" className="space-y-4">
-                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
-                    <Activity className="h-10 w-10 mb-2 opacity-20" />
-                    <p className="text-sm">Nenhum registro de atividade encontrado.</p>
-                  </div>
-                </TabsContent>
+                   <div className="space-y-4 pt-6 border-t border-border">
+                     <h4 className="text-base font-bold flex items-center gap-2 text-primary/80">
+                       <Settings className="h-4 w-4 text-muted-foreground" /> 
+                       Observações Internas
+                     </h4>
+                     <Textarea 
+                       placeholder="Anotações administrativas sobre o funcionário..." 
+                       className="min-h-[120px] text-sm bg-muted/20"
+                       value={form.notes}
+                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                     />
+                   </div>
+                 </TabsContent>
+ 
+                 <TabsContent value="permissoes" className="space-y-8">
+                   <div className="bg-card p-6 rounded-xl border border-border shadow-sm space-y-8">
+                     <div className="flex items-center gap-4 border-b border-border pb-6">
+                       <div className="bg-primary/10 p-3 rounded-xl">
+                         <Shield className="h-6 w-6 text-primary" />
+                       </div>
+                       <div>
+                         <h4 className="font-bold text-lg">Controle de Acesso e Segurança</h4>
+                         <p className="text-sm text-muted-foreground">Defina as permissões de acesso e o papel global deste profissional.</p>
+                       </div>
+                     </div>
+ 
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       {[
+                         { id: 'can_access_system', label: 'Acesso ao Sistema', desc: 'Permitir login no portal web e aplicativo mobile' },
+                         { id: 'can_receive_service_orders', label: 'Receber O.S.', desc: 'Pode ser vinculado como executor de ordens de serviço' },
+                         { id: 'can_manage_materials', label: 'Gerenciar Materiais', desc: 'Permissão para solicitar e movimentar itens de estoque' },
+                         { id: 'can_close_service_orders', label: 'Encerrar O.S.', desc: 'Permissão para finalizar e assinar ordens de serviço' },
+                         { id: 'can_view_financial_data', label: 'Dados Financeiros', desc: 'Visualizar custos, valores e medições de serviços' },
+                         { id: 'can_view_reports', label: 'BI e Relatórios', desc: 'Acesso ao painel de indicadores e exportação de dados' },
+                       ].map((perm) => (
+                         <div key={perm.id} className="flex items-center justify-between p-5 rounded-xl border border-border bg-muted/20 hover:bg-muted/30 transition-all group">
+                           <div className="space-y-1">
+                             <Label className="text-sm font-bold cursor-pointer" htmlFor={perm.id}>{perm.label}</Label>
+                             <p className="text-xs text-muted-foreground leading-relaxed">{perm.desc}</p>
+                           </div>
+                           <Switch 
+                             id={perm.id}
+                             checked={(form as any)[perm.id]} 
+                             onCheckedChange={(v) => setForm({ ...form, [perm.id]: v })} 
+                           />
+                         </div>
+                       ))}
+                     </div>
+ 
+                     <div className="pt-8 border-t border-border space-y-4">
+                       <div className="flex flex-col gap-1">
+                         <Label className="text-sm font-bold uppercase text-primary/70 tracking-wider">Nível de Acesso Global (Role)</Label>
+                         <p className="text-xs text-muted-foreground">Este perfil determina as permissões de interface e menus principais do sistema.</p>
+                       </div>
+                       <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v as AppRole })}>
+                         <SelectTrigger className="h-12 border-primary/20 bg-primary/5 focus:ring-primary/20"><SelectValue /></SelectTrigger>
+                         <SelectContent>
+                           {ROLES.map((r) => (
+                             <SelectItem key={r} value={r} className="py-3 font-medium">{ROLE_LABEL[r]}</SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+                 </TabsContent>
+ 
+                 <TabsContent value="operacional" className="space-y-8">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="space-y-2">
+                       <Label className="text-sm font-bold">Função Operacional Detalhada</Label>
+                       <Input className="h-12" value={form.operational_role} onChange={(e) => setForm({ ...form, operational_role: e.target.value })} placeholder="Ex: Eletricista de Redes MT/BT" />
+                     </div>
+                     <div className="space-y-2">
+                       <Label className="text-sm font-bold">Tipo de Funcionário</Label>
+                       <Select value={form.employee_type} onValueChange={(v) => setForm({ ...form, employee_type: v })}>
+                         <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="management">Gestor / Gerência</SelectItem>
+                           <SelectItem value="supervisor">Supervisor</SelectItem>
+                           <SelectItem value="field_worker">Técnico de Campo</SelectItem>
+                           <SelectItem value="auditor">Auditor</SelectItem>
+                           <SelectItem value="stock">Estoquista / Almoxarifado</SelectItem>
+                           <SelectItem value="admin">Administrativo</SelectItem>
+                           <SelectItem value="finance">Financeiro</SelectItem>
+                           <SelectItem value="purchasing">Comprador</SelectItem>
+                           <SelectItem value="engineering">Engenharia</SelectItem>
+                           <SelectItem value="quality">Qualidade / Segurança</SelectItem>
+                           <SelectItem value="rh">Recursos Humanos</SelectItem>
+                           <SelectItem value="sales">Comercial / Vendas</SelectItem>
+                           <SelectItem value="outsourced">Terceirizado</SelectItem>
+                           <SelectItem value="developer">Desenvolvedor / TI</SelectItem>
+                           <SelectItem value="other">Outros</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+ 
+                   <div className="bg-primary/5 p-8 rounded-2xl border border-primary/10 mt-8 shadow-inner">
+                     <h4 className="text-base font-bold flex items-center gap-3 mb-6 text-primary">
+                       <Activity className="h-5 w-5" /> 
+                       Métricas de Desempenho e Disponibilidade
+                     </h4>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-primary/50 transition-all">
+                         <div className="text-3xl font-black text-primary mb-1">0</div>
+                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">OS em Aberto</div>
+                       </div>
+                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-green-500/50 transition-all">
+                         <div className="text-3xl font-black text-green-600 mb-1">0</div>
+                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Concluídas (Mês)</div>
+                       </div>
+                       <div className="bg-white p-6 rounded-xl border border-border shadow-sm group hover:border-amber-500/50 transition-all">
+                         <div className="text-3xl font-black text-amber-600 mb-1">--</div>
+                         <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Score / Produtividade</div>
+                       </div>
+                     </div>
+                   </div>
+                 </TabsContent>
+ 
+                 <TabsContent value="historico" className="space-y-6">
+                   <div className="flex flex-col items-center justify-center py-20 text-muted-foreground border-2 border-dashed border-border rounded-2xl bg-muted/5">
+                     <div className="bg-muted/20 p-4 rounded-full mb-4">
+                       <Activity className="h-12 w-12 opacity-20" />
+                     </div>
+                     <h5 className="font-bold text-lg text-foreground/70">Histórico de Atividade</h5>
+                     <p className="text-sm max-w-xs text-center">Ainda não há registros de ações ou alterações para este profissional no sistema.</p>
+                   </div>
+                 </TabsContent>
               </Tabs>
             </div>
           </div>

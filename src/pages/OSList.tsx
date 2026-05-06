@@ -1,17 +1,18 @@
- import { useEffect, useState, useMemo } from "react";
+ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
- import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard, MoreHorizontal, FileText, MapPin, Building2, User } from "lucide-react";
+ import { Plus, Filter, Search, Calendar, Archive, EyeOff, CheckCircle2, Clock, CheckCircle, AlertCircle, LayoutDashboard, MoreHorizontal, FileText, MapPin, Building2, User, Briefcase, ListTodo, ChevronRight } from "lucide-react";
  import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Badge } from "@/components/ui/badge";
  import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
  import { ptBR } from "date-fns/locale";
  import { DateRange } from "react-day-picker";
@@ -19,11 +20,13 @@ import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/lib/auth";
 
-export default function OSList() {
-  const { user, hasRole } = useAuth();
-  const [rows, setRows] = useState<any[]>([]);
-  const [deps, setDeps] = useState<any[]>([]);
-    const [filters, setFilters] = useState({
+ export default function OSList() {
+   const { user, hasRole } = useAuth();
+   const [rows, setRows] = useState<any[]>([]);
+   const [obras, setObras] = useState<any[]>([]);
+   const [deps, setDeps] = useState<any[]>([]);
+   const [activeTab, setActiveTab] = useState("ordens");
+   const [filters, setFilters] = useState({
       operational_status: "all",
       financial_status: "all",
       audit_status: "all",
@@ -35,34 +38,46 @@ export default function OSList() {
        dateRange: undefined as DateRange | undefined
     });
 
-  useEffect(() => {
-    if (!user) return;
-
-     const fetchRows = async () => {
-      supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
-        const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor", "developer"]);
-        let query = supabase.from("ordens_servico")
-          .select(`
-             *,
-             department:departments(name, acronym),
-             obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
-             profissional:profiles!ordens_servico_profissional_id_fkey(nome)
-          `);
-
-        if (isCampo) {
-          query = query.eq("profissional_id", user.id);
-        }
-
-      query.order("created_at", { ascending: false }).limit(500)
-        .then(({ data }) => setRows(data ?? []));
-    };
-    fetchRows();
+   const fetchAll = useCallback(async () => {
+     if (!user) return;
+     
+     // Fetch Departments
+     supabase.from("departments").select("id, name").eq("active", true).then(({ data }) => setDeps(data ?? []));
+     
+     // Fetch OS Rows
+     const isCampo = hasRole(["campo"]) && !hasRole(["admin", "gestor", "supervisor", "developer"]);
+     let query = supabase.from("ordens_servico")
+       .select(`
+          *,
+          department:departments(name, acronym),
+          obra:obras(numero, nome, endereco, cidade, estado, cep, bairro), 
+          profissional:profiles!ordens_servico_profissional_id_fkey(nome)
+       `);
+ 
+     if (isCampo) {
+       query = query.eq("profissional_id", user.id);
+     }
+ 
+     query.order("created_at", { ascending: false }).limit(500)
+       .then(({ data }) => setRows(data ?? []));
+ 
+     // Fetch Obras
+     supabase.from("obras")
+       .select("*, os_count:ordens_servico(count)")
+       .eq("ativo", true)
+       .order("created_at", { ascending: false })
+       .then(({ data }) => setObras(data ?? []));
+   }, [user, hasRole]);
+ 
+   useEffect(() => {
+     fetchAll();
     const ch = supabase
       .channel("os-list-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico" }, fetchRows)
+       .on("postgres_changes", { event: "*", schema: "public", table: "ordens_servico" }, fetchAll)
+       .on("postgres_changes", { event: "*", schema: "public", table: "obras" }, fetchAll)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, hasRole]);
+   }, [fetchAll]);
 
     const filteredRows = useMemo(() => {
       return rows.filter(r => {

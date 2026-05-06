@@ -439,26 +439,24 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                       <div className="bg-muted/30 p-4 rounded-xl border border-primary/10 space-y-4">
                         <div className="space-y-2">
                           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código da Obra <span className="text-destructive">*</span></Label>
-                          <div className="relative group">
-                            <Input 
-                              placeholder="Digite ou pesquise..." 
-                              className="h-11 pr-10 border-primary/20 focus-visible:ring-primary shadow-sm font-mono font-bold"
-                              value={selectedObra?.numero || customObraNumero || ""}
-                                className="pr-10 border-primary/20 focus-visible:ring-primary shadow-sm"
-                                value={selectedObra?.numero || customObraNumero || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  const found = obras.find(o => o.numero === val);
-                                  if (found) {
-                                    handleObraChange(found.id);
-                                    setCustomObraNumero("");
-                                  } else {
-                                    setSelectedObra(null);
-                                    setFormData(prev => ({ ...prev, obraId: "new" }));
-                                    setCustomObraNumero(val);
-                                  }
-                                }}
-                              />
+                           <div className="relative group">
+                             <Input 
+                               placeholder="Digite ou pesquise..." 
+                               className="h-11 pr-10 border-primary/20 focus-visible:ring-primary shadow-sm font-mono font-bold"
+                               value={selectedObra?.numero || customObraNumero || ""}
+                               onChange={(e) => {
+                                 const val = e.target.value;
+                                 const found = obras.find(o => o.numero === val);
+                                 if (found) {
+                                   handleObraChange(found.id);
+                                   setCustomObraNumero("");
+                                 } else {
+                                   setSelectedObra(null);
+                                   setFormData(prev => ({ ...prev, obraId: "new" }));
+                                   setCustomObraNumero(val);
+                                 }
+                               }}
+                             />
                               <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
                                 <PopoverTrigger asChild>
                                   <Button 

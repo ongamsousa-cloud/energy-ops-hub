@@ -110,7 +110,6 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
          });
          setPhotoPreview(professional.foto_url || professional.photo_url || null);
        } else {
-      } else {
         setForm(initialFormState);
         setPhotoPreview(null);
       }

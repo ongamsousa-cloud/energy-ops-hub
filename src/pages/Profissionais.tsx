@@ -87,21 +87,27 @@ import EmptyState from "@/components/EmptyState";
      }
    }
 
-   async function toggleStatus(p: any) {
-     const newStatus = p.status === 'active' ? 'inactive' : 'active';
-     try {
-       const { error } = await supabase
-         .from("employees")
-         .update({ status: newStatus, is_active: newStatus === 'active' })
-         .eq("id", p.employee_id);
-       
-       if (error) throw error;
-       toast.success(`Status alterado para ${newStatus === 'active' ? 'Ativo' : 'Inativo'}`);
-       load();
-     } catch (error: any) {
-       toast.error("Erro ao alterar status: " + error.message);
-     }
-   }
+    async function toggleStatus(p: any) {
+      const newStatus = p.status === 'active' ? 'inactive' : 'active';
+      const isActive = newStatus === 'active';
+      try {
+        const { error: empError } = await supabase
+          .from("employees")
+          .update({ status: newStatus, is_active: isActive })
+          .eq("id", p.employee_id);
+        
+        if (empError) throw empError;
+
+        if (p.profile_id) {
+          await supabase.from("profiles").update({ ativo: isActive }).eq("id", p.profile_id);
+        }
+        
+        toast.success(`Status alterado para ${isActive ? 'Ativo' : 'Inativo'}`);
+        load();
+      } catch (error: any) {
+        toast.error("Erro ao alterar status: " + error.message);
+      }
+    }
     const filteredRows = rows.filter(p => {
       const s = search.toLowerCase();
       return (

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
- import { Search, Plus, Trash2, X, AlertCircle, MapPin, Loader2 } from "lucide-react";
+ import { Search, Plus, Trash2, X, AlertCircle, MapPin, Loader2, ClipboardList, Clock, Info, CheckCircle2, ChevronRight, Building2, User2, LayoutList } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -317,16 +317,39 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }
   }
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <DialogHeader className="p-6 pb-2 border-b">
-          <DialogTitle className="text-xl font-bold">Nova Ordem de Serviço</DialogTitle>
-          <DialogDescription>Preencha os dados abaixo para iniciar uma nova OS.</DialogDescription>
-        </DialogHeader>
-        
-        <div className="p-6">
-          {step === 1 && (
+   return (
+     <Dialog open={open} onOpenChange={onOpenChange}>
+       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl">
+         <DialogHeader className="p-8 pb-6 bg-primary text-primary-foreground relative overflow-hidden">
+           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+             <ClipboardList className="h-32 w-32" />
+           </div>
+           <div className="relative z-10">
+             <DialogTitle className="text-2xl font-bold mb-1">Nova Ordem de Serviço</DialogTitle>
+             <DialogDescription className="text-primary-foreground/80">
+               Siga os passos para criar uma nova solicitação de trabalho.
+             </DialogDescription>
+           </div>
+           
+           {/* Stepper Visual */}
+           <div className="flex items-center gap-2 mt-6 relative z-10">
+             {[1, 2, 3, 4, 5].map((s) => (
+               <div key={s} className="flex items-center gap-2">
+                 <div className={cn(
+                   "h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300",
+                   step === s ? "bg-white text-primary scale-110 shadow-lg" : 
+                   step > s ? "bg-primary-foreground/40 text-primary-foreground" : "bg-primary-foreground/10 text-primary-foreground/40"
+                 )}>
+                   {step > s ? <CheckCircle2 className="h-5 w-5" /> : s}
+                 </div>
+                 {s < 5 && <div className={cn("h-0.5 w-6 rounded-full", step > s ? "bg-primary-foreground/40" : "bg-primary-foreground/10")} />}
+               </div>
+             ))}
+           </div>
+         </DialogHeader>
+         
+         <div className="flex-1 overflow-y-auto p-8 bg-background">
+           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -382,47 +405,55 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                      </div>
                    </div>
                      <div className="md:col-span-2 space-y-4 border rounded-md p-4 bg-muted/20">
-                       <div className="flex items-center justify-between">
-                         <h3 className="text-sm font-semibold">Identificação da Obra</h3>
-                         {!selectedObra && formData.obraId === "new" && (
-                           <span className="text-xs text-amber-600 font-medium flex items-center">
-                             <Plus className="h-3 w-3 mr-1" /> Nova Obra sendo cadastrada
-                           </span>
-                         )}
-                       </div>
-                       
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div className="space-y-2">
-                           <Label>Código da Obra <span className="text-destructive">*</span></Label>
-                           <div className="flex gap-2">
-                             <Input 
-                               placeholder="Digite o código (ex: 1234)" 
-                               value={selectedObra?.numero || customObraNumero || ""}
-                               onChange={(e) => {
-                                 const val = e.target.value;
-                                 const found = obras.find(o => o.numero === val);
-                                 if (found) {
-                                   handleObraChange(found.id);
-                                   setCustomObraNumero("");
-                                 } else {
-                                   setSelectedObra(null);
-                                   setFormData(prev => ({ ...prev, obraId: "new" }));
-                                   setCustomObraNumero(val);
-                                 }
-                               }}
-                             />
-                             <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
-                               <PopoverTrigger asChild>
-                                 <Button variant="outline" size="icon" type="button" title="Pesquisar obras cadastradas">
-                                   <Search className="h-4 w-4" />
-                                 </Button>
-                               </PopoverTrigger>
-                               <PopoverContent className="w-[300px] p-0" align="end">
-                                 <Command>
-                                   <CommandInput placeholder="Pesquisar obras..." />
-                                   <CommandList>
-                                     <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
-                                     <CommandGroup>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-primary" />
+                            <h3 className="text-sm font-bold uppercase tracking-tight">Identificação da Obra</h3>
+                          </div>
+                          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => nav('/app/obras')}>
+                            Gerenciar Obras
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-muted/30 p-4 rounded-lg border border-primary/10">
+                          <div className="space-y-2">
+                            <Label className="text-xs font-bold">Código da Obra <span className="text-destructive">*</span></Label>
+                            <div className="relative group">
+                              <Input 
+                                placeholder="Digite o código manualmente..." 
+                                className="pr-10 border-primary/20 focus-visible:ring-primary shadow-sm"
+                                value={selectedObra?.numero || customObraNumero || ""}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const found = obras.find(o => o.numero === val);
+                                  if (found) {
+                                    handleObraChange(found.id);
+                                    setCustomObraNumero("");
+                                  } else {
+                                    setSelectedObra(null);
+                                    setFormData(prev => ({ ...prev, obraId: "new" }));
+                                    setCustomObraNumero(val);
+                                  }
+                                }}
+                              />
+                              <Popover open={obraSearchOpen} onOpenChange={setObraSearchOpen}>
+                                <PopoverTrigger asChild>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    type="button" 
+                                    className="absolute right-0 top-0 h-full text-muted-foreground hover:text-primary transition-colors"
+                                    title="Pesquisar obras cadastradas"
+                                  >
+                                    <Search className="h-4 w-4" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[350px] p-0 shadow-xl" align="end">
+                                  <Command className="rounded-lg">
+                                    <CommandInput placeholder="Pesquisar por número ou nome..." className="h-11" />
+                                    <CommandList className="max-h-[300px]">
+                                      <CommandEmpty>Nenhuma obra encontrada.</CommandEmpty>
+                                      <CommandGroup heading="Obras Cadastradas">
                                        {obras.map((o) => (
                                          <CommandItem
                                            key={o.id}

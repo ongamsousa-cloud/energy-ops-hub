@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
-  import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
+   import { Plus, Search, Upload, Trash2, Edit, Trash } from "lucide-react";
    async function clearAll() {
      if (!confirm("AVISO CRÍTICO: Isso irá excluir TODAS as obras cadastradas. Deseja continuar?")) return;
      const { error } = await supabase.from("obras").delete().neq("id", "00000000-0000-0000-0000-000000000000" as any); // Delete all

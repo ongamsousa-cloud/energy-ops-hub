@@ -25,12 +25,12 @@ export default function TwoFactorSetup() {
       const { data, error } = await supabase.auth.mfa.listFactors();
       if (error) throw error;
 
-      const totpFactor = data.totp.find(f => f.status === "verified");
+       const totpFactor = data.all.find(f => f.status === "verified" && f.factor_type === "totp");
       if (totpFactor) {
         setStatus("enabled");
         setFactorId(totpFactor.id);
       } else {
-        const unverifiedFactor = data.totp.find(f => f.status === "unverified");
+         const unverifiedFactor = data.all.find(f => f.status === "unverified" && f.factor_type === "totp");
         if (unverifiedFactor) {
           // Keep it as disabled for now to allow re-enrolling if needed, 
           // or we could resume. For simplicity, we'll let them start over if they didn't finish.

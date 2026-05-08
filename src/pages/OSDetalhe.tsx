@@ -474,7 +474,8 @@ export default function OSDetalhe() {
       equipe_id?: string | null,
       profissional_id?: string | null,
       supervisor_id?: string | null,
-      gestor_responsavel_id?: string | null
+      gestor_responsavel_id?: string | null,
+      auditor_id?: string | null
     }) {
       const updateData: any = { ...fields };
       
@@ -681,8 +682,8 @@ export default function OSDetalhe() {
                       <User className="h-4 w-4" /> Atribuir
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader className="bg-primary/5 p-6 rounded-t-lg border-b">
+                  <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+                    <DialogHeader className="bg-primary/5 p-8 rounded-t-lg border-b">
                       <DialogTitle className="text-xl font-bold flex items-center gap-2">
                         <Briefcase className="h-5 w-5 text-primary" />
                         Atribuição de Responsabilidades - OS {os.numero}
@@ -692,7 +693,7 @@ export default function OSDetalhe() {
                       </DialogDescription>
                     </DialogHeader>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label className="font-bold flex items-center gap-2">
@@ -759,10 +760,26 @@ export default function OSDetalhe() {
                             </SelectContent>
                           </Select>
                         </div>
+
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <History className="h-4 w-4 text-primary" /> Auditor Responsável
+                          </Label>
+                          <Select defaultValue={os.auditor_id} onValueChange={(v) => salvarAtribuicao({ auditor_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione o auditor da OS"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {profs.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="bg-muted/30 p-4 border-t flex justify-end gap-3 rounded-b-lg">
+                    <div className="bg-muted/30 p-6 border-t flex justify-end gap-3 rounded-b-lg">
                       <DialogTrigger asChild>
                         <Button variant="outline">Fechar</Button>
                       </DialogTrigger>

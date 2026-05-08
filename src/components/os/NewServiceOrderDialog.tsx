@@ -48,8 +48,10 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
      prioridade: "media",
      data_agendada: new Date().toISOString().split('T')[0],
      hora_agendada: "08:00",
-     gestorId: "",
-     equipeId: "",
+      gestorId: "",
+      supervisorId: "",
+      auditorId: "",
+      equipeId: "",
       titulo: "",
       descricao: "",
       observacoes: "",
@@ -78,16 +80,16 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
     }
   }, [open, initialObraId]);
 
-   async function fetchInitialData() {
-     const [resObras, resAtividades, resCats, resServicos, resGestores, resEquipes, resDeps] = await Promise.all([
-       supabase.from("obras").select("*").eq("ativo", true).order("numero"),
-       supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
-       supabase.from("categorias").select("*").order("nome"),
-       supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
-        supabase.from("profiles").select("id, nome").eq("ativo", true).in("id", (await supabase.from("user_roles").select("user_id").in("role", ["gestor", "supervisor"])).data?.map(r => r.user_id) || []),
-       supabase.from("equipes").select("id, nome").order("nome"),
-       supabase.from("departments").select("id, name, acronym").eq("active", true).order("name")
-     ]);
+    async function fetchInitialData() {
+      const [resObras, resAtividades, resCats, resServicos, resProfs, resEquipes, resDeps] = await Promise.all([
+        supabase.from("obras").select("*").eq("ativo", true).order("numero"),
+        supabase.from("atividades").select("*, categoria:categorias(nome, servico_id)").eq("ativo", true).order("codigo_item"),
+        supabase.from("categorias").select("*").order("nome"),
+        supabase.from("servicos").select("*").eq("ativo", true).order("nome"),
+        supabase.from("profiles").select("id, nome, role").eq("ativo", true).order("nome"),
+        supabase.from("equipes").select("id, nome").order("nome"),
+        supabase.from("departments").select("id, name, acronym").eq("active", true).order("name")
+      ]);
  
      setObras(resObras.data ?? []);
       const allAtividades = resAtividades.data ?? [];
@@ -95,7 +97,8 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
       setCategorias(resCats.data ?? []);
       const allServicos = resServicos.data ?? [];
       setServicos(allServicos);
-     setGestores(resGestores.data ?? []);
+      const profs = resProfs.data ?? [];
+      setGestores(profs);
      setEquipes(resEquipes.data ?? []);
       const depsData = resDeps.data ?? [];
       setDepartamentos(depsData);
@@ -109,9 +112,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
         setServicoHasNoActivities(!hasAtvs);
      }
  
-     if (resGestores.data?.length === 1) {
-       setFormData(prev => ({ ...prev, gestorId: resGestores.data![0].id }));
-     }
+      if (profs.length === 1) {
+        setFormData(prev => ({ ...prev, gestorId: profs[0].id }));
+      }
     }
 
     async function fetchGestoresByDep(depId: string) {
@@ -251,6 +254,9 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           profissional_id: user!.id,
           assigned_manager_id: formData.gestorId || null,
           gestor_responsavel_id: formData.gestorId || null,
+          supervisor_id: formData.supervisorId || null,
+          assigned_supervisor_id: formData.supervisorId || null,
+          auditor_id: formData.auditorId || null,
           equipe_id: (formData.equipeId && formData.equipeId !== 'none') ? formData.equipeId : null,
           status: "pendente" as any,
           operational_status: "iniciada" as any,
@@ -403,18 +409,56 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
                         <Building2 className="h-5 w-5 text-primary" />
                         <h3 className="font-bold text-lg">Responsável</h3>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Setor Executor <span className="text-destructive">*</span></Label>
-                        <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
-                          <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
-                          <SelectContent className="max-h-[300px]">
-                            {departamentos.map((d) => (
-                              <SelectItem key={d.id} value={d.id}>
-                                {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Setor Executor <span className="text-destructive">*</span></Label>
+                          <Select value={formData.departmentId} onValueChange={handleDepartmentChange}>
+                            <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o setor" /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {departamentos.map((d) => (
+                                <SelectItem key={d.id} value={d.id}>
+                                  {d.acronym ? `[${d.acronym}] ` : ""}{d.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Gestor Responsável</Label>
+                          <Select value={formData.gestorId} onValueChange={(v) => setFormData({...formData, gestorId: v})}>
+                            <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o gestor" /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {gestores.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Supervisor Responsável</Label>
+                          <Select value={formData.supervisorId} onValueChange={(v) => setFormData({...formData, supervisorId: v})}>
+                            <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o supervisor" /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {gestores.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Auditor Responsável</Label>
+                          <Select value={formData.auditorId} onValueChange={(v) => setFormData({...formData, auditorId: v})}>
+                            <SelectTrigger className="h-11"><SelectValue placeholder="Selecione o auditor" /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              {gestores.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Solicitante</Label>

@@ -88,9 +88,9 @@ export default function AppShell() {
 
   const items = NAV.filter((i) => !i.roles || hasRole(i.roles));
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Topbar */}
+   return (
+     <div className="min-h-screen flex flex-col bg-background">
+       {/* Topbar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card px-4 safe-top">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
@@ -121,7 +121,7 @@ export default function AppShell() {
         </div>
       </header>
 
-      <div className="flex">
+       <div className="flex flex-1">
         {/* Sidebar */}
         <aside
           className={cn(
@@ -156,10 +156,29 @@ export default function AppShell() {
           </nav>
         </aside>
 
-         <main className="flex-1 min-h-[calc(100vh-3.5rem)] p-[10px] md:p-[20px] overflow-x-hidden">
-          <Outlet />
-        </main>
-      </div>
-    </div>
-  );
+          <main className="flex-1 flex flex-col min-h-[calc(100vh-3.5rem)] p-[10px] md:p-[20px] overflow-x-hidden">
+           <div className="flex-1">
+             <Outlet />
+           </div>
+           
+           <footer className="mt-8 pt-6 border-t border-border/50 text-center">
+             <div className="flex flex-wrap justify-center gap-6 mb-4">
+               <Link to="/privacidade" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
+                 Política de Privacidade
+               </Link>
+               <a href="mailto:suporte@energiaoperacoes.com.br" className="text-xs text-muted-foreground hover:text-primary transition-colors font-medium">
+                 Suporte Técnico
+               </a>
+               <span className="text-xs text-muted-foreground/50 font-medium">
+                 v1.4.2
+               </span>
+             </div>
+             <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-bold">
+               © 2026 Energia Operações · Gestão Inteligente de Infraestrutura
+             </p>
+           </footer>
+         </main>
+       </div>
+     </div>
+   );
 }

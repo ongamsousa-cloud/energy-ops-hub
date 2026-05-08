@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import InstallAppButton from "@/components/InstallAppButton";
+import { ShieldCheck } from "lucide-react";
 
 export default function Login() {
   const nav = useNavigate();

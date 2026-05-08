@@ -30,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import Configuracoes from "./pages/Configuracoes";
  import Departamentos from "./pages/Departamentos";
  import DevDashboard from "./pages/DevDashboard";
+ import Privacidade from "./pages/Privacidade";
 import { useAppTheme } from "./hooks/useAppTheme";
 
 const queryClient = new QueryClient();
@@ -50,7 +51,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Navigate to="/app" replace />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+             <Route path="/reset-password" element={<ResetPassword />} />
+             <Route path="/privacidade" element={<Privacidade />} />
 
              <Route path="/app" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
               <Route index element={<Dashboard />} />

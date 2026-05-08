@@ -3,7 +3,7 @@ import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
    LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks, Terminal,
    ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck, Package, Building2,
-   Database, Palette, Activity, RefreshCw
+    Database, Palette, Activity, RefreshCw, Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -30,6 +30,7 @@ const NAV: Item[] = [
    { to: "/app/relatorios", label: "Relatórios", icon: FileBarChart2, roles: ["admin","gestor","financeiro","auditor"] },
     { to: "/app/medicao", label: "Medição", icon: Calculator, roles: ["admin","gestor","financeiro"] },
     { to: "/app/dev", label: "Painel Developer", icon: Terminal, roles: ["developer"] },
+    { to: "/app/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export default function AppShell() {

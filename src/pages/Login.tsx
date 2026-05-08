@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import InstallAppButton from "@/components/InstallAppButton";
+import { ShieldCheck } from "lucide-react";
 
 export default function Login() {
   const nav = useNavigate();
@@ -19,7 +20,11 @@ export default function Login() {
    const [password, setPassword] = useState("");
    const [nome, setNome] = useState("");
    const [selectedRole, setSelectedRole] = useState("campo");
-   const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [mfaOpen, setMfaOpen] = useState(false);
+    const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+    const [mfaCode, setMfaCode] = useState("");
+    const [mfaLoading, setMfaLoading] = useState(false);
    const [forgotOpen, setForgotOpen] = useState(false);
    const [forgotEmail, setForgotEmail] = useState("");
    const [forgotLoading, setForgotLoading] = useState(false);
@@ -47,12 +52,53 @@ export default function Login() {
       { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
     ];
  
-   const quickLogin = async (email: string) => {
+   async function handleMfaVerification(challengeId: string) {
+     setMfaLoading(true);
+     try {
+       const { error } = await supabase.auth.mfa.verify({
+         factorId: mfaFactorId!,
+         challengeId,
+         code: mfaCode,
+       });
+       if (error) throw error;
+
+       toast.success("Verificação concluída");
+       setMfaOpen(false);
+       nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
+     } catch (e: any) {
+       toast.error("Código inválido. Verifique o seu aplicativo autenticador.");
+     } finally {
+       setMfaLoading(false);
+     }
+   }
+
+   async function checkMfa() {
+     const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+     if (error) throw error;
+
+     if (data.nextLevel === "aal2" && data.currentLevel !== "aal2") {
+       const factors = await supabase.auth.mfa.listFactors();
+       if (factors.error) throw factors.error;
+
+       const factor = factors.data.all.find(f => f.status === "verified");
+       if (factor) {
+         setMfaFactorId(factor.id);
+         const challenge = await supabase.auth.mfa.challenge({ factorId: factor.id });
+         if (challenge.error) throw challenge.error;
+
+         setMfaOpen(true);
+         return challenge.data.id;
+       }
+     }
+     return null;
+   }
+
+   const quickLogin = async (targetEmail: string) => {
      setLoading(true);
      try {
-       await mockSignIn(email);
+       await mockSignIn(targetEmail);
        toast.success("Acesso de teste liberado");
-       nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
+       nav(targetEmail === "estoque@energyops.demo" ? "/estoque-app" : "/app");
      } catch (e: any) {
        toast.error(e.message ?? "Erro ao autenticar");
      } finally { setLoading(false); }
@@ -88,8 +134,12 @@ export default function Login() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success("Bem-vindo");
-        nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
+
+        const mfaChallengeId = await checkMfa();
+        if (!mfaChallengeId) {
+          toast.success("Bem-vindo");
+          nav(email === "estoque@energyops.demo" ? "/estoque-app" : "/app");
+        }
       } else {
          const { error } = await supabase.auth.signUp({
            email, password,
@@ -221,6 +271,46 @@ export default function Login() {
         <div className="mt-6 flex justify-center">
           <InstallAppButton />
         </div>
+
+        <Dialog open={mfaOpen} onOpenChange={setMfaOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Verificação em Duas Etapas
+              </DialogTitle>
+              <DialogDescription>
+                Sua conta possui 2FA ativado. Digite o código gerado pelo seu aplicativo autenticador.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                placeholder="000000"
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                className="text-center text-2xl tracking-[0.5em] font-mono h-14"
+                maxLength={6}
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button 
+                className="w-full h-11" 
+                onClick={async () => {
+                  const factors = await supabase.auth.mfa.listFactors();
+                  const factor = factors.data?.all.find(f => f.id === mfaFactorId);
+                  if (factor) {
+                    const challenge = await supabase.auth.mfa.challenge({ factorId: factor.id });
+                    if (!challenge.error) handleMfaVerification(challenge.data.id);
+                  }
+                }} 
+                disabled={mfaLoading || mfaCode.length !== 6}
+              >
+                {mfaLoading ? "Verificando..." : "Confirmar Código"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
           <DialogContent>

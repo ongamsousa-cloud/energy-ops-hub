@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-  import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter, Archive } from "lucide-react";
+  import { Plus, Trash2, MapPin, Camera, Video, History, CheckCircle, CheckCircle2, ShieldCheck, Briefcase, XCircle, AlertCircle, Download, Send, MessageSquare, RefreshCw, X, Eye, Info, Search, Package, ShoppingCart, Filter, Archive, User, ListTodo } from "lucide-react";
  import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
  import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -470,12 +470,21 @@ export default function OSDetalhe() {
     }
   }
 
-   async function salvarAtribuicao(equipeId: string | null, profId: string | null) {
-     const { error } = await supabase.from("ordens_servico").update({
-       equipe_id: equipeId || os.equipe_id,
-       profissional_id: profId || os.profissional_id,
-       status: os.status === "pendente" ? "iniciada" : os.status
-     }).eq("id", id);
+    async function salvarAtribuicao(fields: {
+      equipe_id?: string | null,
+      profissional_id?: string | null,
+      supervisor_id?: string | null,
+      gestor_responsavel_id?: string | null,
+      auditor_id?: string | null
+    }) {
+      const updateData: any = { ...fields };
+      
+      if (os.status === "pendente" || os.operational_status === "pendente") {
+        updateData.status = "iniciada";
+        updateData.operational_status = "iniciada";
+      }
+
+      const { error } = await supabase.from("ordens_servico").update(updateData).eq("id", id);
      if (error) return toast.error(error.message);
      toast.success("Atribuição atualizada");
      load();
@@ -666,38 +675,121 @@ export default function OSDetalhe() {
          actions={
            <div className="flex items-center gap-2">
              <StatusBadge status={os.operational_status || os.status} />
-             {isGestor && (
-               <Dialog>
-                 <DialogTrigger asChild><Button size="sm" variant="outline">Atribuir</Button></DialogTrigger>
-                 <DialogContent>
-                  <DialogHeader><DialogTitle>Atribuir Ordem de Serviço</DialogTitle></DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Equipe Executora</Label>
-                      <Select defaultValue={os.equipe_id} onValueChange={(v) => salvarAtribuicao(v, null)}>
-                        <SelectTrigger><SelectValue placeholder="Selecione a equipe"/></SelectTrigger>
-                        <SelectContent>
-                          {equipes.map((e) => (
-                            <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+              {isGestor && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <User className="h-4 w-4" /> Atribuir
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto p-0">
+                    <DialogHeader className="bg-primary/5 p-8 rounded-t-lg border-b">
+                      <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                        <Briefcase className="h-5 w-5 text-primary" />
+                        Atribuição de Responsabilidades - OS {os.numero}
+                      </DialogTitle>
+                      <DialogDescription>
+                        Defina quem será responsável por cada etapa da execução e validação desta ordem de serviço.
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8">
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <User className="h-4 w-4 text-primary" /> Profissional Responsável (Executor)
+                          </Label>
+                          <Select defaultValue={os.profissional_id} onValueChange={(v) => salvarAtribuicao({ profissional_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione o técnico de campo"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {profs.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <ListTodo className="h-4 w-4 text-primary" /> Equipe Executora
+                          </Label>
+                          <Select defaultValue={os.equipe_id} onValueChange={(v) => salvarAtribuicao({ equipe_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione a equipe de trabalho"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {equipes.map((e) => (
+                                <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-primary" /> Supervisor de Campo
+                          </Label>
+                          <Select defaultValue={os.supervisor_id} onValueChange={(v) => salvarAtribuicao({ supervisor_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione o supervisor responsável"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {profs.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-primary" /> Gestor Responsável (Setor)
+                          </Label>
+                          <Select defaultValue={os.gestor_responsavel_id} onValueChange={(v) => salvarAtribuicao({ gestor_responsavel_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione o gestor da OS"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {profs.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="font-bold flex items-center gap-2">
+                            <History className="h-4 w-4 text-primary" /> Auditor Responsável
+                          </Label>
+                          <Select defaultValue={os.auditor_id} onValueChange={(v) => salvarAtribuicao({ auditor_id: v })}>
+                            <SelectTrigger className="h-11 border-2 focus:ring-primary">
+                              <SelectValue placeholder="Selecione o auditor da OS"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {profs.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>Profissional Responsável</Label>
-                      <Select defaultValue={os.profissional_id} onValueChange={(v) => salvarAtribuicao(null, v)}>
-                        <SelectTrigger><SelectValue placeholder="Selecione o profissional"/></SelectTrigger>
-                        <SelectContent>
-                          {profs.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+
+                    <div className="bg-muted/30 p-6 border-t flex justify-end gap-3 rounded-b-lg">
+                      <DialogTrigger asChild>
+                        <Button variant="outline">Fechar</Button>
+                      </DialogTrigger>
+                      <DialogTrigger asChild>
+                        <Button className="font-bold">Confirmar Atribuições</Button>
+                      </DialogTrigger>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+                  </DialogContent>
+                </Dialog>
+              )}
           </div>
           }
         />

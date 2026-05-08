@@ -2572,6 +2572,7 @@ export type Database = {
           assigned_manager_id: string | null
           assigned_supervisor_id: string | null
           audit_status: Database["public"]["Enums"]["os_audit_status"] | null
+          auditor_id: string | null
           bairro: string | null
           cep: string | null
           cidade: string | null
@@ -2645,6 +2646,7 @@ export type Database = {
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
+          auditor_id?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -2718,6 +2720,7 @@ export type Database = {
           assigned_manager_id?: string | null
           assigned_supervisor_id?: string | null
           audit_status?: Database["public"]["Enums"]["os_audit_status"] | null
+          auditor_id?: string | null
           bairro?: string | null
           cep?: string | null
           cidade?: string | null
@@ -2786,6 +2789,13 @@ export type Database = {
           {
             foreignKeyName: "ordens_servico_aprovado_por_fkey"
             columns: ["aprovado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordens_servico_auditor_id_fkey"
+            columns: ["auditor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

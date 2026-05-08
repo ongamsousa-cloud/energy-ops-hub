@@ -403,11 +403,18 @@ import { useAuth } from "@/lib/auth";
                          <DropdownMenuContent align="end" className="w-48">
                            <DropdownMenuLabel>Ações da OS</DropdownMenuLabel>
                            <DropdownMenuSeparator />
-                           <DropdownMenuItem asChild>
-                             <Link to={`/app/os/${r.id}`} className="flex items-center">
-                               <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
-                             </Link>
-                           </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link to={`/app/os/${r.id}`} className="flex items-center">
+                                <FileText className="mr-2 h-4 w-4" /> Ver Detalhes
+                              </Link>
+                            </DropdownMenuItem>
+                            {hasRole(["admin", "gestor"]) && (
+                              <DropdownMenuItem asChild>
+                                <Link to={`/app/os/${r.id}`} className="flex items-center text-primary font-bold">
+                                  <User className="mr-2 h-4 w-4" /> Atribuir Responsáveis
+                                </Link>
+                              </DropdownMenuItem>
+                            )}
                            <DropdownMenuItem asChild>
                              <Link to={`/app/obras/${r.obra_id}`} className="flex items-center">
                                <Building2 className="mr-2 h-4 w-4" /> Ver Obra

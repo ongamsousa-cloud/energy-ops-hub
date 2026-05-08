@@ -32,6 +32,7 @@ import Configuracoes from "./pages/Configuracoes";
  import DevDashboard from "./pages/DevDashboard";
  import Privacidade from "./pages/Privacidade";
 import { useAppTheme } from "./hooks/useAppTheme";
+import CookieBanner from "@/components/CookieBanner";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CookieBanner />
       <BrowserRouter>
         <AuthProvider>
           <ThemeBoot />

@@ -46,10 +46,10 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <CookieBanner />
       <BrowserRouter>
         <AuthProvider>
           <ThemeBoot />
+          <CookieBanner />
           <Routes>
             <Route path="/" element={<Navigate to="/app" replace />} />
             <Route path="/login" element={<Login />} />

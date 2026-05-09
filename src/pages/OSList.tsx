@@ -348,7 +348,7 @@ import { useAuth } from "@/lib/auth";
                 <tr className="border-b bg-muted/50 text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                   <th className="px-4 py-3 text-left">N° OS</th>
                   <th className="px-4 py-3 text-left">Obra / Cliente</th>
-                  <th className="px-4 py-3 text-left">Localização</th>
+                  <th className="px-4 py-3 text-left">Está com (Responsável)</th>
                   <th className="px-4 py-3 text-left">Setor</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Data</th>
@@ -367,14 +367,20 @@ import { useAuth } from "@/lib/auth";
                          <span className="text-[10px] text-muted-foreground uppercase">{r.obra?.cliente || "Consumidor Final"}</span>
                        </div>
                      </td>
-                     <td className="px-4 py-4">
-                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                         <MapPin className="h-3.5 w-3.5 shrink-0" />
-                         <span className="text-xs line-clamp-1">
-                           {r.cidade || r.obra?.cidade || '---'}, {r.bairro || r.obra?.bairro || '---'}
-                         </span>
-                       </div>
-                     </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <User className="h-4 w-4" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-xs line-clamp-1">{r.profissional?.nome || "Não atribuído"}</span>
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              <span className="line-clamp-1">{r.cidade || r.obra?.cidade || '---'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
                      <td className="px-4 py-4">
                        {r.department?.name ? (
                          <Badge variant="outline" className="text-[10px] font-medium border-primary/20 bg-primary/5 text-primary">

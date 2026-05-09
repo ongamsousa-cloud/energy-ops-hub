@@ -1507,10 +1507,6 @@ export default function OSDetalhe() {
               <DialogTitle>Detalhes da Evidência</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-             <DialogHeader>
-               <DialogTitle>Detalhes da Evidência</DialogTitle>
-             </DialogHeader>
-             <div className="space-y-4 py-4">
                <div className="aspect-video bg-black rounded-lg overflow-hidden">
                  {isVideo ? (
                    <video src={url} controls className="h-full w-full object-contain" />

@@ -45,7 +45,7 @@ export default function WarehouseDialog({ open, onOpenChange, onSuccess, warehou
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md w-[95vw]">
         <DialogHeader>
           <DialogTitle>{warehouse ? "Editar" : "Novo"} Almoxarifado</DialogTitle>
           <DialogDescription>Cadastre depósitos fixos ou veículos móveis.</DialogDescription>

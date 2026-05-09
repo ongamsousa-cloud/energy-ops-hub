@@ -326,7 +326,7 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
 
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+        <DialogContent className="max-w-4xl w-[95vw] h-[92vh] max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl rounded-2xl">
           <DialogHeader className="p-0 relative overflow-hidden border-b">
             <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 pb-10 text-primary-foreground relative">
               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">

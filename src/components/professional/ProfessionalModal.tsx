@@ -462,7 +462,7 @@ export default function ProfessionalModal({ open, onOpenChange, onSuccess, profe
 
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-       <DialogContent className="max-w-5xl w-[95vw] h-[92vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl rounded-2xl">
+        <DialogContent className="max-w-5xl w-[95vw] h-[92vh] max-h-[92vh] overflow-hidden flex flex-col p-0 border-none shadow-2xl rounded-2xl focus:outline-none">
          <DialogHeader className="p-0 relative overflow-hidden border-b shrink-0">
            <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 p-8 text-primary-foreground relative">
              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">

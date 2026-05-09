@@ -123,27 +123,27 @@ import { Cookie, ShieldCheck, X } from "lucide-react";
                 <Label className="text-sm font-bold">Analíticos</Label>
                 <p className="text-xs text-muted-foreground">Ajudam-nos a entender como o sistema é utilizado.</p>
               </div>
-              <Switch 
-                checked={preferences.analytical} 
-                onCheckedChange={(v) => setPreferences(prev => ({ ...prev, analytical: v }))} 
-              />
+               <Switch
+                 checked={tempPreferences.analytical}
+                 onCheckedChange={(v) => setTempPreferences(prev => ({ ...prev, analytical: v }))}
+               />
             </div>
             <div className="flex items-center justify-between space-x-4">
               <div className="flex flex-col space-y-1 flex-1">
                 <Label className="text-sm font-bold">Marketing</Label>
                 <p className="text-xs text-muted-foreground">Utilizados para oferecer conteúdo mais relevante.</p>
               </div>
-              <Switch 
-                checked={preferences.marketing} 
-                onCheckedChange={(v) => setPreferences(prev => ({ ...prev, marketing: v }))} 
-              />
+               <Switch
+                 checked={tempPreferences.marketing}
+                 onCheckedChange={(v) => setTempPreferences(prev => ({ ...prev, marketing: v }))}
+               />
             </div>
           </div>
-          <DialogFooter>
-            <Button className="w-full" onClick={() => saveConsent(preferences)}>
-              Salvar Preferências
-            </Button>
-          </DialogFooter>
+           <DialogFooter>
+             <Button className="w-full" onClick={() => saveConsent(tempPreferences)}>
+               Salvar Preferências
+             </Button>
+           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

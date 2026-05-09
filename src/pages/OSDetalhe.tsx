@@ -470,25 +470,49 @@ export default function OSDetalhe() {
     }
   }
 
-    async function salvarAtribuicao(fields: {
-      equipe_id?: string | null,
-      profissional_id?: string | null,
-      supervisor_id?: string | null,
-      gestor_responsavel_id?: string | null,
-      auditor_id?: string | null
-    }) {
-      const updateData: any = { ...fields };
-      
-      if (os.status === "pendente" || os.operational_status === "pendente") {
-        updateData.status = "iniciada";
-        updateData.operational_status = "iniciada";
-      }
+  async function salvarAtribuicao(fields: {
+    equipe_id?: string | null,
+    profissional_id?: string | null,
+    supervisor_id?: string | null,
+    gestor_responsavel_id?: string | null,
+    auditor_id?: string | null
+  }) {
+    const updateData: any = { ...fields };
+    
+    if (os.status === "pendente" || os.operational_status === "pendente") {
+      updateData.status = "iniciada";
+      updateData.operational_status = "iniciada";
+    }
 
-      const { error } = await supabase.from("ordens_servico").update(updateData).eq("id", id);
-     if (error) return toast.error(error.message);
-     toast.success("Atribuição atualizada");
-     load();
-   }
+    const { error } = await supabase.from("ordens_servico").update(updateData).eq("id", id);
+    if (error) return toast.error(error.message);
+
+    // Registrar em auditoria para cada campo alterado
+    for (const [key, value] of Object.entries(fields)) {
+      const oldValue = os[key];
+      if (oldValue !== value) {
+        let label = key;
+        if (key === 'profissional_id') label = 'Profissional';
+        if (key === 'equipe_id') label = 'Equipe';
+        if (key === 'supervisor_id') label = 'Supervisor';
+        if (key === 'gestor_responsavel_id') label = 'Gestor';
+        if (key === 'auditor_id') label = 'Auditor';
+
+        const oldName = profs.find(p => p.id === oldValue)?.nome || equipes.find(e => e.id === oldValue)?.nome || "Nenhum";
+        const newName = profs.find(p => p.id === value)?.nome || equipes.find(e => e.id === value)?.nome || "Nenhum";
+
+        await registrarAuditoria(os.status, "atribuicao_alterada", { 
+          campo: label, 
+          de: oldName, 
+          para: newName,
+          message: `${label} alterado de ${oldName} para ${newName}`
+        });
+      }
+    }
+
+    toast.success("Atribuição atualizada");
+    load();
+  }
 
   async function deleteEvidence(evId: string) {
     if (!confirm("Tem certeza que deseja excluir esta evidência?")) return;

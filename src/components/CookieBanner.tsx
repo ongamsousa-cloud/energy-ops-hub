@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,43 +7,47 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Cookie, ShieldCheck, X } from "lucide-react";
 
-interface CookiePreferences {
-  essential: boolean;
-  analytical: boolean;
-  marketing: boolean;
-}
-
-export default function CookieBanner() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showPreferences, setShowPreferences] = useState(false);
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    essential: true,
-    analytical: false,
-    marketing: false,
-  });
-
-  useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent");
-    if (!consent) {
-      setIsVisible(true);
-    } else {
-      try {
-        setPreferences(JSON.parse(consent));
-      } catch (e) {
-        setIsVisible(true);
-      }
-    }
-  }, []);
-
-  const saveConsent = (prefs: CookiePreferences) => {
-    localStorage.setItem("cookie-consent", JSON.stringify(prefs));
-    setPreferences(prefs);
-    setIsVisible(false);
-    setShowPreferences(false);
-    
-    // Trigger event for analytics scripts if needed
-    window.dispatchEvent(new CustomEvent("cookie-consent-updated", { detail: prefs }));
-  };
+ import { useLocalStorage } from "@/hooks/useLocalStorage";
+ 
+ interface CookiePreferences {
+   essential: boolean;
+   analytical: boolean;
+   marketing: boolean;
+   acceptedAt?: string;
+ }
+ 
+ export default function CookieBanner() {
+   const [isVisible, setIsVisible] = useState(false);
+   const [showPreferences, setShowPreferences] = useState(false);
+   const [consent, setConsent] = useLocalStorage<CookiePreferences | null>("cookie-consent", null);
+   
+   const [tempPreferences, setTempPreferences] = useState<CookiePreferences>({
+     essential: true,
+     analytical: false,
+     marketing: false,
+   });
+ 
+   useEffect(() => {
+     if (!consent) {
+       setIsVisible(true);
+     }
+   }, [consent]);
+ 
+   const saveConsent = (prefs: CookiePreferences) => {
+     const newConsent = { ...prefs, acceptedAt: new Date().toISOString() };
+     setConsent(newConsent);
+     setIsVisible(false);
+     setShowPreferences(false);
+     
+     window.dispatchEvent(new CustomEvent("cookie-consent-updated", { detail: newConsent }));
+     
+     if (newConsent.analytical) {
+       console.log("Cookies analíticos ativados");
+     }
+     if (newConsent.marketing) {
+       console.log("Cookies de marketing ativados");
+     }
+   };
 
   const handleAcceptAll = () => {
     saveConsent({
@@ -119,27 +123,27 @@ export default function CookieBanner() {
                 <Label className="text-sm font-bold">Analíticos</Label>
                 <p className="text-xs text-muted-foreground">Ajudam-nos a entender como o sistema é utilizado.</p>
               </div>
-              <Switch 
-                checked={preferences.analytical} 
-                onCheckedChange={(v) => setPreferences(prev => ({ ...prev, analytical: v }))} 
-              />
+               <Switch
+                 checked={tempPreferences.analytical}
+                 onCheckedChange={(v) => setTempPreferences(prev => ({ ...prev, analytical: v }))}
+               />
             </div>
             <div className="flex items-center justify-between space-x-4">
               <div className="flex flex-col space-y-1 flex-1">
                 <Label className="text-sm font-bold">Marketing</Label>
                 <p className="text-xs text-muted-foreground">Utilizados para oferecer conteúdo mais relevante.</p>
               </div>
-              <Switch 
-                checked={preferences.marketing} 
-                onCheckedChange={(v) => setPreferences(prev => ({ ...prev, marketing: v }))} 
-              />
+               <Switch
+                 checked={tempPreferences.marketing}
+                 onCheckedChange={(v) => setTempPreferences(prev => ({ ...prev, marketing: v }))}
+               />
             </div>
           </div>
-          <DialogFooter>
-            <Button className="w-full" onClick={() => saveConsent(preferences)}>
-              Salvar Preferências
-            </Button>
-          </DialogFooter>
+           <DialogFooter>
+             <Button className="w-full" onClick={() => saveConsent(tempPreferences)}>
+               Salvar Preferências
+             </Button>
+           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

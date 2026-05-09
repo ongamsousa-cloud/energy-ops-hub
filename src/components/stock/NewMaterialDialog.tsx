@@ -118,11 +118,6 @@
             <DialogDescription>{material ? "Atualize as informações do item no catálogo." : "Cadastre um novo item no catálogo de materiais."}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex-1 p-8 space-y-4 overflow-y-auto">
-         <DialogHeader>
-           <DialogTitle>{material ? "Editar Material" : "Novo Material"}</DialogTitle>
-           <DialogDescription>{material ? "Atualize as informações do item no catálogo." : "Cadastre um novo item no catálogo de materiais."}</DialogDescription>
-         </DialogHeader>
-         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
            <div className="grid grid-cols-2 gap-4">
              <div className="space-y-2">
                <Label htmlFor="code">Código do Produto</Label>

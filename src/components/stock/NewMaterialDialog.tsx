@@ -112,7 +112,12 @@
  
    return (
      <Dialog open={open} onOpenChange={onOpenChange}>
-       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-[95vw] h-[90vh] max-h-[90vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl focus:outline-none">
+          <DialogHeader className="p-8 bg-muted/30 border-b">
+            <DialogTitle className="text-2xl font-bold">{material ? "Editar Material" : "Novo Material"}</DialogTitle>
+            <DialogDescription>{material ? "Atualize as informações do item no catálogo." : "Cadastre um novo item no catálogo de materiais."}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="flex-1 p-8 space-y-4 overflow-y-auto">
          <DialogHeader>
            <DialogTitle>{material ? "Editar Material" : "Novo Material"}</DialogTitle>
            <DialogDescription>{material ? "Atualize as informações do item no catálogo." : "Cadastre um novo item no catálogo de materiais."}</DialogDescription>

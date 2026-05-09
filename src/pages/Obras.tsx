@@ -263,7 +263,7 @@ export default function Obras() {
                <DialogTrigger asChild>
                  <Button size="sm"><Plus className="mr-1 h-3.5 w-3.5"/>Nova obra</Button>
                </DialogTrigger>
-               <DialogContent className="max-w-2xl p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
+                <DialogContent className="max-w-2xl w-[95vw] h-[90vh] max-h-[92vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-2xl">
                  <DialogHeader className="p-8 bg-primary text-primary-foreground relative overflow-hidden">
                    <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none transform translate-x-4 -translate-y-4">
                      <Briefcase className="h-32 w-32 text-white" />
@@ -274,7 +274,7 @@ export default function Obras() {
                    </div>
                  </DialogHeader>
                  
-                 <div className="p-8 space-y-6 max-h-[65vh] overflow-y-auto bg-background">
+                  <div className="flex-1 p-8 space-y-6 overflow-y-auto bg-background">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div className="space-y-2">
                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código / Número *</Label>

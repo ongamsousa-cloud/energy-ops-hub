@@ -1423,7 +1423,7 @@ export default function OSDetalhe() {
       )}
 
       <Dialog open={reviewDialog.open} onOpenChange={(open) => setReviewDialog(prev => ({ ...prev, open }))}>
-        <DialogContent>
+        <DialogContent className="max-w-md w-[95vw]">
           <DialogHeader>
             <DialogTitle>{reviewDialog.type === 'reprovar' ? 'Reprovar Ordem de Serviço' : 'Solicitar Correção'}</DialogTitle>
             <DialogDescription>
@@ -1502,7 +1502,11 @@ export default function OSDetalhe() {
          </div>
 
          <Dialog open={showDetails} onOpenChange={setShowDetails}>
-           <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md w-[95vw] max-h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-6 border-b">
+              <DialogTitle>Detalhes da Evidência</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
              <DialogHeader>
                <DialogTitle>Detalhes da Evidência</DialogTitle>
              </DialogHeader>

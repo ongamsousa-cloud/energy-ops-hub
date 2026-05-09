@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,43 +7,47 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Cookie, ShieldCheck, X } from "lucide-react";
 
-interface CookiePreferences {
-  essential: boolean;
-  analytical: boolean;
-  marketing: boolean;
-}
-
-export default function CookieBanner() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showPreferences, setShowPreferences] = useState(false);
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    essential: true,
-    analytical: false,
-    marketing: false,
-  });
-
-  useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent");
-    if (!consent) {
-      setIsVisible(true);
-    } else {
-      try {
-        setPreferences(JSON.parse(consent));
-      } catch (e) {
-        setIsVisible(true);
-      }
-    }
-  }, []);
-
-  const saveConsent = (prefs: CookiePreferences) => {
-    localStorage.setItem("cookie-consent", JSON.stringify(prefs));
-    setPreferences(prefs);
-    setIsVisible(false);
-    setShowPreferences(false);
-    
-    // Trigger event for analytics scripts if needed
-    window.dispatchEvent(new CustomEvent("cookie-consent-updated", { detail: prefs }));
-  };
+ import { useLocalStorage } from "@/hooks/useLocalStorage";
+ 
+ interface CookiePreferences {
+   essential: boolean;
+   analytical: boolean;
+   marketing: boolean;
+   acceptedAt?: string;
+ }
+ 
+ export default function CookieBanner() {
+   const [isVisible, setIsVisible] = useState(false);
+   const [showPreferences, setShowPreferences] = useState(false);
+   const [consent, setConsent] = useLocalStorage<CookiePreferences | null>("cookie-consent", null);
+   
+   const [tempPreferences, setTempPreferences] = useState<CookiePreferences>({
+     essential: true,
+     analytical: false,
+     marketing: false,
+   });
+ 
+   useEffect(() => {
+     if (!consent) {
+       setIsVisible(true);
+     }
+   }, [consent]);
+ 
+   const saveConsent = (prefs: CookiePreferences) => {
+     const newConsent = { ...prefs, acceptedAt: new Date().toISOString() };
+     setConsent(newConsent);
+     setIsVisible(false);
+     setShowPreferences(false);
+     
+     window.dispatchEvent(new CustomEvent("cookie-consent-updated", { detail: newConsent }));
+     
+     if (newConsent.analytical) {
+       console.log("Cookies analíticos ativados");
+     }
+     if (newConsent.marketing) {
+       console.log("Cookies de marketing ativados");
+     }
+   };
 
   const handleAcceptAll = () => {
     saveConsent({

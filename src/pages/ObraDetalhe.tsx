@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, User, History, ListTodo, ClipboardList, CheckCircle2 } from "lucide-react";
 import NewServiceOrderDialog from "@/components/os/NewServiceOrderDialog";
 import { useAuth } from "@/lib/auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function ObraDetalhe() {
   const { id } = useParams();
@@ -15,16 +18,60 @@ export default function ObraDetalhe() {
   const { hasRole } = useAuth();
   const [obra, setObra] = useState<any>(null);
   const [oss, setOss] = useState<any[]>([]);
+  const [atividades, setAtividades] = useState<any[]>([]);
+  const [historico, setHistorico] = useState<any[]>([]);
   const [osDialogOpen, setOsDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("oss");
 
   const loadData = useCallback(async () => {
     if (!id) return;
-    const [obraRes, ossRes] = await Promise.all([
-      supabase.from("obras").select("*").eq("id", id).maybeSingle(),
-      supabase.from("ordens_servico").select("*, profissional:profiles!ordens_servico_profissional_id_fkey(nome)").eq("obra_id", id).order("created_at", { ascending: false })
-    ]);
-    if (obraRes.data) setObra(obraRes.data);
-    if (ossRes.data) setOss(ossRes.data);
+    
+    // 1. Carregar dados da Obra
+    const { data: obraData } = await supabase.from("obras").select("*").eq("id", id).maybeSingle();
+    if (obraData) setObra(obraData);
+
+    // 2. Carregar OSs com seus profissionais e supervisores
+    const { data: ossData } = await supabase.from("ordens_servico")
+      .select(`
+        *, 
+        profissional:profiles!ordens_servico_profissional_id_fkey(nome),
+        supervisor:profiles!ordens_servico_supervisor_id_fkey(nome),
+        gestor:profiles!ordens_servico_gestor_responsavel_id_fkey(nome)
+      `)
+      .eq("obra_id", id)
+      .order("created_at", { ascending: false });
+    
+    if (ossData) setOss(ossData);
+
+    if (ossData && ossData.length > 0) {
+      const osIds = ossData.map(os => os.id);
+      
+      // 3. Carregar todas as atividades vinculadas a essas OSs
+      const { data: atvsData } = await supabase.from("os_atividades")
+        .select(`
+          *,
+          atividade:atividades(descricao, codigo_item),
+          categoria:categorias(nome),
+          os:ordens_servico(numero, status, operational_status, profissional:profiles!ordens_servico_profissional_id_fkey(nome))
+        `)
+        .in("os_id", osIds)
+        .order("created_at", { ascending: false });
+      
+      if (atvsData) setAtividades(atvsData);
+
+      // 4. Carregar histórico de auditoria consolidado da obra
+      const { data: logsData } = await supabase.from("os_audit_logs")
+        .select(`
+          *,
+          profile:profiles(nome),
+          os:ordens_servico(numero)
+        `)
+        .in("os_id", osIds)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      
+      if (logsData) setHistorico(logsData);
+    }
   }, [id]);
 
   useEffect(() => {

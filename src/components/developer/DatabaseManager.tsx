@@ -2,7 +2,7 @@
  import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
  import { Textarea } from "@/components/ui/textarea";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
  import { developerService } from "@/services/developerService";
  import { Database, Play, AlertCircle, Table as TableIcon } from "lucide-react";
  import { ScrollArea } from "@/components/ui/scroll-area";

@@ -4,7 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
  import { ROLE_LABEL, AppRole, useAuth } from "@/lib/auth";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
   import { Card, CardContent } from "@/components/ui/card";
   import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
  import { Badge } from "@/components/ui/badge";

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ROLE_LABEL, AppRole } from "@/lib/auth";
 import { notificationService } from "@/services";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { Check, X } from "lucide-react";
 
 const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque"];

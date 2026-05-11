@@ -3,7 +3,7 @@
  import { developerService } from "@/services/developerService";
   import { Activity, Database, Users, Building2, AlertTriangle, RefreshCw, Layers, CheckCircle2 } from "lucide-react";
   import { Button } from "@/components/ui/button";
-  import { toast } from "sonner";
+  import { toast } from "@/components/ui/sonner";
  
  export default function DeveloperOverview() {
    const [stats, setStats] = useState<any>(null);

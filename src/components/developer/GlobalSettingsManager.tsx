@@ -5,7 +5,7 @@
  import { Label } from "@/components/ui/label";
  import { Switch } from "@/components/ui/switch";
   import { Save, RefreshCw, Trash2, Zap, History, RotateCcw } from "lucide-react";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
   import { developerService } from "@/services/developerService";
   import { Badge } from "@/components/ui/badge";
  

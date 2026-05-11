@@ -25,7 +25,7 @@ import WarehouseDialog from "@/components/stock/WarehouseDialog";
 import { format, subDays, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, PieChart, Pie, Cell } from "recharts";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 
  const COLORS = ["hsl(var(--primary))", "#64748b", "#94a3b8", "#cbd5e1", "#10b981", "#f59e0b"];
 

@@ -71,7 +71,7 @@ import { Cookie, ShieldCheck, X } from "lucide-react";
     <>
       {isVisible && (
         <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 animate-in slide-in-from-bottom duration-500">
-          <Card className="max-w-4xl mx-auto p-4 md:p-6 shadow-2xl border-primary/20 bg-card/95 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          <Card className="max-w-4xl mx-auto p-4 md:p-6 shadow-2xl border-primary/20 bg-card/95 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 md:gap-8 ring-1 ring-primary/10">
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2 text-primary">
                 <Cookie className="h-5 w-5" />
@@ -91,7 +91,7 @@ import { Cookie, ShieldCheck, X } from "lucide-react";
               <Button variant="outline" size="sm" onClick={handleRejectNonEssential} className="text-xs">
                 Rejeitar não essenciais
               </Button>
-              <Button size="sm" onClick={handleAcceptAll} className="text-xs font-bold">
+              <Button size="sm" onClick={handleAcceptAll} className="text-xs font-bold bg-primary hover:bg-primary/90">
                 Aceitar todos
               </Button>
             </div>

@@ -183,7 +183,7 @@ export default function Login() {
           {mode === "login" ? "Use suas credenciais corporativas." : "Defina suas credenciais de acesso."}
         </p>
          <form onSubmit={submit} className="space-y-4">
-            <div className="rounded-md bg-blue-50 p-2.5 text-[10px] text-blue-800 dark:bg-blue-900/20 dark:text-blue-300 space-y-1">
+            <div className="rounded-md bg-primary/10 p-2.5 text-[10px] text-primary dark:bg-primary/20 space-y-1">
               <div>Dica: Para todas as contas (incluindo Almoxarifado), a senha é <span className="font-bold">Energy@2026!Ops</span></div>
               <div className="opacity-70 font-medium">Conta Estoque: estoque@energyops.demo</div>
             </div>
@@ -230,11 +230,11 @@ export default function Login() {
           )}
         </form>
           <div className="mt-8 pt-6 border-t border-border space-y-4">
-            <div className="rounded-lg border-2 border-orange-200 bg-orange-50/50 p-4 dark:border-orange-900/30 dark:bg-orange-900/10">
-              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Portal Especializado</div>
+            <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-primary">Portal Especializado</div>
               <button
                 onClick={() => quickLogin("estoque@energyops.demo")}
-                className="flex w-full items-center justify-between rounded-md bg-orange-600 p-3 text-white shadow-sm transition-all hover:bg-orange-700 active:scale-[0.98]"
+                className="flex w-full items-center justify-between rounded-md bg-primary p-3 text-white shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
               >
                 <div className="flex flex-col items-start text-left">
                   <span className="text-sm font-bold">Estoque · Almoxarifado</span>

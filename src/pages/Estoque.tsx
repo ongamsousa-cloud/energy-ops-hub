@@ -326,7 +326,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     const filteredMovements = useMemo(() => {
       return movements.filter(m => {
         const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
-        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.supervisor_id === equipeFilter; // Usando supervisor_id como fallback para filtro se equipe_id for omitido
+        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
         const matchType = filters.type === 'all' || m.type === filters.type;
         const matchWarehouse = filters.warehouse === 'all' || m.from_warehouse_id === filters.warehouse || m.to_warehouse_id === filters.warehouse;
         const matchMaterial = filters.material === 'all' || m.material_id === filters.material;

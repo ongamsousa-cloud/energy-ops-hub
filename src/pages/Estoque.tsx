@@ -481,6 +481,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </Card>
         </TabsContent>
 
+        <TabsContent value="campo" className="mt-0 space-y-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowUpFromLine className="h-5 w-5 text-amber-500" />

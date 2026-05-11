@@ -27,20 +27,20 @@ import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, PieChart, Pie, Cell } from "recharts";
 import { toast } from "sonner";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--accent))", "hsl(var(--muted-foreground))", "#10b981", "#f59e0b"];
+ const COLORS = ["hsl(var(--primary))", "#64748b", "#94a3b8", "#cbd5e1", "#10b981", "#f59e0b"];
 
 const TYPE_LABEL: Record<string,string> = {
   entrada: "Entrada", saida: "Saída", devolucao: "Devolução",
   transferencia: "Transferência", ajuste: "Ajuste", reserva: "Reserva"
 };
-const TYPE_COLOR: Record<string,string> = {
-  entrada: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  saida: "bg-red-500/10 text-red-600 border-red-500/30",
-  devolucao: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-  transferencia: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  ajuste: "bg-purple-500/10 text-purple-600 border-purple-500/30",
-  reserva: "bg-slate-500/10 text-slate-600 border-slate-500/30",
-};
+ const TYPE_COLOR: Record<string,string> = {
+   entrada: "bg-emerald-500/5 text-emerald-700 border-emerald-500/20",
+   saida: "bg-red-500/5 text-red-700 border-red-500/20",
+   devolucao: "bg-blue-500/5 text-blue-700 border-blue-500/20",
+   transferencia: "bg-amber-500/5 text-amber-700 border-amber-500/20",
+   ajuste: "bg-slate-500/5 text-slate-700 border-slate-500/20",
+   reserva: "bg-slate-500/5 text-slate-600 border-slate-500/20",
+ };
 
 export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const { hasRole } = useAuth();
@@ -387,298 +387,99 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-         <TabsList className="flex w-full overflow-x-auto bg-muted/50 p-1 mb-4">
-           <TabsTrigger value="overview" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
-           <TabsTrigger value="entradas" className="flex-1 min-w-[120px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-            <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Pendentes Liberação {waitingReleaseOS.length > 0 && <Badge className="ml-2 scale-75" variant="secondary">{waitingReleaseOS.length}</Badge>}</TabsTrigger>
-           <TabsTrigger value="materials" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
-           <TabsTrigger value="warehouses" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
-           <TabsTrigger value="movements" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
-           <TabsTrigger value="alerts" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-         </TabsList>
+          <TabsList className="flex w-full overflow-x-auto bg-muted/30 border-b border-border p-0 h-10 mb-6 rounded-none space-x-1">
+            <TabsTrigger value="overview" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><Activity className="h-3 w-3 mr-2"/>Visão Geral</TabsTrigger>
+            <TabsTrigger value="materials" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><Package className="h-3 w-3 mr-2"/>Em Estoque</TabsTrigger>
+            <TabsTrigger value="campo" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><ArrowUpFromLine className="h-3 w-3 mr-2"/>Saídas Campo</TabsTrigger>
+            <TabsTrigger value="devolucoes" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><RotateCcw className="h-3 w-3 mr-2"/>Retornos</TabsTrigger>
+            <TabsTrigger value="auditoria" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><ListChecks className="h-3 w-3 mr-2"/>Auditoria</TabsTrigger>
+            <TabsTrigger value="warehouses" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><WarehouseIcon className="h-3 w-3 mr-2"/>Depósitos</TabsTrigger>
+          </TabsList>
 
-         <TabsContent value="overview" className="mt-4 space-y-6">
-           <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-             {/* Main Analytics Area (3/4) */}
-             <div className="xl:col-span-3 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="p-4 bg-emerald-500/5 border-emerald-500/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Entradas (Hoje)</p>
-                      <p className="text-2xl font-black text-emerald-700">{kpis.entriesToday}</p>
-                    </div>
-                    <ArrowDownToLine className="h-8 w-8 text-emerald-500/20" />
-                  </Card>
-                  <Card className="p-4 bg-red-500/5 border-red-500/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Saídas (Hoje)</p>
-                      <p className="text-2xl font-black text-red-700">{kpis.exitsToday}</p>
-                    </div>
-                    <ArrowUpFromLine className="h-8 w-8 text-red-500/20" />
-                  </Card>
-                  <Card className="p-4 bg-amber-500/5 border-amber-500/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Críticos</p>
-                      <p className="text-2xl font-black text-amber-700">{kpis.critical}</p>
-                    </div>
-                    <AlertTriangle className="h-8 w-8 text-amber-500/20" />
-                  </Card>
-                  <Card className="p-4 bg-primary/5 border-primary/10 flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Atendimentos</p>
-                      <p className="text-2xl font-black text-primary/80">{new Set(movements.filter(m => m.type === 'saida' && new Date(m.created_at) >= startOfDay(new Date())).map(m => m.os_id).filter(Boolean)).size}</p>
-                    </div>
-                    <Activity className="h-8 w-8 text-primary/20" />
-                  </Card>
-                </div>
- 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <ArrowDownToLine className="h-4 w-4 text-emerald-500" />
-                        Entradas Recentes
-                      </h3>
-                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("entradas")}>Ver Todas</Button>
-                    </div>
-                    <div className="space-y-4">
-                      {movements.filter(m => m.type === 'entrada').slice(0, 5).map(m => (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold">{m.materials?.name}</span>
-                            <span className="text-[10px] text-muted-foreground">NF: {m.invoice_number || '—'} · {m.to_wh?.name}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs font-mono font-bold text-emerald-600">+{Number(m.quantity)} {m.materials?.unit}</span>
-                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
- 
-                  <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <ArrowUpFromLine className="h-4 w-4 text-red-500" />
-                        Liberações p/ OS
-                      </h3>
-                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("liberacao")}>Ver Todas</Button>
-                    </div>
-                    <div className="space-y-4">
-                      {movements.filter(m => m.type === 'saida').slice(0, 5).map(m => (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold">{m.materials?.name}</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              {m.ordens_servico?.numero && <Badge variant="outline" className="text-[9px] h-4 font-mono">OS {m.ordens_servico.numero}</Badge>}
-                              <span className="text-[10px] text-muted-foreground">{m.profiles?.nome}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs font-mono font-bold text-red-600">-{Number(m.quantity)} {m.materials?.unit}</span>
-                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                </div>
 
-                 <Card className="p-6 border-none shadow-sm bg-card/50">
-                   <div className="flex items-center justify-between mb-6">
-                     <div>
-                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Distribuição Patrimonial</h3>
-                       <p className="text-[10px] text-muted-foreground">Valor por Categoria</p>
-                     </div>
-                     <TrendingUp className="h-4 w-4 text-primary" />
-                   </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                     <div className="h-[280px]">
-                       <ResponsiveContainer width="100%" height="100%">
-                         <PieChart>
-                           <Pie data={chartByCategory} dataKey="value" nameKey="name" innerRadius={70} outerRadius={100} paddingAngle={5}>
-                             {chartByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                           </Pie>
-                           <Tooltip formatter={(v: any) => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} />
-                           <Legend verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px' }} />
-                         </PieChart>
-                       </ResponsiveContainer>
-                     </div>
-                     <div className="space-y-4">
-                       <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                         <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Ajustes & Perdas (Mês)</h4>
-                         <p className="text-xl font-black text-destructive">{kpis.lossMonth.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</p>
-                         <div className="mt-2 flex items-center text-[10px] text-destructive italic">
-                           <AlertCircle className="h-3 w-3 mr-1" />
-                           Quebras, extravios e ajustes manuais
-                         </div>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4">
-                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Reservas</h4>
-                           <p className="text-lg font-bold text-primary">{kpis.reservedActive}</p>
-                         </div>
-                         <div className="p-4 rounded-xl bg-background border border-border/50 shadow-sm">
-                           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Depósitos</h4>
-                           <p className="text-lg font-bold text-primary">{warehouses.length}</p>
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 </Card>
-             </div>
-
-             {/* Sidebar Area: Activity & Status (The "Sides") */}
-             <div className="space-y-6">
-               <Card className="p-5 border-none shadow-sm bg-card/80">
-                 <div className="flex items-center justify-between mb-6">
-                   <h3 className="text-xs font-bold uppercase tracking-widest text-destructive">Reposição Crítica</h3>
-                   <Badge variant="destructive" className="animate-pulse">{alerts.length}</Badge>
-                 </div>
-                 <div className="space-y-3">
-                   {alerts.slice(0, 4).map((a) => (
-                     <div key={a.id} className="group p-3 rounded-xl bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-colors">
-                       <div className="flex items-start justify-between">
-                         <div className="flex flex-col">
-                           <div className="flex items-center gap-1.5 mb-1">
-                             <AlertTriangle className="h-3 w-3 text-destructive" />
-                             <span className="text-[9px] font-black uppercase tracking-tighter text-destructive">{a.type === 'ruptura' ? 'RUPTURA' : 'CRÍTICO'}</span>
-                           </div>
-                           <span className="text-xs font-bold leading-tight line-clamp-1">{a.materials?.name}</span>
-                           <span className="text-[9px] text-muted-foreground mt-0.5">{a.warehouses?.name}</span>
-                         </div>
-                         <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => resolveAlert(a.id)}>
-                           <ListChecks className="h-4 w-4 text-destructive"/>
-                         </Button>
-                       </div>
-                     </div>
-                   ))}
-                   {alerts.length === 0 && (
-                     <div className="text-center py-10">
-                       <Activity className="h-8 w-8 text-emerald-500/20 mx-auto mb-2" />
-                       <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Estoque OK</p>
-                     </div>
-                   )}
-                 </div>
-               </Card>
-
-               <Card className="p-5 border-none shadow-sm bg-card/80 flex flex-col min-h-[400px]">
-                 <div className="flex items-center justify-between mb-6">
-                   <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Feed de Operações</h3>
-                   <History className="h-4 w-4 text-muted-foreground opacity-50" />
-                 </div>
-                 <div className="flex gap-1.5 mb-4">
-                    <Select value={osFilter} onValueChange={setOsFilter}>
-                      <SelectTrigger className="h-7 text-[9px] flex-1"><SelectValue placeholder="Obra" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Obras</SelectItem>
-                        {allObras.map(o => <SelectItem key={o.id} value={o.id}>{o.numero}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <Select value={equipeFilter} onValueChange={setEquipeFilter}>
-                      <SelectTrigger className="h-7 text-[9px] flex-1"><SelectValue placeholder="Equipe" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Equipes</SelectItem>
-                        {allEquipes.map(e => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                 </div>
-                 <div className="space-y-4 flex-1 overflow-y-auto max-h-[400px] pr-1">
-                   {filteredMovements.slice(0, 10).map((m) => (
-                     <div key={m.id} className="relative pl-4 border-l-2 pb-1 hover:bg-muted/30 transition-colors" style={{ borderLeftColor: m.type === 'entrada' ? '#10b981' : m.type === 'saida' ? 'hsl(var(--destructive))' : 'hsl(var(--primary))' }}>
-                       <div className="flex flex-col">
-                         <div className="flex items-center justify-between">
-                           <span className="text-[10px] font-bold uppercase">{TYPE_LABEL[m.type]}</span>
-                           <span className="text-[9px] text-muted-foreground font-mono">{format(new Date(m.created_at), "HH:mm")}</span>
-                         </div>
-                         <span className="text-xs font-medium text-foreground line-clamp-1">{m.materials?.name}</span>
-                         <span className="text-[9px] text-muted-foreground truncate">{m.creator?.nome}</span>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-                 <Button variant="ghost" size="sm" className="w-full mt-4 text-[10px] font-bold uppercase" onClick={() => setActiveTab("movements")}>
-                   Ver Histórico
-                 </Button>
-               </Card>
-             </div>
-           </div>
-         </TabsContent>
-
-        <TabsContent value="entradas" className="mt-4 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
-              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recebido Hoje</div>
-              <div className="text-2xl font-black text-emerald-700">{summary.inToday.length}</div>
-              <div className="text-[10px] text-emerald-600/70">Volumes processados</div>
-            </Card>
-            <Card className="p-4 bg-blue-500/5 border-blue-500/10">
-              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Aguardando NF</div>
-              <div className="text-2xl font-black text-blue-700">{movements.filter(m => m.type === "entrada" && !m.invoice_number).length}</div>
-              <div className="text-[10px] text-blue-600/70">Entradas sem documento</div>
-            </Card>
+        <TabsContent value="devolucoes" className="mt-0 space-y-6">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-sm font-bold uppercase tracking-tight">Retornos e Devoluções do Campo</h3>
+            <Button size="sm" variant="outline" onClick={() => openMovement("devolucao")}>Registrar Retorno</Button>
           </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <ArrowDownToLine className="h-5 w-5 text-emerald-500" />
-              <h3 className="text-lg font-bold">Entradas de Materiais</h3>
-            </div>
-            <Button onClick={() => openMovement("entrada")} className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="h-4 w-4 mr-2" /> Registrar Novo Recebimento
-            </Button>
-          </div>
-          <Card>
+          <Card className="border-border/50 shadow-none overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
-                  <TableHead>Destino</TableHead>
-                  <TableHead>NF/Fornecedor</TableHead>
-                  <TableHead>Responsável</TableHead>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-[10px] uppercase font-bold">Data</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold">Material</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold text-right">Qtd</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold">Origem (OS/Equipe)</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold text-right">Destino</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {movements.filter(m => m.type === "entrada").map(m => (
+                {movements.filter(m => m.type === 'devolucao').slice(0, 15).map(m => (
                   <TableRow key={m.id}>
-                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
+                    <TableCell className="text-[11px] py-3">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
                     <TableCell>
-                      <div className="font-medium text-xs">{m.materials?.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
+                      <div className="text-[11px] font-medium">{m.materials?.name}</div>
+                      <div className="text-[9px] text-muted-foreground font-mono">{m.materials?.code}</div>
                     </TableCell>
-                    <TableCell className="text-right font-mono text-emerald-600 font-bold">+{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.to_wh?.name || "—"}</TableCell>
-                    <TableCell className="text-xs">
-                      {m.invoice_number ? `NF: ${m.invoice_number}` : "—" }
-                      {m.supplier && <div className="text-[10px] text-muted-foreground">{m.supplier}</div>}
+                    <TableCell className="text-right text-[11px] font-mono font-bold text-blue-600">+{m.quantity}</TableCell>
+                    <TableCell className="text-[11px]">
+                      {m.ordens_servico?.numero ? `OS ${m.ordens_servico.numero}` : m.notes || '—'}
                     </TableCell>
-                    <TableCell className="text-xs">{m.creator?.nome || "—"}</TableCell>
+                    <TableCell className="text-right text-[11px] font-medium">{m.to_wh?.name || '—'}</TableCell>
                   </TableRow>
                 ))}
-                {movements.filter(m => m.type === "entrada").length === 0 && (
-                  <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Nenhuma entrada registrada recentemente.</TableCell></TableRow>
+                {movements.filter(m => m.type === 'devolucao').length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-xs">Nenhum retorno registrado recentemente.</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
           </Card>
         </TabsContent>
 
-        <TabsContent value="liberacao" className="mt-4 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <Card className="p-4 bg-amber-500/5 border-amber-500/10">
-              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Pendentes de Liberação</div>
-              <div className="text-2xl font-black text-amber-700">{waitingReleaseOS.length}</div>
-              <div className="text-[10px] text-amber-600/70">Aguardando estoque</div>
+        <TabsContent value="auditoria" className="mt-0 space-y-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <Card className="p-4 flex-1 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo Total Patrimonial</div>
+              <div className="text-2xl font-semibold">{kpis.totalValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>
             </Card>
-            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
-              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Liberado Hoje</div>
-              <div className="text-2xl font-black text-emerald-700">{summary.outToday.length}</div>
-              <div className="text-[10px] text-emerald-600/70">Saídas para campo</div>
+            <Card className="p-4 flex-1 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Perdas/Ajustes (Mês)</div>
+              <div className="text-2xl font-semibold text-destructive">{kpis.lossMonth.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>
             </Card>
           </div>
+          <Card className="border-border/50 shadow-none">
+             <div className="p-4 border-b bg-muted/10 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-widest">Conciliação de Movimentações</h3>
+                <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase" onClick={exportMovementsToCSV}><Download className="h-3 w-3 mr-2" /> Exportar Relatório</Button>
+             </div>
+             <Table>
+                <TableHeader>
+                   <TableRow>
+                      <TableHead className="text-[10px] uppercase font-bold">Data</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Tipo</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Material</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold text-right">Qtd</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Responsável</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Notas/Ref</TableHead>
+                   </TableRow>
+                </TableHeader>
+                <TableBody>
+                   {movements.slice(0, 20).map(m => (
+                      <TableRow key={m.id}>
+                         <TableCell className="text-[11px]">{format(new Date(m.created_at), "dd/MM HH:mm")}</TableCell>
+                         <TableCell><Badge variant="outline" className={cn("text-[9px] uppercase font-normal px-1", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
+                         <TableCell className="text-[11px] font-medium">{m.materials?.name}</TableCell>
+                         <TableCell className={cn("text-right text-[11px] font-mono font-bold", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : 'text-foreground')}>
+                            {m.type === 'entrada' || m.type === 'devolucao' ? '+' : '-'}{m.quantity}
+                         </TableCell>
+                         <TableCell className="text-[11px]">{m.creator?.nome || '—'}</TableCell>
+                         <TableCell className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">{m.notes || m.ordens_servico?.numero || '—'}</TableCell>
+                      </TableRow>
+                   ))}
+                </TableBody>
+             </Table>
+          </Card>
+        </TabsContent>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -814,139 +615,15 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </div>
         </TabsContent>
 
-         <TabsContent value="movements" className="mt-4 space-y-4">
-           <Card className="p-4 bg-muted/20 border-none shadow-none">
-             <div className="flex flex-wrap gap-4 items-end">
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Tipo</Label>
-                 <Select value={filters.type} onValueChange={(v) => setFilters({ ...filters, type: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os tipos</SelectItem>
-                     {Object.entries(TYPE_LABEL).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Almoxarifado</Label>
-                 <Select value={filters.warehouse} onValueChange={(v) => setFilters({ ...filters, warehouse: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os almoxarifados</SelectItem>
-                     {warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Material</Label>
-                 <Select value={filters.material} onValueChange={(v) => setFilters({ ...filters, material: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os materiais</SelectItem>
-                     {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => { setFilters({ type: 'all', warehouse: 'all', material: 'all' }); setOsFilter('all'); setEquipeFilter('all'); }} title="Limpar Filtros">
-                 <X className="h-4 w-4" />
-               </Button>
-               <Button size="sm" variant="outline" className="h-9" onClick={exportMovementsToCSV}>
-                 <Download className="h-4 w-4 mr-2" /> Exportar
-               </Button>
-             </div>
-           </Card>
- 
-           <Card>
-             <Table>
-              <TableHeader><TableRow>
-                <TableHead>Data</TableHead><TableHead>Tipo</TableHead><TableHead>Material</TableHead>
-                <TableHead className="text-right">Qtd</TableHead><TableHead>Origem → Destino</TableHead>
-                <TableHead>OS</TableHead><TableHead>Profissional</TableHead><TableHead>Por</TableHead>
-              </TableRow></TableHeader>
-               <TableBody>
-                 {filteredMovements.map(m => (
-                    <TableRow key={m.id} className="hover:bg-muted/30">
-                     <TableCell className="text-xs whitespace-nowrap py-3">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
-                     <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
-                     <TableCell className="py-3"><div className="font-bold text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground font-mono">{m.materials?.code}</div></TableCell>
-                     <TableCell className={cn("text-right font-mono font-bold py-3", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : '')}>
-                       {m.type === 'entrada' ? '+' : m.type === 'saida' ? '-' : ''}{Number(m.quantity)} {m.materials?.unit}
-                     </TableCell>
-                     <TableCell className="text-xs py-3">
-                       <div className="flex flex-col gap-0.5">
-                         {m.from_wh?.name && <span className="text-muted-foreground line-through decoration-muted-foreground/30">{m.from_wh.name}</span>}
-                         {m.to_wh?.name && <span className="font-medium text-primary flex items-center gap-1"><ArrowDownToLine className="h-3 w-3" /> {m.to_wh.name}</span>}
-                         {!m.to_wh?.name && m.from_wh?.name && <span className="font-medium text-destructive flex items-center gap-1"><ArrowUpFromLine className="h-3 w-3" /> {m.from_wh.name}</span>}
-                       </div>
-                     </TableCell>
-                     <TableCell className="py-3">
-                       {m.ordens_servico?.numero ? (
-                         <Badge variant="secondary" className="font-mono text-[9px] bg-blue-50 text-blue-700 border-blue-100 uppercase tracking-tighter">OS {m.ordens_servico.numero}</Badge>
-                       ) : <span className="text-muted-foreground text-[10px]">—</span>}
-                     </TableCell>
-                     <TableCell className="text-xs font-medium py-3">{m.profiles?.nome || "—"}</TableCell>
-                     <TableCell className="text-xs text-muted-foreground py-3 italic">{m.creator?.nome || "—"}</TableCell>
-                   </TableRow>
-                ))}
-                {movements.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Sem movimentações registradas.</TableCell></TableRow>}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="reservations" className="mt-4">
-          <Card>
-            <Table>
-              <TableHeader><TableRow>
-                <TableHead>OS</TableHead><TableHead>Material</TableHead><TableHead>Almoxarifado</TableHead>
-                <TableHead className="text-right">Qtd</TableHead><TableHead>Status</TableHead>
-                <TableHead>Reservado por</TableHead><TableHead>Data</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {reservations.map(r => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.ordens_servico?.numero}</TableCell>
-                    <TableCell><div className="font-medium text-xs">{r.materials?.name}</div><div className="text-[10px] text-muted-foreground">{r.materials?.code}</div></TableCell>
-                    <TableCell className="text-xs">{r.warehouses?.name}</TableCell>
-                    <TableCell className="text-right font-mono">{Number(r.quantity)} {r.materials?.unit}</TableCell>
-                    <TableCell><Badge variant={r.status === "consumido" ? "default" : r.status === "liberado" ? "secondary" : "outline"}>{r.status}</Badge></TableCell>
-                    <TableCell className="text-xs">{r.profiles?.nome}</TableCell>
-                    <TableCell className="text-xs">{format(new Date(r.created_at),"dd/MM/yy HH:mm",{locale:ptBR})}</TableCell>
-                  </TableRow>
-                ))}
-                {reservations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Sem reservas ativas.</TableCell></TableRow>}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="mt-4 space-y-2">
-          {alerts.length === 0 && <Card className="p-8 text-center text-muted-foreground"><AlertCircle className="h-10 w-10 mx-auto mb-2 opacity-30"/>Nenhum alerta ativo no momento. Estoque sob controle.</Card>}
-          {alerts.map(a => (
-            <Card key={a.id} className="p-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className={`h-5 w-5 mt-0.5 ${a.severity === 'high' ? 'text-red-500' : 'text-amber-500'}`}/>
-                <div>
-                  <div className="font-medium text-sm">{a.message}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {a.materials?.name && <>Material: {a.materials.name} · </>}
-                    {a.warehouses?.name && <>Almoxarifado: {a.warehouses.name} · </>}
-                    {format(new Date(a.created_at),"dd/MM HH:mm",{locale:ptBR})}
-                  </div>
-                </div>
-              </div>
-              {canWrite && <Button size="sm" variant="outline" onClick={()=>resolveAlert(a.id)}>Resolver</Button>}
-            </Card>
-          ))}
-        </TabsContent>
+        <TabsContent value="movements" className="mt-4 space-y-4" />
       </Tabs>
 
-       <NewMaterialDialog 
-         open={newMaterialOpen} 
-         onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
-         onSuccess={loadMaterials} 
-         material={editMaterial}
-       />
+      <NewMaterialDialog 
+        open={newMaterialOpen} 
+        onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
+        onSuccess={loadMaterials} 
+        material={editMaterial}
+      />
       <StockMovementDialog open={movementOpen} onOpenChange={setMovementOpen} onSuccess={loadAll} defaultType={movementType as any}/>
       <WarehouseDialog open={warehouseOpen} onOpenChange={setWarehouseOpen} onSuccess={loadWarehouses} warehouse={editWarehouse}/>
     </div>

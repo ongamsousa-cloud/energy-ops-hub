@@ -221,9 +221,24 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     }
   }
    async function loadMovements() {
-     const { data } = await supabase.from("stock_movements")
-       .select("*, materials(name, code, unit), profiles!stock_movements_professional_id_fkey(nome), creator:profiles!stock_movements_created_by_fkey(nome), from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name), to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name), ordens_servico(numero, assigned_supervisor_id, equipe_id)")
+     const { data, error } = await supabase.from("stock_movements")
+       .select(`
+         *,
+         materials(name, code, unit),
+         profiles!stock_movements_professional_id_fkey(nome),
+         creator:profiles!stock_movements_professional_id_fkey(nome),
+         from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name),
+         to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name),
+         ordens_servico(numero, assigned_supervisor_id, equipe_id)
+       `)
        .order("created_at", { ascending: false }).limit(200);
+     
+     if (error) {
+       console.error("Erro ao carregar movimentações:", error);
+       toast.error("Erro ao carregar dados do histórico de estoque.");
+       return;
+     }
+     
      if (data) setMovements(data);
    }
   async function loadWarehouses() {

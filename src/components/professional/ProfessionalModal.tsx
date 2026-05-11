@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
  import { Camera, Loader2, UserPlus, Save, Shield, Settings, Activity, Globe, Eye, EyeOff, Key, MapPin, Search, CheckCircle2, History } from "lucide-react";
  import 'react-phone-number-input/style.css';
  import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';

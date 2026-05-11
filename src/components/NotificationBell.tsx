@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 
 type Notif = { id: string; titulo: string; mensagem: string | null; link: string | null; lida: boolean; created_at: string };
 

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { saveThemePrimary } from "@/hooks/useAppTheme";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import TwoFactorSetup from "@/components/TwoFactorSetup";
 
 const PRESETS = [

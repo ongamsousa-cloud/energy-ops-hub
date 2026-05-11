@@ -5,7 +5,7 @@
  import { Bug, AlertCircle, RefreshCw, CheckCircle } from "lucide-react";
  import { supabase } from "@/integrations/supabase/client";
  import { Button } from "@/components/ui/button";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
 
  export default function ErrorLogs() {
    const [errors, setErrors] = useState<any[]>([]);

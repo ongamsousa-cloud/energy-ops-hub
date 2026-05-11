@@ -8,7 +8,7 @@ import NewServiceOrderDialog from "@/components/os/NewServiceOrderDialog";
  import { mediaService, geoLocationService, notificationService } from "@/services";
  import { supabase } from "@/integrations/supabase/client";
  import { useAuth } from "@/lib/auth";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
 
 interface CampoDashboardProps { stats: any; profile: any; }
 

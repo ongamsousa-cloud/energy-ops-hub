@@ -4,7 +4,7 @@
  import { Label } from "@/components/ui/label";
  import { Slider } from "@/components/ui/slider";
  import { Input } from "@/components/ui/input";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
  import { saveThemePrimary } from "@/hooks/useAppTheme";
  import { useAuth } from "@/lib/auth";
  import { useAuditLogger } from "@/hooks/useAuditLogger";

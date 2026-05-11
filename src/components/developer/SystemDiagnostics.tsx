@@ -3,7 +3,7 @@
  import { Button } from "@/components/ui/button";
  import { CheckCircle2, XCircle, RefreshCcw, Wifi, Database, Lock, Package, Globe } from "lucide-react";
  import { supabase } from "@/integrations/supabase/client";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
 
  export default function SystemDiagnostics() {
    const [running, setRunning] = useState(false);

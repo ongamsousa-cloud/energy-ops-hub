@@ -7,7 +7,7 @@
  import { Input } from "@/components/ui/input";
  import { Search, Shield, Ban, CheckCircle, Key, UserPlus } from "lucide-react";
  import { developerService } from "@/services/developerService";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
  import {
    DropdownMenu,
    DropdownMenuContent,

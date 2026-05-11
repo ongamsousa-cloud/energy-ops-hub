@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
  import { Label } from "@/components/ui/label";
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/lib/auth";
 import InstallAppButton from "@/components/InstallAppButton";
 import { ShieldCheck } from "lucide-react";

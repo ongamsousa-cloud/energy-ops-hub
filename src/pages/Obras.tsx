@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
      import { Plus, Search, Upload, Trash2, Edit, Trash, Briefcase, User, MapPin } from "lucide-react";
  import { useAuth } from "@/lib/auth";
  import { cepService } from "@/services";

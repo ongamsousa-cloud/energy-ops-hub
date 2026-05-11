@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EmptyState from "@/components/EmptyState";
  import { Plus, Users, Shield, MapPin, Search, UserCheck, UserPlus, ChevronRight } from "lucide-react";
 import ProfessionalModal from "@/components/professional/ProfessionalModal";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
  import { Card } from "@/components/ui/card";

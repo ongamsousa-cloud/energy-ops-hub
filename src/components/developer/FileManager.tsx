@@ -3,7 +3,7 @@
  import { Button } from "@/components/ui/button";
  import { Input } from "@/components/ui/input";
  import { Upload, File, Trash2, Globe, Lock, Search, RefreshCw, Folder } from "lucide-react";
- import { toast } from "sonner";
+ import { toast } from "@/components/ui/sonner";
  import { supabase } from "@/integrations/supabase/client";
  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
  import { Badge } from "@/components/ui/badge";

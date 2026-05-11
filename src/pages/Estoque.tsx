@@ -225,8 +225,8 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        .select(`
          *,
          materials(name, code, unit),
-          profiles!stock_movements_professional_id_fkey(nome),
-          creator:profiles!stock_movements_professional_id_fkey(nome),
+         profiles!stock_movements_professional_id_fkey(nome),
+         creator:profiles!stock_movements_professional_id_fkey(nome),
          from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name),
          to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name),
           ordens_servico(numero, assigned_supervisor_id, equipe_id)

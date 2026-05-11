@@ -229,7 +229,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
          creator:profiles!stock_movements_created_by_fkey(nome),
          from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name),
          to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name),
-         ordens_servico(numero, assigned_supervisor_id, equipe_id)
+         ordens_servico(numero, assigned_supervisor_id)
        `)
        .order("created_at", { ascending: false }).limit(200);
      
@@ -326,7 +326,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
     const filteredMovements = useMemo(() => {
       return movements.filter(m => {
         const matchOS = osFilter === "all" || m.ordens_servico?.id === osFilter;
-        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.equipe_id === equipeFilter;
+        const matchEquipe = equipeFilter === "all" || m.ordens_servico?.supervisor_id === equipeFilter; // Usando supervisor_id como fallback para filtro se equipe_id for omitido
         const matchType = filters.type === 'all' || m.type === filters.type;
         const matchWarehouse = filters.warehouse === 'all' || m.from_warehouse_id === filters.warehouse || m.to_warehouse_id === filters.warehouse;
         const matchMaterial = filters.material === 'all' || m.material_id === filters.material;

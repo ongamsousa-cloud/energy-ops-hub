@@ -599,79 +599,74 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
            </div>
          </TabsContent>
 
-        <TabsContent value="entradas" className="mt-4 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
-              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Recebido Hoje</div>
-              <div className="text-2xl font-black text-emerald-700">{summary.inToday.length}</div>
-              <div className="text-[10px] text-emerald-600/70">Volumes processados</div>
+        <TabsContent value="campo" className="mt-0 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-4 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Aguardando Liberação</div>
+              <div className="text-2xl font-semibold text-amber-600">{waitingReleaseOS.length}</div>
             </Card>
-            <Card className="p-4 bg-blue-500/5 border-blue-500/10">
-              <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Aguardando NF</div>
-              <div className="text-2xl font-black text-blue-700">{movements.filter(m => m.type === "entrada" && !m.invoice_number).length}</div>
-              <div className="text-[10px] text-blue-600/70">Entradas sem documento</div>
+            <Card className="p-4 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saídas (Hoje)</div>
+              <div className="text-2xl font-semibold text-foreground">{summary.outToday.length}</div>
             </Card>
           </div>
 
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <ArrowDownToLine className="h-5 w-5 text-emerald-500" />
-              <h3 className="text-lg font-bold">Entradas de Materiais</h3>
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1 space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-bold uppercase tracking-tight">Fila de Liberação (OS)</h3>
+                <Badge variant="outline" className="text-[10px]">{waitingReleaseOS.length} Pendentes</Badge>
+              </div>
+              {waitingReleaseOS.length === 0 ? (
+                <div className="h-40 flex items-center justify-center border border-dashed rounded-lg text-muted-foreground text-xs">
+                  Nenhuma OS aguardando material
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {waitingReleaseOS.map(o => (
+                    <Card key={o.id} className="p-4 shadow-none border-border/50 hover:border-primary/30 transition-colors">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-primary uppercase">OS {o.numero}</span>
+                            <span className="text-[9px] text-muted-foreground">/ {o.obra?.nome}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {o.materials?.slice(0, 3).map((m: any) => (
+                              <Badge key={m.id} variant="secondary" className="text-[9px] font-normal px-1 h-4">
+                                {m.materials?.name}: {m.quantity_planned}
+                              </Badge>
+                            ))}
+                            {o.materials?.length > 3 && <span className="text-[9px] text-muted-foreground">+{o.materials.length - 3} itens</span>}
+                          </div>
+                        </div>
+                        <Button size="sm" className="h-7 text-[10px]" onClick={() => releaseMaterials(o.id)}>Liberar</Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-            <Button onClick={() => openMovement("entrada")} className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="h-4 w-4 mr-2" /> Registrar Novo Recebimento
-            </Button>
-          </div>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data/Hora</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead className="text-right">Qtd</TableHead>
-                  <TableHead>Destino</TableHead>
-                  <TableHead>NF/Fornecedor</TableHead>
-                  <TableHead>Responsável</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {movements.filter(m => m.type === "entrada").map(m => (
-                  <TableRow key={m.id}>
-                    <TableCell className="text-xs">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
-                    <TableCell>
-                      <div className="font-medium text-xs">{m.materials?.name}</div>
-                      <div className="text-[10px] text-muted-foreground">{m.materials?.code}</div>
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-emerald-600 font-bold">+{Number(m.quantity)} {m.materials?.unit}</TableCell>
-                    <TableCell className="text-xs">{m.to_wh?.name || "—"}</TableCell>
-                    <TableCell className="text-xs">
-                      {m.invoice_number ? `NF: ${m.invoice_number}` : "—" }
-                      {m.supplier && <div className="text-[10px] text-muted-foreground">{m.supplier}</div>}
-                    </TableCell>
-                    <TableCell className="text-xs">{m.creator?.nome || "—"}</TableCell>
-                  </TableRow>
-                ))}
-                {movements.filter(m => m.type === "entrada").length === 0 && (
-                  <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Nenhuma entrada registrada recentemente.</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="liberacao" className="mt-4 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <Card className="p-4 bg-amber-500/5 border-amber-500/10">
-              <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Pendentes de Liberação</div>
-              <div className="text-2xl font-black text-amber-700">{waitingReleaseOS.length}</div>
-              <div className="text-[10px] text-amber-600/70">Aguardando estoque</div>
-            </Card>
-            <Card className="p-4 bg-emerald-500/5 border-emerald-500/10">
-              <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Liberado Hoje</div>
-              <div className="text-2xl font-black text-emerald-700">{summary.outToday.length}</div>
-              <div className="text-[10px] text-emerald-600/70">Saídas para campo</div>
-            </Card>
+            <div className="w-full md:w-1/3 space-y-4">
+              <div className="flex items-center justify-between border-b pb-2">
+                <h3 className="text-sm font-bold uppercase tracking-tight">Últimas Saídas</h3>
+                <History className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-2">
+                {movements.filter(m => m.type === 'saida').slice(0, 8).map(m => (
+                  <div key={m.id} className="flex items-center justify-between p-2 border-b border-border/30 last:border-0">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-medium truncate max-w-[120px]">{m.materials?.name}</span>
+                      <span className="text-[8px] text-muted-foreground uppercase">{m.profiles?.nome}</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-red-600">-{m.quantity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
+        </TabsContent>
 
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">

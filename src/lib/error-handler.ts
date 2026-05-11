@@ -2,7 +2,21 @@
 export function translateError(error: any): string {
   if (!error) return "Ocorreu um erro inesperado.";
 
-  const message = typeof error === 'string' ? error : error.message || error.error_description || "";
+  let message = typeof error === 'string' ? error : error.message || error.error_description || "";
+
+  // Se a mensagem vier com prefixo "Erro ao salvar: ...", tenta extrair a parte técnica
+  if (message.includes(": ")) {
+    const parts = message.split(": ");
+    const technicalPart = parts[parts.length - 1];
+    if (technicalPart && technicalPart.length > 3) {
+      // Se a parte técnica for traduzível, usamos a tradução dela
+      const translatedPart = translateError(technicalPart);
+      if (translatedPart !== technicalPart) {
+        return translatedPart;
+      }
+    }
+  }
+
   const msg = message.toLowerCase();
 
   // Mapeamento de erros comuns do Supabase/Auth/Postgres

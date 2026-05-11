@@ -615,28 +615,15 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </div>
         </TabsContent>
 
-        <TabsContent value="movements" className="mt-4 space-y-4">
-           {/* Histórico moved to auditoria for cleaner layout */}
-        </TabsContent>
-
+        <TabsContent value="movements" className="mt-4 space-y-4" />
       </Tabs>
 
-       <NewMaterialDialog 
-         open={newMaterialOpen} 
-         onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
-         onSuccess={loadMaterials} 
-         material={editMaterial}
-       />
-      <StockMovementDialog open={movementOpen} onOpenChange={setMovementOpen} onSuccess={loadAll} defaultType={movementType as any}/>
-      <WarehouseDialog open={warehouseOpen} onOpenChange={setWarehouseOpen} onSuccess={loadWarehouses} warehouse={editWarehouse}/>
-    </div>
-
-       <NewMaterialDialog 
-         open={newMaterialOpen} 
-         onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
-         onSuccess={loadMaterials} 
-         material={editMaterial}
-       />
+      <NewMaterialDialog 
+        open={newMaterialOpen} 
+        onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
+        onSuccess={loadMaterials} 
+        material={editMaterial}
+      />
       <StockMovementDialog open={movementOpen} onOpenChange={setMovementOpen} onSuccess={loadAll} defaultType={movementType as any}/>
       <WarehouseDialog open={warehouseOpen} onOpenChange={setWarehouseOpen} onSuccess={loadWarehouses} warehouse={editWarehouse}/>
     </div>

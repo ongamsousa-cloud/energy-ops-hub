@@ -752,6 +752,90 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </Card>
         </TabsContent>
 
+        <TabsContent value="devolucoes" className="mt-0 space-y-6">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-sm font-bold uppercase tracking-tight">Retornos e Devoluções do Campo</h3>
+            <Button size="sm" variant="outline" onClick={() => openMovement("devolucao")}>Registrar Retorno</Button>
+          </div>
+          <Card className="border-border/50 shadow-none overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-[10px] uppercase font-bold">Data</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold">Material</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold text-right">Qtd</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold">Origem (OS/Equipe)</TableHead>
+                  <TableHead className="text-[10px] uppercase font-bold text-right">Destino</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {movements.filter(m => m.type === 'devolucao').slice(0, 15).map(m => (
+                  <TableRow key={m.id}>
+                    <TableCell className="text-[11px] py-3">{format(new Date(m.created_at), "dd/MM/yy HH:mm")}</TableCell>
+                    <TableCell>
+                      <div className="text-[11px] font-medium">{m.materials?.name}</div>
+                      <div className="text-[9px] text-muted-foreground font-mono">{m.materials?.code}</div>
+                    </TableCell>
+                    <TableCell className="text-right text-[11px] font-mono font-bold text-blue-600">+{m.quantity}</TableCell>
+                    <TableCell className="text-[11px]">
+                      {m.ordens_servico?.numero ? `OS ${m.ordens_servico.numero}` : m.notes || '—'}
+                    </TableCell>
+                    <TableCell className="text-right text-[11px] font-medium">{m.to_wh?.name || '—'}</TableCell>
+                  </TableRow>
+                ))}
+                {movements.filter(m => m.type === 'devolucao').length === 0 && (
+                  <TableRow><TableCell colSpan={5} className="text-center py-10 text-muted-foreground text-xs">Nenhum retorno registrado recentemente.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="auditoria" className="mt-0 space-y-6">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
+            <Card className="p-4 flex-1 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo Total Patrimonial</div>
+              <div className="text-2xl font-semibold">{kpis.totalValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>
+            </Card>
+            <Card className="p-4 flex-1 shadow-none border-border/50">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Perdas/Ajustes (Mês)</div>
+              <div className="text-2xl font-semibold text-destructive">{kpis.lossMonth.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>
+            </Card>
+          </div>
+          <Card className="border-border/50 shadow-none">
+             <div className="p-4 border-b bg-muted/10 flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-widest">Conciliação de Movimentações</h3>
+                <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase" onClick={exportMovementsToCSV}><Download className="h-3 w-3 mr-2" /> Exportar Relatório</Button>
+             </div>
+             <Table>
+                <TableHeader>
+                   <TableRow>
+                      <TableHead className="text-[10px] uppercase font-bold">Data</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Tipo</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Material</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold text-right">Qtd</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Responsável</TableHead>
+                      <TableHead className="text-[10px] uppercase font-bold">Notas/Ref</TableHead>
+                   </TableRow>
+                </TableHeader>
+                <TableBody>
+                   {movements.slice(0, 20).map(m => (
+                      <TableRow key={m.id}>
+                         <TableCell className="text-[11px]">{format(new Date(m.created_at), "dd/MM HH:mm")}</TableCell>
+                         <TableCell><Badge variant="outline" className={cn("text-[9px] uppercase font-normal px-1", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
+                         <TableCell className="text-[11px] font-medium">{m.materials?.name}</TableCell>
+                         <TableCell className={cn("text-right text-[11px] font-mono font-bold", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : 'text-foreground')}>
+                            {m.type === 'entrada' || m.type === 'devolucao' ? '+' : '-'}{m.quantity}
+                         </TableCell>
+                         <TableCell className="text-[11px]">{m.creator?.nome || '—'}</TableCell>
+                         <TableCell className="text-[10px] text-muted-foreground italic truncate max-w-[150px]">{m.notes || m.ordens_servico?.numero || '—'}</TableCell>
+                      </TableRow>
+                   ))}
+                </TableBody>
+             </Table>
+          </Card>
+        </TabsContent>
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
               <ArrowUpFromLine className="h-5 w-5 text-amber-500" />

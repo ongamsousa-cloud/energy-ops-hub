@@ -25,7 +25,12 @@ export function translateError(error: any): string {
   if (msg.includes("user not found")) return "Usuário não encontrado.";
   if (msg.includes("jwt expired") || msg.includes("invalid ticket")) return "Sua sessão expirou. Por favor, faça login novamente.";
   if (msg.includes("violates foreign key constraint")) return "Este item não pode ser removido ou alterado pois está sendo usado em outra parte do sistema.";
-  if (msg.includes("violates unique constraint")) return "Já existe um registro com estes dados. Verifique duplicidade.";
+  if (msg.includes("violates unique constraint") || msg.includes("duplicate key value")) {
+    if (msg.includes("ordens_servico_numero_key")) {
+      return "Erro de numeração da OS. Por favor, tente salvar novamente; o sistema gerará um novo número automático.";
+    }
+    return "Já existe um registro com estes dados. Verifique duplicidade.";
+  }
   if (msg.includes("null value in column") && msg.includes("violates not-null constraint")) return "Por favor, preencha todos os campos obrigatórios.";
   if (msg.includes("permission denied")) return "Você não tem permissão para realizar esta ação.";
   if (msg.includes("network error") || msg.includes("failed to fetch")) return "Erro de conexão. Verifique sua internet.";

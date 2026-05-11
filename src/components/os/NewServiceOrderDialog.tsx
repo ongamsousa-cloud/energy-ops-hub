@@ -247,7 +247,11 @@ export default function NewServiceOrderDialog({ open, onOpenChange, onSuccess, i
           finalObraId = newObra.id;
         }
 
+        // Gerar um número aleatório temporário para evitar conflito com a sequência automática bugada
+        const tempNum = `OS-${Date.now().toString().slice(-6)}`;
+        
         const { data: os, error: osError } = await supabase.from("ordens_servico").insert({
+          numero: tempNum,
           obra_id: finalObraId,
           department_id: formData.departmentId || null,
           servico_id: selectedServicoId || null,

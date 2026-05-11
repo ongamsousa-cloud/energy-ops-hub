@@ -615,84 +615,8 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
           </div>
         </TabsContent>
 
-         <TabsContent value="movements" className="mt-4 space-y-4">
-           <Card className="p-4 bg-muted/20 border-none shadow-none">
-             <div className="flex flex-wrap gap-4 items-end">
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Tipo</Label>
-                 <Select value={filters.type} onValueChange={(v) => setFilters({ ...filters, type: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os tipos</SelectItem>
-                     {Object.entries(TYPE_LABEL).map(([val, label]) => <SelectItem key={val} value={val}>{label}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Almoxarifado</Label>
-                 <Select value={filters.warehouse} onValueChange={(v) => setFilters({ ...filters, warehouse: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os almoxarifados</SelectItem>
-                     {warehouses.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <div className="space-y-1.5 flex-1 min-w-[150px]">
-                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Filtrar Material</Label>
-                 <Select value={filters.material} onValueChange={(v) => setFilters({ ...filters, material: v })}>
-                   <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value="all">Todos os materiais</SelectItem>
-                     {materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
-                   </SelectContent>
-                 </Select>
-               </div>
-               <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => { setFilters({ type: 'all', warehouse: 'all', material: 'all' }); setOsFilter('all'); setEquipeFilter('all'); }} title="Limpar Filtros">
-                 <X className="h-4 w-4" />
-               </Button>
-               <Button size="sm" variant="outline" className="h-9" onClick={exportMovementsToCSV}>
-                 <Download className="h-4 w-4 mr-2" /> Exportar
-               </Button>
-             </div>
-           </Card>
- 
-           <Card>
-             <Table>
-              <TableHeader><TableRow>
-                <TableHead>Data</TableHead><TableHead>Tipo</TableHead><TableHead>Material</TableHead>
-                <TableHead className="text-right">Qtd</TableHead><TableHead>Origem → Destino</TableHead>
-                <TableHead>OS</TableHead><TableHead>Profissional</TableHead><TableHead>Por</TableHead>
-              </TableRow></TableHeader>
-               <TableBody>
-                 {filteredMovements.map(m => (
-                    <TableRow key={m.id} className="hover:bg-muted/30">
-                     <TableCell className="text-xs whitespace-nowrap py-3">{format(new Date(m.created_at),"dd/MM HH:mm",{locale:ptBR})}</TableCell>
-                     <TableCell className="py-3"><Badge variant="outline" className={cn("text-[10px] px-1.5 py-0", TYPE_COLOR[m.type])}>{TYPE_LABEL[m.type]}</Badge></TableCell>
-                     <TableCell className="py-3"><div className="font-bold text-xs">{m.materials?.name}</div><div className="text-[10px] text-muted-foreground font-mono">{m.materials?.code}</div></TableCell>
-                     <TableCell className={cn("text-right font-mono font-bold py-3", m.type === 'entrada' ? 'text-emerald-600' : m.type === 'saida' ? 'text-red-600' : '')}>
-                       {m.type === 'entrada' ? '+' : m.type === 'saida' ? '-' : ''}{Number(m.quantity)} {m.materials?.unit}
-                     </TableCell>
-                     <TableCell className="text-xs py-3">
-                       <div className="flex flex-col gap-0.5">
-                         {m.from_wh?.name && <span className="text-muted-foreground line-through decoration-muted-foreground/30">{m.from_wh.name}</span>}
-                         {m.to_wh?.name && <span className="font-medium text-primary flex items-center gap-1"><ArrowDownToLine className="h-3 w-3" /> {m.to_wh.name}</span>}
-                         {!m.to_wh?.name && m.from_wh?.name && <span className="font-medium text-destructive flex items-center gap-1"><ArrowUpFromLine className="h-3 w-3" /> {m.from_wh.name}</span>}
-                       </div>
-                     </TableCell>
-                     <TableCell className="py-3">
-                       {m.ordens_servico?.numero ? (
-                         <Badge variant="secondary" className="font-mono text-[9px] bg-blue-50 text-blue-700 border-blue-100 uppercase tracking-tighter">OS {m.ordens_servico.numero}</Badge>
-                       ) : <span className="text-muted-foreground text-[10px]">—</span>}
-                     </TableCell>
-                     <TableCell className="text-xs font-medium py-3">{m.profiles?.nome || "—"}</TableCell>
-                     <TableCell className="text-xs text-muted-foreground py-3 italic">{m.creator?.nome || "—"}</TableCell>
-                   </TableRow>
-                ))}
-                {movements.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">Sem movimentações registradas.</TableCell></TableRow>}
-              </TableBody>
-            </Table>
-          </Card>
+        <TabsContent value="movements" className="mt-4 space-y-4">
+           {/* Histórico moved to auditoria for cleaner layout */}
         </TabsContent>
 
         <TabsContent value="reservations" className="mt-4">

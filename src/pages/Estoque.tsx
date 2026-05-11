@@ -229,7 +229,7 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
          creator:profiles!stock_movements_created_by_fkey(nome),
          from_wh:warehouses!stock_movements_from_warehouse_id_fkey(name),
          to_wh:warehouses!stock_movements_to_warehouse_id_fkey(name),
-         ordens_servico(numero, assigned_supervisor_id)
+          ordens_servico(numero, assigned_supervisor_id, equipe_id)
        `)
        .order("created_at", { ascending: false }).limit(200);
      

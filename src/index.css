@@ -95,10 +95,10 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 4%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 4%;
-    --primary: 0 72% 51%;               /* Vermelho Vibrante */
+    --primary: 0 83% 45%;               /* Vermelho Logo (#D21415) */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 0 72% 45%;
-    --primary-active: 0 72% 40%;
+    --primary-hover: 0 83% 38%;
+    --primary-active: 0 83% 32%;
     --primary-disabled: 0 30% 75%;
     --primary-glow: 0 80% 60%;
     --secondary: 60 5% 96%;
@@ -107,14 +107,14 @@ All colors MUST be HSL.
     --muted-foreground: 25 5% 35%;     /* #57534E aprox */
     --accent: 60 5% 94%;
     --accent-foreground: 0 0% 4%;
-    --destructive: 0 72% 42%;          /* #B91C1C */
+    --destructive: 0 83% 45%;          /* Mesmo tom da logo */
     --destructive-foreground: 0 0% 100%;
     --success: 142 71% 30%;            /* #15803D */
     --warning: 38 84% 35%;             /* #A16207 */
     --info: 224 76% 48%;               /* #1D4ED8 */
     --border: 24 6% 90%;               /* #E7E5E4 */
     --input: 24 6% 90%;
-    --ring: 0 72% 51%;
+    --ring: 0 83% 45%;
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
@@ -144,10 +144,10 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 0 72% 51%;
+    --primary: 0 83% 45%;
     --primary-foreground: 210 40% 98%;
-    --primary-hover: 0 72% 45%;
-    --primary-active: 0 72% 40%;
+    --primary-hover: 0 83% 38%;
+    --primary-active: 0 83% 32%;
     --primary-disabled: 0 30% 35%;
     --primary-glow: 0 80% 60%;
 
@@ -160,12 +160,12 @@ All colors MUST be HSL.
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 83% 45%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 0 72% 51%;
+    --ring: 0 83% 45%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

@@ -28,7 +28,7 @@ export default function Login() {
    const [forgotOpen, setForgotOpen] = useState(false);
    const [forgotEmail, setForgotEmail] = useState("");
    const [forgotLoading, setForgotLoading] = useState(false);
-   const [logoUrl, setLogoUrl] = useState("https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1777828431331_eu29es_logo.png");
+   const [logoUrl, setLogoUrl] = useState("https://rmetppilvfrxosvxzhgj.supabase.co/storage/v1/object/public/message-attachments/ad8ea817-6d17-4c76-b864-22b9b9c2e855/1778513213662_19zkbg_logo__1_.png");
  
    const fetchLogo = useCallback(async () => {
      try {

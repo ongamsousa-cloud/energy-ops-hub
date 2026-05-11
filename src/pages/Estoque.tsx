@@ -27,20 +27,20 @@ import { ptBR } from "date-fns/locale";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, PieChart, Pie, Cell } from "recharts";
 import { toast } from "sonner";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--accent))", "hsl(var(--muted-foreground))", "#10b981", "#f59e0b"];
+ const COLORS = ["hsl(var(--primary))", "#64748b", "#94a3b8", "#cbd5e1", "#10b981", "#f59e0b"];
 
 const TYPE_LABEL: Record<string,string> = {
   entrada: "Entrada", saida: "Saída", devolucao: "Devolução",
   transferencia: "Transferência", ajuste: "Ajuste", reserva: "Reserva"
 };
-const TYPE_COLOR: Record<string,string> = {
-  entrada: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
-  saida: "bg-red-500/10 text-red-600 border-red-500/30",
-  devolucao: "bg-blue-500/10 text-blue-600 border-blue-500/30",
-  transferencia: "bg-amber-500/10 text-amber-600 border-amber-500/30",
-  ajuste: "bg-purple-500/10 text-purple-600 border-purple-500/30",
-  reserva: "bg-slate-500/10 text-slate-600 border-slate-500/30",
-};
+ const TYPE_COLOR: Record<string,string> = {
+   entrada: "bg-emerald-500/5 text-emerald-700 border-emerald-500/20",
+   saida: "bg-red-500/5 text-red-700 border-red-500/20",
+   devolucao: "bg-blue-500/5 text-blue-700 border-blue-500/20",
+   transferencia: "bg-amber-500/5 text-amber-700 border-amber-500/20",
+   ajuste: "bg-slate-500/5 text-slate-700 border-slate-500/20",
+   reserva: "bg-slate-500/5 text-slate-600 border-slate-500/20",
+ };
 
 export default function Estoque({ defaultTab }: { defaultTab?: string }) {
   const { hasRole } = useAuth();
@@ -387,15 +387,14 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
        </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-         <TabsList className="flex w-full overflow-x-auto bg-muted/50 p-1 mb-4">
-           <TabsTrigger value="overview" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Activity className="h-4 w-4 mr-2"/>Dashboard</TabsTrigger>
-           <TabsTrigger value="entradas" className="flex-1 min-w-[120px] data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-600"><ArrowDownToLine className="h-4 w-4 mr-2"/>Entradas</TabsTrigger>
-            <TabsTrigger value="liberacao" className="flex-1 min-w-[120px] data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600"><ArrowUpFromLine className="h-4 w-4 mr-2"/>Pendentes Liberação {waitingReleaseOS.length > 0 && <Badge className="ml-2 scale-75" variant="secondary">{waitingReleaseOS.length}</Badge>}</TabsTrigger>
-           <TabsTrigger value="materials" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><Boxes className="h-4 w-4 mr-2"/>Inventário</TabsTrigger>
-           <TabsTrigger value="warehouses" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><WarehouseIcon className="h-4 w-4 mr-2"/>Depósitos</TabsTrigger>
-           <TabsTrigger value="movements" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><History className="h-4 w-4 mr-2"/>Histórico</TabsTrigger>
-           <TabsTrigger value="alerts" className="flex-1 min-w-[120px] data-[state=active]:bg-background data-[state=active]:shadow-sm"><AlertCircle className="h-4 w-4 mr-2"/>Alertas {alerts.length > 0 && <Badge className="ml-2 scale-75" variant="destructive">{alerts.length}</Badge>}</TabsTrigger>
-         </TabsList>
+          <TabsList className="flex w-full overflow-x-auto bg-muted/30 border-b border-border p-0 h-10 mb-6 rounded-none space-x-1">
+            <TabsTrigger value="overview" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><Activity className="h-3 w-3 mr-2"/>Visão Geral</TabsTrigger>
+            <TabsTrigger value="materials" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><Package className="h-3 w-3 mr-2"/>Em Estoque</TabsTrigger>
+            <TabsTrigger value="campo" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><ArrowUpFromLine className="h-3 w-3 mr-2"/>Saídas Campo</TabsTrigger>
+            <TabsTrigger value="devolucoes" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><RotateCcw className="h-3 w-3 mr-2"/>Retornos</TabsTrigger>
+            <TabsTrigger value="auditoria" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><ListChecks className="h-3 w-3 mr-2"/>Auditoria</TabsTrigger>
+            <TabsTrigger value="warehouses" className="h-10 px-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all font-medium text-xs"><WarehouseIcon className="h-3 w-3 mr-2"/>Depósitos</TabsTrigger>
+          </TabsList>
 
          <TabsContent value="overview" className="mt-4 space-y-6">
            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">

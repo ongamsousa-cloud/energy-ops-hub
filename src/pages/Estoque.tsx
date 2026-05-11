@@ -453,32 +453,29 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
                      </div>
                   </Card>
  
-                  <Card className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                        <ArrowUpFromLine className="h-4 w-4 text-red-500" />
-                        Liberações p/ OS
-                      </h3>
-                      <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("liberacao")}>Ver Todas</Button>
-                    </div>
-                    <div className="space-y-4">
-                      {movements.filter(m => m.type === 'saida').slice(0, 5).map(m => (
-                        <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/5">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold">{m.materials?.name}</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              {m.ordens_servico?.numero && <Badge variant="outline" className="text-[9px] h-4 font-mono">OS {m.ordens_servico.numero}</Badge>}
-                              <span className="text-[10px] text-muted-foreground">{m.profiles?.nome}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-xs font-mono font-bold text-red-600">-{Number(m.quantity)} {m.materials?.unit}</span>
-                            <p className="text-[9px] text-muted-foreground">{format(new Date(m.created_at), "HH:mm")}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
+                   <Card className="p-6 bg-card border border-border/50 shadow-none rounded-lg">
+                     <div className="flex items-center justify-between mb-6">
+                       <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Saídas para Campo</h3>
+                       <Button variant="ghost" size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={() => setActiveTab("campo")}>Monitorar Fluxo</Button>
+                     </div>
+                     <div className="space-y-3">
+                       {movements.filter(m => m.type === 'saida').slice(0, 5).map(m => (
+                         <div key={m.id} className="flex items-center justify-between p-2.5 rounded-md border border-border/40 bg-muted/10">
+                           <div className="flex flex-col">
+                             <span className="text-[11px] font-semibold text-foreground leading-tight">{m.materials?.name}</span>
+                             <div className="flex items-center gap-1.5 mt-1">
+                               {m.ordens_servico?.numero && <span className="text-[9px] font-mono border border-primary/20 bg-primary/5 px-1 text-primary rounded">OS {m.ordens_servico.numero}</span>}
+                               <span className="text-[9px] text-muted-foreground uppercase">{m.profiles?.nome}</span>
+                             </div>
+                           </div>
+                           <div className="text-right">
+                             <span className="text-[11px] font-mono font-bold text-red-600">-{Number(m.quantity)} {m.materials?.unit}</span>
+                             <p className="text-[8px] text-muted-foreground uppercase">{format(new Date(m.created_at), "HH:mm")}</p>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
+                   </Card>
                 </div>
 
                  <Card className="p-6 border-none shadow-sm bg-card/50">

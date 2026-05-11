@@ -619,52 +619,17 @@ export default function Estoque({ defaultTab }: { defaultTab?: string }) {
            {/* Histórico moved to auditoria for cleaner layout */}
         </TabsContent>
 
-        <TabsContent value="reservations" className="mt-4">
-          <Card>
-            <Table>
-              <TableHeader><TableRow>
-                <TableHead>OS</TableHead><TableHead>Material</TableHead><TableHead>Almoxarifado</TableHead>
-                <TableHead className="text-right">Qtd</TableHead><TableHead>Status</TableHead>
-                <TableHead>Reservado por</TableHead><TableHead>Data</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {reservations.map(r => (
-                  <TableRow key={r.id}>
-                    <TableCell className="font-mono text-xs">{r.ordens_servico?.numero}</TableCell>
-                    <TableCell><div className="font-medium text-xs">{r.materials?.name}</div><div className="text-[10px] text-muted-foreground">{r.materials?.code}</div></TableCell>
-                    <TableCell className="text-xs">{r.warehouses?.name}</TableCell>
-                    <TableCell className="text-right font-mono">{Number(r.quantity)} {r.materials?.unit}</TableCell>
-                    <TableCell><Badge variant={r.status === "consumido" ? "default" : r.status === "liberado" ? "secondary" : "outline"}>{r.status}</Badge></TableCell>
-                    <TableCell className="text-xs">{r.profiles?.nome}</TableCell>
-                    <TableCell className="text-xs">{format(new Date(r.created_at),"dd/MM/yy HH:mm",{locale:ptBR})}</TableCell>
-                  </TableRow>
-                ))}
-                {reservations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Sem reservas ativas.</TableCell></TableRow>}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="alerts" className="mt-4 space-y-2">
-          {alerts.length === 0 && <Card className="p-8 text-center text-muted-foreground"><AlertCircle className="h-10 w-10 mx-auto mb-2 opacity-30"/>Nenhum alerta ativo no momento. Estoque sob controle.</Card>}
-          {alerts.map(a => (
-            <Card key={a.id} className="p-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className={`h-5 w-5 mt-0.5 ${a.severity === 'high' ? 'text-red-500' : 'text-amber-500'}`}/>
-                <div>
-                  <div className="font-medium text-sm">{a.message}</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    {a.materials?.name && <>Material: {a.materials.name} · </>}
-                    {a.warehouses?.name && <>Almoxarifado: {a.warehouses.name} · </>}
-                    {format(new Date(a.created_at),"dd/MM HH:mm",{locale:ptBR})}
-                  </div>
-                </div>
-              </div>
-              {canWrite && <Button size="sm" variant="outline" onClick={()=>resolveAlert(a.id)}>Resolver</Button>}
-            </Card>
-          ))}
-        </TabsContent>
       </Tabs>
+
+       <NewMaterialDialog 
+         open={newMaterialOpen} 
+         onOpenChange={(o) => { setNewMaterialOpen(o); if(!o) setEditMaterial(null); }} 
+         onSuccess={loadMaterials} 
+         material={editMaterial}
+       />
+      <StockMovementDialog open={movementOpen} onOpenChange={setMovementOpen} onSuccess={loadAll} defaultType={movementType as any}/>
+      <WarehouseDialog open={warehouseOpen} onOpenChange={setWarehouseOpen} onSuccess={loadWarehouses} warehouse={editWarehouse}/>
+    </div>
 
        <NewMaterialDialog 
          open={newMaterialOpen} 

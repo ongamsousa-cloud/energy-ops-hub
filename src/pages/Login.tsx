@@ -50,6 +50,8 @@ export default function Login() {
       { role: "Técnico", email: "campo@teste.com", password: "senha123", desc: "Lançamentos" },
       { role: "Financeiro", email: "financeiro@teste.com", password: "senha123", desc: "Medição/UMD" },
       { role: "Auditor", email: "auditor@teste.com", password: "senha123", desc: "Qualidade" },
+      { role: "Comercial", email: "comercial@teste.com", password: "senha123", desc: "Funil/Vendas" },
+      { role: "Pós-venda", email: "posvenda@teste.com", password: "senha123", desc: "Chamados/NPS" },
     ];
  
    async function handleMfaVerification(challengeId: string) {

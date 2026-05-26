@@ -1,77 +1,30 @@
-Diagnóstico confirmado
+## Objetivo
+Garantir acesso de login para todas as contas de teste com as senhas especificadas, ativando os perfis e atribuindo os papéis (roles) corretos.
 
-O problema não é “falta de entender o requisito”; é implementação errada em 3 pontos:
+## Contas a configurar
 
-1. O clique no departamento hoje só filtra a lista. Ele não vira um destinatário real.
-2. A busca de contatos está quebrando no backend com erro 400, porque a tela tenta carregar `profiles` junto com `user_roles(role)` por um relacionamento que não existe no schema exposto. Resultado: a lista falha e aparece erro de carregamento.
-3. O CRUD não está completo no banco: `messages` não tem `updated_at`, e as políticas atuais não liberam `UPDATE/DELETE`, então editar/excluir tende a falhar ou ficar inconsistente.
+| Email | Senha | Papel |
+|---|---|---|
+| admin@teste.com | senha123! | admin |
+| gestor@teste.com | senha123 | gestor |
+| supervisor@teste.com | senha123 | supervisor |
+| campo@teste.com | senha123 | campo |
+| financeiro@teste.com | senha123 | financeiro |
+| auditor@teste.com | senha123 | auditor |
+| estoque@energyops.demo | Estoque@2026 | estoque (cargo Almoxarife) |
 
-Também validei que já existem departamentos e perfis ativos vinculados a eles. Então isso deveria mesmo estar funcionando agora.
+## Como será feito
 
-Plano de correção
+1. **Atualizar a edge function `reset-test-passwords`** (já existe no projeto) para:
+   - Criar o usuário no Auth se não existir (com `email_confirm: true`)
+   - Atualizar a senha de cada conta usando `auth.admin.updateUserById`
+   - Garantir registro em `profiles` com `ativo = true`, `must_change_password = false` e cargo apropriado (Almoxarife para a conta estoque)
+   - Garantir entrada em `user_roles` com o papel correto (upsert)
+2. **Invocar a edge function** uma vez para aplicar as mudanças.
+3. **Ajustar o `src/pages/Login.tsx`**: a dica atual diz que a senha de todas é `Energy@2026!Ops`. Atualizar o aviso para refletir as novas credenciais (admin = `senha123!`, demais = `senha123`, estoque = `Estoque@2026`) e ajustar o `quickLogin`/`mockSignIn` para usar a senha correta por email em vez de uma senha fixa.
+4. **Ajustar `mockSignIn` em `src/lib/auth.tsx`** para aceitar a senha como parâmetro (ou mapear por email) já que hoje está fixa em `Energy@2026!Ops`.
 
-1. Corrigir o carregamento dos contatos
-- Remover a consulta quebrada que tenta embutir `user_roles` dentro de `profiles`.
-- Carregar perfis, departamentos e papéis em consultas separadas e combinar no front.
-- Eliminar o falso erro de “contatos não carregados” quando o backend retornar departamentos corretamente.
-
-2. Transformar departamento em destinatário real
-- Alterar a lógica da modal para trabalhar com dois tipos de destinatário:
-  - profissional
-  - departamento
-- Ao clicar no departamento da lateral, ele passará a ser selecionável como destinatário, e não apenas filtro.
-- Exibir o departamento selecionado na área “Para:” igual aos destinatários já escolhidos.
-- Permitir mandar mensagem mesmo sem selecionar nenhum profissional, desde que um departamento esteja selecionado.
-
-3. Dar suporte real no banco para conversa por departamento
-- Criar migração para identificar conversas de departamento de forma explícita.
-- Adicionar `department_id` em `conversations` e usar um tipo próprio de conversa de departamento.
-- Criar função/RPC para “obter ou criar” a conversa do departamento.
-- Ao enviar para um departamento:
-  - a conversa do departamento é criada/recuperada
-  - o remetente entra como participante
-  - os usuários ativos já vinculados àquele departamento entram como participantes
-- Assim o envio ao departamento funciona mesmo que a grade de profissionais esteja vazia ou filtrada.
-
-4. Ajustar a interface da conversa
-- Na lista e no cabeçalho, conversas de departamento passarão a mostrar o nome do departamento, em vez de depender só do primeiro participante.
-- Manter a possibilidade de mandar direto para um funcionário específico.
-- Preservar os filtros por código, nome, função e cargo para seleção de profissionais quando houver usuários.
-- Separar visualmente “destinatário departamento” de “destinatário profissional”.
-
-5. Concluir o CRUD de mensagens de forma segura
-- Criar migração para completar o ciclo de edição/exclusão.
-- Adicionar `updated_at` em `messages` e trigger de atualização.
-- Adicionar políticas de `UPDATE` e `DELETE` para o autor da mensagem.
-- Ajustar o front para:
-  - editar mensagem com persistência real
-  - excluir mensagem corretamente
-  - marcar “editada” só quando realmente houver alteração
-- Se você quiser, posso fazer exclusão lógica em vez de apagar fisicamente, para manter histórico interno.
-
-6. Garantir texto, anexo e áudio no mesmo fluxo
-- Aplicar a nova lógica tanto no envio de texto quanto no envio de áudio/anexo.
-- Se o destino for departamento, o envio vai usar a conversa do departamento.
-- Se o destino for profissional, mantém conversa direta.
-
-Detalhes técnicos
-
-Arquivos principais a mexer
-- `src/pages/Mensagens.tsx`
-- nova migração em `supabase/migrations/...`
-
-Mudanças de banco previstas
-- `conversations.department_id` (nullable, FK para departments)
-- ajuste do tipo da conversa para suportar departamento
-- função para get/create de conversa por departamento
-- `messages.updated_at`
-- políticas RLS de `UPDATE/DELETE` para mensagens
-
-Resultado esperado após a implementação
-- Clicar em “Operação”, “Financeiro” etc. vai permitir enviar direto ao departamento.
-- O sistema não dependerá da lista de profissionais para autorizar esse envio.
-- O erro de carregamento dos contatos deixará de aparecer por causa da consulta quebrada.
-- Editar e excluir mensagem passarão a funcionar de verdade, com persistência no banco.
-- O filtro por funcionário continuará existindo para envios individuais.
-
-Se você aprovar, eu implemento exatamente isso agora.
+## Observações técnicas
+- Nenhuma migração de schema é necessária — apenas dados (auth + profiles + user_roles).
+- A conta `estoque@energyops.demo` precisa ter `cargo` contendo "almoxar" ou "estoque" para o flag `isEstoqueDept` funcionar e redirecionar para `/estoque-app`.
+- Após executar, valido fazendo login manual com uma das contas para confirmar.

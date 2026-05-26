@@ -13,7 +13,7 @@ interface AuthCtx {
   loading: boolean;
   signOut: () => Promise<void>;
   hasRole: (r: AppRole | AppRole[]) => boolean;
-  mockSignIn: (email: string) => Promise<void>;
+  mockSignIn: (email: string, password?: string) => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx | undefined>(undefined);
@@ -104,12 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const mockSignIn = async (email: string) => {
+  const mockSignIn = async (email: string, password?: string) => {
     setLoading(true);
     try {
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        password: "Energy@2026!Ops",
+        password: password ?? "Energy@2026!Ops",
       });
 
       if (authError) throw authError;

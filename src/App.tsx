@@ -31,6 +31,8 @@ import Configuracoes from "./pages/Configuracoes";
  import Departamentos from "./pages/Departamentos";
  import DevDashboard from "./pages/DevDashboard";
  import Privacidade from "./pages/Privacidade";
+import ComercialDashboard from "./pages/ComercialDashboard";
+import PosVendaDashboard from "./pages/PosVendaDashboard";
 import { useAppTheme } from "./hooks/useAppTheme";
 import CookieBanner from "@/components/CookieBanner";
 
@@ -82,6 +84,8 @@ const App = () => (
               <Route path="configuracoes" element={<Configuracoes />} />
                <Route path="departamentos" element={<ProtectedRoute roles={["admin"]}><Departamentos /></ProtectedRoute>} />
                <Route path="dev" element={<ProtectedRoute roles={["developer"]}><DevDashboard /></ProtectedRoute>} />
+               <Route path="comercial" element={<ProtectedRoute roles={["admin","gestor","comercial"]}><ComercialDashboard /></ProtectedRoute>} />
+               <Route path="posvenda" element={<ProtectedRoute roles={["admin","gestor","posvenda"]}><PosVendaDashboard /></ProtectedRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

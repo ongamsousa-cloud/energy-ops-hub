@@ -17,6 +17,8 @@ Deno.serve(async (req) => {
     { email: "financeiro@teste.com",  password: "senha123",  nome: "Financeiro Teste",    role: "financeiro",  cargo: "Financeiro" },
     { email: "auditor@teste.com",     password: "senha123",  nome: "Auditor Teste",       role: "auditor",     cargo: "Auditor" },
     { email: "estoque@energyops.demo",password: "Estoque@2026", nome: "Almoxarifado",     role: "estoque",     cargo: "Almoxarife" },
+    { email: "comercial@teste.com",   password: "senha123",  nome: "Comercial Teste",     role: "comercial",   cargo: "Comercial" },
+    { email: "posvenda@teste.com",    password: "senha123",  nome: "Pós-venda Teste",     role: "posvenda",    cargo: "Pós-venda" },
   ];
   
   const dbUrl = Deno.env.get("SUPABASE_DB_URL")!;

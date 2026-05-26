@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as supaTyped } from "@/integrations/supabase/client";
+const supabase: any = supaTyped;
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -108,7 +109,7 @@ export default function ComercialDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard Comercial" subtitle="Funil de vendas, leads e oportunidades" />
+      <PageHeader title="Dashboard Comercial" description="Funil de vendas, leads e oportunidades" />
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

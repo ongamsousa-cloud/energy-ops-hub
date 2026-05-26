@@ -3,7 +3,7 @@ import { useAuth, ROLE_LABEL, AppRole } from "@/lib/auth";
 import {
    LayoutDashboard, Briefcase, Users, UserCircle, Tag, ListChecks, Terminal,
    ClipboardList, FileBarChart2, Calculator, ShieldCheck, LogOut, Menu, Bell, Upload, MessageSquare, UserCheck, Package, Building2,
-    Database, Palette, Activity, RefreshCw, Settings
+    Database, Palette, Activity, RefreshCw, Settings, TrendingUp, Headphones
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -24,6 +24,8 @@ const NAV: Item[] = [
   { to: "/app/usuarios/aprovacoes", label: "Aprovações de Usuários", icon: UserCheck, roles: ["admin"] },
   { to: "/app/atividades", label: "Atividades", icon: ListChecks, roles: ["admin","gestor"] },
    { to: "/app/estoque", label: "Estoque", icon: Package, roles: ["admin","gestor","supervisor","financeiro","auditor","campo","estoque"] },
+   { to: "/app/comercial", label: "Comercial", icon: TrendingUp, roles: ["admin","gestor","comercial"] },
+   { to: "/app/posvenda", label: "Pós-venda", icon: Headphones, roles: ["admin","gestor","posvenda"] },
   { to: "/app/mensagens", label: "Mensagens", icon: MessageSquare },
    { to: "/app/aprovacoes", label: "Aprovações", icon: ShieldCheck, roles: ["admin","gestor","supervisor"] },
    { to: "/app/departamentos", label: "Departamentos", icon: Building2, roles: ["admin","gestor"] },

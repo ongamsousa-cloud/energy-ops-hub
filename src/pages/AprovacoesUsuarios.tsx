@@ -9,7 +9,7 @@ import { notificationService } from "@/services";
 import { toast } from "@/components/ui/sonner";
 import { Check, X } from "lucide-react";
 
-const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque"];
+const ROLES: AppRole[] = ["admin", "gestor", "supervisor", "campo", "financeiro", "auditor", "estoque", "comercial", "posvenda"];
 const ROLE_TO_DEPT: Record<AppRole, string> = {
   admin: "Administração",
   gestor: "Operação",
@@ -19,6 +19,8 @@ const ROLE_TO_DEPT: Record<AppRole, string> = {
    auditor: "Auditoria",
    estoque: "Almoxarifado / Estoque",
    developer: "Sistemas",
+   comercial: "Comercial / Vendas",
+   posvenda: "Pós-venda / Atendimento",
  };
 
 export default function AprovacoesUsuarios() {

@@ -44,12 +44,12 @@ export default function Login() {
    }, [fetchLogo]);
  
     const testAccounts = [
-      { role: "Administrador", email: "admin@teste.com", desc: "Visão 360º" },
-      { role: "Gestor", email: "gestor@teste.com", desc: "Operacional" },
-      { role: "Supervisor", email: "supervisor@teste.com", desc: "Campo/Revisão" },
-      { role: "Técnico", email: "campo@teste.com", desc: "Lançamentos" },
-      { role: "Financeiro", email: "financeiro@teste.com", desc: "Medição/UMD" },
-      { role: "Auditor", email: "auditor@teste.com", desc: "Qualidade" },
+      { role: "Administrador", email: "admin@teste.com", password: "senha123!", desc: "Visão 360º" },
+      { role: "Gestor", email: "gestor@teste.com", password: "senha123", desc: "Operacional" },
+      { role: "Supervisor", email: "supervisor@teste.com", password: "senha123", desc: "Campo/Revisão" },
+      { role: "Técnico", email: "campo@teste.com", password: "senha123", desc: "Lançamentos" },
+      { role: "Financeiro", email: "financeiro@teste.com", password: "senha123", desc: "Medição/UMD" },
+      { role: "Auditor", email: "auditor@teste.com", password: "senha123", desc: "Qualidade" },
     ];
  
    async function handleMfaVerification(challengeId: string) {
@@ -93,10 +93,14 @@ export default function Login() {
      return null;
    }
 
-   const quickLogin = async (targetEmail: string) => {
+   const quickLogin = async (targetEmail: string, targetPassword?: string) => {
      setLoading(true);
      try {
-       await mockSignIn(targetEmail);
+       const pwd = targetPassword
+         ?? (targetEmail === "estoque@energyops.demo" ? "Estoque@2026"
+         : targetEmail === "admin@teste.com" ? "senha123!"
+         : "senha123");
+       await mockSignIn(targetEmail, pwd);
        toast.success("Acesso de teste liberado");
        nav(targetEmail === "estoque@energyops.demo" ? "/estoque-app" : "/app");
      } catch (e: any) {
@@ -184,8 +188,10 @@ export default function Login() {
         </p>
          <form onSubmit={submit} className="space-y-4">
             <div className="rounded-md bg-primary/10 p-2.5 text-[10px] text-primary dark:bg-primary/20 space-y-1">
-              <div>Dica: Para todas as contas (incluindo Almoxarifado), a senha é <span className="font-bold">Energy@2026!Ops</span></div>
-              <div className="opacity-70 font-medium">Conta Estoque: estoque@energyops.demo</div>
+              <div className="font-semibold">Credenciais de teste</div>
+              <div>Administrador: <span className="font-mono">senha123!</span></div>
+              <div>Demais perfis (.com): <span className="font-mono">senha123</span></div>
+              <div>Almoxarifado (estoque@energyops.demo): <span className="font-mono">Estoque@2026</span></div>
             </div>
            {mode === "signup" && (
              <>
@@ -250,7 +256,7 @@ export default function Login() {
                 {testAccounts.map((acc) => (
                   <button
                     key={acc.role}
-                    onClick={() => quickLogin(acc.email)}
+                    onClick={() => quickLogin(acc.email, acc.password)}
                     className="flex flex-col items-start rounded-md border border-border p-2 text-left transition-colors hover:bg-accent"
                   >
                     <span className="text-[11px] font-semibold">{acc.role}</span>
